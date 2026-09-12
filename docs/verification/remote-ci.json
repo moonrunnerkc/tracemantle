@@ -1,6 +1,6 @@
 {
   "observed_date": "2026-09-12",
-  "scope": "Implementation verification before the final documentation commit; later commits require their own full CI run.",
+  "scope": "Historical CI evidence before the owner-requested author rewrite. Replacement and later commits require their own full CI runs.",
   "runs": [
     {
       "databaseId": 34725943611,
@@ -169,6 +169,90 @@
           "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726120556/job/103640767722"
         }
       ]
+    },
+    {
+      "databaseId": 34726331659,
+      "headSha": "f1ad521ef04e0c616dda9e638f4c615b86b9bda0",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659",
+      "jobs": [
+        {
+          "name": "tokenizer",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659/job/103640975887"
+        },
+        {
+          "name": "test (ubuntu-latest, 3.13)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659/job/103640975953"
+        },
+        {
+          "name": "test (macos-latest, 3.13)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659/job/103640975961"
+        },
+        {
+          "name": "test (windows-latest, 3.11)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659/job/103640975981"
+        },
+        {
+          "name": "test (macos-latest, 3.10)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659/job/103640975997"
+        },
+        {
+          "name": "test (ubuntu-latest, 3.12)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659/job/103640976003"
+        },
+        {
+          "name": "lint",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659/job/103640976013"
+        },
+        {
+          "name": "test (windows-latest, 3.12)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659/job/103640976014"
+        },
+        {
+          "name": "test (macos-latest, 3.12)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659/job/103640976018"
+        },
+        {
+          "name": "test (windows-latest, 3.10)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659/job/103640976031"
+        },
+        {
+          "name": "test (macos-latest, 3.11)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659/job/103640976047"
+        },
+        {
+          "name": "test (windows-latest, 3.13)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659/job/103640976053"
+        },
+        {
+          "name": "test (ubuntu-latest, 3.10)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659/job/103640976057"
+        },
+        {
+          "name": "test (ubuntu-latest, 3.11)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659/job/103640976066"
+        },
+        {
+          "name": "package",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34726331659/job/103641397519"
+        }
+      ]
     }
   ],
   "artifact_verification": {
@@ -191,5 +275,22 @@
         "legacy_migration": "not requested"
       }
     ]
-  }
+  },
+  "authorship_rewrite": [
+    {
+      "old": "bd62f5dedb70ead010f921d1d94c63502581cfc6",
+      "new": "391a91d579595677a477c1201c5ab9e5526ddfe3",
+      "subject": "feat: add TraceMantle"
+    },
+    {
+      "old": "fe7faa37f446dc817b292e3a2e103775a62e6a0f",
+      "new": "8b79a1efae1593200fe959409e39f7da27adf157",
+      "subject": "fix: install tomli for type checks"
+    },
+    {
+      "old": "f1ad521ef04e0c616dda9e638f4c615b86b9bda0",
+      "new": "2b910e679961b274b8ace742096d78216439998e",
+      "subject": "docs: record rename checks"
+    }
+  ]
 }

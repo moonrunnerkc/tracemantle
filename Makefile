@@ -8,8 +8,8 @@ COV_FLOOR := 80
 # shipped files; update only if a new major version creates a new legacy line.
 LEGACY_VERSION := 0.2.0
 
-# Current package version, read from pyproject.toml. Used to assert the README's
-# pre-commit `rev:` example tracks the shipped version.
+# Current package version, read from pyproject.toml. Used to assert the
+# migration guide's pre-commit `rev:` example tracks the shipped version.
 VERSION := $(shell grep -m1 '^version' pyproject.toml | sed 's/.*"\(.*\)".*/\1/')
 
 regen-self-host-fixtures:
@@ -42,6 +42,6 @@ verify-release:
 	tracemantle skills/tracemantle/SKILL.md --analyze-graph
 	@if grep -rn "$(LEGACY_VERSION)" --include="*.py" --include="*.toml" --include="*.md" --include="*.yml" src/ pyproject.toml README.md action.yml ; then echo "FAIL: $(LEGACY_VERSION) references found"; exit 1; fi
 	@if grep -En "moonrunnerkc/(skillcheck|tracemantle)@v0" README.md; then echo "FAIL: @v0 reference in README"; exit 1; fi
-	@grep -q "rev: v$(VERSION)" README.md && echo "OK: README pre-commit rev matches v$(VERSION)" || { echo "FAIL: README pre-commit 'rev:' does not match pyproject version v$(VERSION); update the rev in README.md"; exit 1; }
+	@grep -q "rev: v$(VERSION)" docs/migration.md && echo "OK: migration pre-commit rev matches v$(VERSION)" || { echo "FAIL: migration pre-commit 'rev:' does not match pyproject version v$(VERSION); update the rev in docs/migration.md"; exit 1; }
 	python3 -m build --no-isolation --outdir candidate-dist
 	python3 scripts/verify_artifacts.py candidate-dist
