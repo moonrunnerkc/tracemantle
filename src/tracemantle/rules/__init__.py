@@ -1,0 +1,171 @@
+from __future__ import annotations
+
+from collections.abc import Callable
+
+from tracemantle import config
+from tracemantle.parser import ParsedSkill
+from tracemantle.result import Diagnostic
+from tracemantle.rules.compat import (
+    check_claude_only_fields,
+    check_cursor_description_block_scalar,
+    check_cursor_description_block_scalar_warning,
+    check_unverified_fields,
+    check_vscode_dirname,
+    make_strict_cursor_rule,
+    make_strict_vscode_rule,
+)
+from tracemantle.rules.description import (
+    check_description_quality,
+    make_min_score_rule,
+)
+from tracemantle.rules.disclosure import (
+    check_body_bloat,
+    check_body_budget,
+    check_metadata_budget,
+)
+from tracemantle.rules.frontmatter import (
+    check_description_max_length,
+    check_description_no_xml_tags,
+    check_description_non_empty,
+    check_description_person_voice,
+    check_description_required,
+    check_description_type,
+    check_name_charset,
+    check_name_consecutive_hyphens,
+    check_name_directory_match,
+    check_name_leading_trailing_hyphen,
+    check_name_max_length,
+    check_name_required,
+    check_name_reserved_words,
+    check_name_type,
+    check_unknown_fields,
+    check_yaml_anchors,
+)
+from tracemantle.rules.frontmatter_fields import check_standard_fields
+from tracemantle.rules.references import (
+    check_dependencies,
+)
+from tracemantle.rules.sizing import make_line_count_rule, make_token_estimate_rule
+from tracemantle.rules.template import check_template_detected
+
+_FRONTMATTER_RULES: list[Callable[[ParsedSkill], list[Diagnostic]]] = [
+    check_template_detected,
+    check_standard_fields,
+    check_name_required,
+    check_name_type,
+    check_name_max_length,
+    check_name_charset,
+    check_name_leading_trailing_hyphen,
+    check_name_consecutive_hyphens,
+    check_name_reserved_words,
+    check_description_required,
+    check_description_type,
+    check_description_non_empty,
+    check_description_max_length,
+    check_description_no_xml_tags,
+    check_description_person_voice,
+    check_unknown_fields,
+    check_yaml_anchors,
+]
+
+_DESCRIPTION_RULES: list[Callable[[ParsedSkill], list[Diagnostic]]] = [
+    check_description_quality,
+]
+
+_REFERENCE_RULES: list[Callable[[ParsedSkill], list[Diagnostic]]] = [
+    check_dependencies,
+]
+
+_DISCLOSURE_RULES: list[Callable[[ParsedSkill], list[Diagnostic]]] = [
+    check_metadata_budget,
+    check_body_budget,
+    check_body_bloat,
+]
+
+_COMPAT_RULES: list[Callable[[ParsedSkill], list[Diagnostic]]] = [
+    check_claude_only_fields,
+    check_vscode_dirname,
+    check_unverified_fields,
+    check_cursor_description_block_scalar,
+]
+
+
+def get_rules(
+    max_lines: int | None = None,
+    max_tokens: int | None = None,
+    skip_dirname_check: bool = False,
+    skip_ref_check: bool = False,
+    min_desc_score: int | None = None,
+    strict_vscode: bool = False,
+    strict_cursor: bool = False,
+    strict_all: bool = False,
+    target_agent: str = "all",
+) -> list[Callable[[ParsedSkill], list[Diagnostic]]]:
+    """Build the full rule list, optionally overriding thresholds and toggling features."""
+
+    rules: list[Callable[[ParsedSkill], list[Diagnostic]]] = list(_FRONTMATTER_RULES)
+
+     # Directory-name matching (Feature 1)
+    if not skip_dirname_check:
+        rules.append(check_name_directory_match)
+
+     # Sizing rules
+    sizing_rules = [
+        make_line_count_rule(max_lines if max_lines is not None else config.MAX_BODY_LINES),
+        make_token_estimate_rule(max_tokens if max_tokens is not None else config.MAX_TOKENS),
+    ]
+    rules.extend(sizing_rules)
+
+     # Description quality scoring (Feature 2)
+    rules.extend(_DESCRIPTION_RULES)
+    if min_desc_score is not None and min_desc_score > 0:
+        rules.append(make_min_score_rule(min_desc_score))
+
+     # File reference validation (Feature 3)
+    if not skip_ref_check:
+        rules.extend(_REFERENCE_RULES)
+
+     # Progressive disclosure budget (Feature 4)
+    rules.extend(_DISCLOSURE_RULES)
+
+     # Cross-agent compatibility (Feature 5)
+    _VALID_AGENTS = {"all", "claude", "vscode", "cursor"}
+    if target_agent not in _VALID_AGENTS:
+        raise ValueError(
+            f"Unknown target_agent '{target_agent}'. "
+            f"Must be one of: {', '.join(sorted(_VALID_AGENTS))}"
+        )
+
+     # Apply strict_all meta-flag: combine all strict modes
+    _sa = strict_all
+    _sv = strict_vscode or _sa
+    _sc = strict_cursor or _sa
+
+    if target_agent == "all":
+        compat_rules = list(_COMPAT_RULES)
+        if _sv:
+             # Replace the INFO-level dirname check with an ERROR-level one
+             # so the same mismatch is not reported twice.
+            compat_rules = [r for r in compat_rules if r is not check_vscode_dirname]
+            compat_rules.append(make_strict_vscode_rule())
+        if _sc:
+            compat_rules = [
+                r for r in compat_rules
+                if r is not check_cursor_description_block_scalar
+            ]
+            compat_rules.append(make_strict_cursor_rule())
+        rules.extend(compat_rules)
+    elif target_agent == "vscode":
+        if _sv:
+            rules.append(make_strict_vscode_rule())
+        else:
+            rules.append(check_vscode_dirname)
+    elif target_agent == "claude":
+        rules.append(check_claude_only_fields)
+    elif target_agent == "cursor":
+        if _sc:
+            rules.append(make_strict_cursor_rule())
+        else:
+            rules.append(check_cursor_description_block_scalar_warning)
+
+    return rules

@@ -1,9 +1,9 @@
 """Tests for Fix 6: YAML anchor/alias detection in frontmatter."""
 
 
-from skillcheck.parser import parse
-from skillcheck.result import Severity
-from skillcheck.rules.frontmatter import check_yaml_anchors
+from tracemantle.parser import parse
+from tracemantle.result import Severity
+from tracemantle.rules.frontmatter import check_yaml_anchors
 
 
 def test_anchor_and_alias_detected(tmp_path):

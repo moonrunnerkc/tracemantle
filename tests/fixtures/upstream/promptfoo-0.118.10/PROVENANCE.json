@@ -1,0 +1,9 @@
+{
+  "source": "https://github.com/promptfoo/promptfoo/blob/c0b47e4a10b38a7a54c782b32fc779802dfaf72e/test/__fixtures__/sample-export.json",
+  "source_revision": "c0b47e4a10b38a7a54c782b32fc779802dfaf72e",
+  "containing_tag": "0.120.0",
+  "export_version": "0.118.10",
+  "sha256": "60f4c9f191453cbc3ddaa95474828c48734d34f31eaee9e110f27970fe22a9e7",
+  "license": "MIT",
+  "observations": "Upstream riddle model judgments. No local agent execution claimed."
+}

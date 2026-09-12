@@ -33,22 +33,15 @@ def test_heuristic_matches_estimate_tokens_when_tiktoken_is_absent() -> None:
     describe something the tool does not do.
     """
     script = load_script()
-    from skillcheck import tokenizer
+    from tracemantle import tokenizer
 
     samples = [
         "---\nname: demo\ndescription: Validates things when asked.\n---\n\nBody text.\n",
         "A short line.",
         "code: `foo(bar)` and a list:\n- one\n- two\n",
     ]
-    original = tokenizer._tiktoken_available
-    try:
-        # Force the offline branch regardless of whether the extra is installed.
-        tokenizer._tiktoken_available = True
-        tokenizer._tiktoken_enc = None
-        for text in samples:
-            assert script.heuristic_tokens(text) == tokenizer.estimate_tokens(text), text
-    finally:
-        tokenizer._tiktoken_available = original
+    for text in samples:
+        assert script.heuristic_tokens(text) == tokenizer.estimate_tokens(text, 'heuristic'), text
 
 
 def test_naive_is_the_chars_over_four_rule() -> None:

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.core.history import (
+from tracemantle.core.history import (
     Ledger,
     LedgerEntry,
     ResultCounts,
@@ -20,8 +20,8 @@ from skillcheck.core.history import (
     load_ledger,
     save_ledger,
 )
-from skillcheck.parser import ParsedSkill
-from skillcheck.result import Diagnostic, Severity, ValidationResult
+from tracemantle.parser import ParsedSkill
+from tracemantle.result import Diagnostic, Severity, ValidationResult
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -201,10 +201,12 @@ def test_ledger_is_hashable():
 # ---------------------------------------------------------------------------
 
 
-def test_ledger_path_for_returns_sibling():
+def test_ledger_path_for_is_outside_bundle():
     skill_path = Path("/home/user/skills/my-skill/SKILL.md")
-    expected = Path("/home/user/skills/my-skill/.skillcheck-history.json")
-    assert ledger_path_for(skill_path) == expected
+    actual = ledger_path_for(skill_path)
+    assert actual.parent.name == "history"
+    assert actual.parent.parent.name == ".tracemantle"
+    assert not actual.is_relative_to(skill_path.parent.resolve())
 
 
 def test_ledger_path_for_is_pure():

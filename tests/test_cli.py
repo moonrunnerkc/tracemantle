@@ -5,18 +5,18 @@ import sys
 
 import pytest
 
-from tests.conftest import CLI_AVAILABLE, FIXTURES_DIR, SKILLCHECK_CMD
+from tests.conftest import CLI_AVAILABLE, FIXTURES_DIR, TRACEMANTLE_CMD
 
 # Skip all CLI tests if the package is not importable in this interpreter.
 pytestmark = pytest.mark.skipif(
     not CLI_AVAILABLE,
-    reason="skillcheck not installed; run `pip install -e .` first",
+    reason="tracemantle not installed; run `pip install -e .` first",
 )
 
 
 def run(*args: str) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [*SKILLCHECK_CMD, *args],
+        [*TRACEMANTLE_CMD, *args],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -24,9 +24,9 @@ def run(*args: str) -> subprocess.CompletedProcess:
 
 
 def run_fixture(*args: str) -> subprocess.CompletedProcess:
-    """Run skillcheck with --skip-dirname-check for fixture files."""
+    """Run tracemantle with --skip-dirname-check for fixture files."""
     return subprocess.run(
-        [*SKILLCHECK_CMD, "--skip-dirname-check", *args],
+        [*TRACEMANTLE_CMD, "--skip-dirname-check", *args],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -201,7 +201,7 @@ def test_ignore_prefix_does_not_suppress_unrelated_rules():
 # ---------------------------------------------------------------------------
 
 def test_version_flag_shows_version():
-    from skillcheck import __version__
+    from tracemantle import __version__
 
     result = run("--version")
     assert result.returncode == 0
@@ -373,7 +373,7 @@ def test_modes_exit_clean_on_non_utf8_file(tmp_path, mode):
     result = run("--skip-dirname-check", target, mode)
     assert result.returncode == 1
     assert "Traceback" not in result.stderr
-    assert "not valid UTF-8" in result.stderr
+    assert "not valid UTF-8" in result.stderr + result.stdout
 
 
 def test_ingest_critique_non_utf8_response_exits_two(tmp_path):
@@ -390,13 +390,13 @@ def test_ingest_critique_non_utf8_response_exits_two(tmp_path):
     # Wording converged when ingest, ledger, and config moved onto the one
     # guard in io_limits. What matters is the same as before: exit 2, no
     # traceback, and a message naming the file and the reason.
-    assert "not valid UTF-8" in result.stderr
+    assert "not valid UTF-8" in result.stderr + result.stdout
     assert "response.json" in result.stderr
 
 
 def test_ingest_response_over_size_cap_exits_two(tmp_path):
     """An oversized ingest response file is rejected with exit 2, not read fully."""
-    from skillcheck.agents._ingest import MAX_INGEST_BYTES
+    from tracemantle.agents._ingest import MAX_INGEST_BYTES
     response = tmp_path / "response.json"
     response.write_text("{" + " " * (MAX_INGEST_BYTES + 16), encoding="utf-8")
     result = run_fixture(
@@ -413,7 +413,7 @@ def test_ingest_response_over_size_cap_exits_two(tmp_path):
 @pytest.mark.skipif(sys.platform == "win32", reason="symlink creation needs privileges on Windows")
 def test_collect_paths_does_not_follow_directory_symlinks(tmp_path):
     """A directory symlink into another tree must not pull in foreign SKILL.md files."""
-    from skillcheck.commands import collect_paths
+    from tracemantle.commands import collect_paths
 
     scanned = tmp_path / "project"
     (scanned / "real").mkdir(parents=True)

@@ -1,0 +1,74 @@
+........................................................................ [  6%]
+........................................................................ [ 13%]
+........................................................................ [ 20%]
+........................................................................ [ 27%]
+........................................................................ [ 34%]
+........................................................................ [ 40%]
+........................................................................ [ 47%]
+........................................................................ [ 54%]
+........................................................................ [ 61%]
+........................................................................ [ 68%]
+........................................................................ [ 74%]
+........................................................................ [ 81%]
+.................ss..................................................... [ 88%]
+........................................................................ [ 95%]
+..................................................                       [100%]
+================================ tests coverage ================================
+______________ coverage: platform darwin, python 3.10.14-final-0 _______________
+
+Name                                              Stmts   Miss  Cover   Missing
+-------------------------------------------------------------------------------
+src/skillcheck/__init__.py                            5      0   100%
+src/skillcheck/__main__.py                            1      0   100%
+src/skillcheck/agents/__init__.py                    29      0   100%
+src/skillcheck/agents/_ingest.py                     35      1    97%   134
+src/skillcheck/agents/_response_text.py              12      0   100%
+src/skillcheck/agents/base.py                        17      0   100%
+src/skillcheck/agents/claude.py                       4      0   100%
+src/skillcheck/agents/codex.py                        8      0   100%
+src/skillcheck/agents/cursor.py                       8      0   100%
+src/skillcheck/agents/graph_base.py                  17      0   100%
+src/skillcheck/agents/graph_claude.py                 4      0   100%
+src/skillcheck/agents/graph_codex.py                  8      0   100%
+src/skillcheck/agents/graph_cursor.py                 8      0   100%
+src/skillcheck/agents/graph_parser.py               107      8    93%   125, 138, 154, 176, 198, 243, 288, 295
+src/skillcheck/agents/parser.py                      71      2    97%   144, 149
+src/skillcheck/agents/schema.py                      35      0   100%
+src/skillcheck/cli.py                               139     32    77%   312, 319, 321, 323, 325, 327, 329, 333, 335, 337, 339, 341, 343, 345, 360-361, 372, 374, 382-383, 386, 388, 390, 392, 403, 406, 416-417, 421-422, 426-427
+src/skillcheck/commands.py                          299    116    61%   107-108, 111-112, 127-132, 140, 147-148, 154-156, 169-171, 181-190, 195-210, 215-230, 248-270, 279-280, 285-291, 307, 316-321, 331-332, 337, 360, 369, 372, 419-420, 428-436, 449-450, 492-494, 498, 521, 547-563, 598-606, 623-631
+src/skillcheck/config.py                             24      0   100%
+src/skillcheck/config_loader.py                     141      7    95%   100-101, 147, 152, 201, 207-208
+src/skillcheck/core/__init__.py                      11      0   100%
+src/skillcheck/core/activation.py                    76      3    96%   168-170
+src/skillcheck/core/activation_render.py             19      0   100%
+src/skillcheck/core/graph.py                        145      3    98%   228, 358, 371
+src/skillcheck/core/graph_analyzers.py               88      3    97%   266, 271, 301
+src/skillcheck/core/graph_model.py                   54      0   100%
+src/skillcheck/core/graph_render.py                  42      0   100%
+src/skillcheck/core/history.py                       87     19    78%   290-323
+src/skillcheck/core/history_io.py                    89     14    84%   69, 86-87, 91-92, 113, 197-202, 239-242
+src/skillcheck/core/semantic.py                      43      0   100%
+src/skillcheck/core/symbolic.py                      15      3    80%   44-45, 72
+src/skillcheck/formatters.py                        127      5    96%   89-90, 189-191
+src/skillcheck/io_limits.py                          40      2    95%   119-120
+src/skillcheck/modes.py                              46      0   100%
+src/skillcheck/parser.py                             36      2    94%   57-58
+src/skillcheck/result.py                             45      0   100%
+src/skillcheck/rules/__init__.py                     55      5    91%   122, 159-162, 164
+src/skillcheck/rules/compat.py                       96      5    95%   70, 86, 168, 202, 216
+src/skillcheck/rules/description.py                 178      8    96%   250-252, 267, 283, 334, 371, 404
+src/skillcheck/rules/disclosure.py                   58      0   100%
+src/skillcheck/rules/frontmatter.py                   6      0   100%
+src/skillcheck/rules/frontmatter_common.py           33      4    88%   19, 22, 25, 41
+src/skillcheck/rules/frontmatter_description.py      60      4    93%   60, 76, 94, 113
+src/skillcheck/rules/frontmatter_fields.py           32      2    94%   57-58
+src/skillcheck/rules/frontmatter_name.py             89      6    93%   53, 72, 75, 102, 150, 170
+src/skillcheck/rules/references.py                   67      1    99%   62
+src/skillcheck/rules/sizing.py                       21      0   100%
+src/skillcheck/rules/template.py                      8      0   100%
+src/skillcheck/template_detection.py                 15      1    93%   40
+src/skillcheck/tokenizer.py                          27      2    93%   54-55
+-------------------------------------------------------------------------------
+TOTAL                                              2680    258    90%
+Required test coverage of 80% reached. Total coverage: 90.37%
+1056 passed, 2 skipped in 32.19s

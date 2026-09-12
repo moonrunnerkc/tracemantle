@@ -8,19 +8,19 @@ from pathlib import Path
 
 import pytest
 
-from tests.conftest import CLI_AVAILABLE, FIXTURES_DIR, SKILLCHECK_CMD
+from tests.conftest import CLI_AVAILABLE, FIXTURES_DIR, TRACEMANTLE_CMD
 
 CRITIQUE_DIR = FIXTURES_DIR / "critique"
 
 pytestmark = pytest.mark.skipif(
     not CLI_AVAILABLE,
-    reason="skillcheck not installed; run `pip install -e .` first",
+    reason="tracemantle not installed; run `pip install -e .` first",
 )
 
 
 def run(*args: str, stdin: str | None = None) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [*SKILLCHECK_CMD, *args],
+        [*TRACEMANTLE_CMD, *args],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -30,7 +30,7 @@ def run(*args: str, stdin: str | None = None) -> subprocess.CompletedProcess:
 
 def run_fixture(*args: str, stdin: str | None = None) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [*SKILLCHECK_CMD, "--skip-dirname-check", *args],
+        [*TRACEMANTLE_CMD, "--skip-dirname-check", *args],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -115,21 +115,21 @@ def test_emit_critique_prompt_directory_contains_delimiters(tmp_path: Path) -> N
         )
 
     result = subprocess.run(
-        [*SKILLCHECK_CMD, "--skip-dirname-check", str(tmp_path), "--emit-critique-prompt"],
+        [*TRACEMANTLE_CMD, "--skip-dirname-check", str(tmp_path), "--emit-critique-prompt"],
         capture_output=True,
         text=True,
         encoding="utf-8",
     )
     assert result.returncode == 0
     # Both delimiters should appear (order is sorted by path)
-    assert "skillcheck:critique-prompt:" in result.stdout
+    assert "tracemantle:critique-prompt:" in result.stdout
     # Should appear twice (once per skill)
-    assert result.stdout.count("skillcheck:critique-prompt:") == 2
+    assert result.stdout.count("tracemantle:critique-prompt:") == 2
 
 
 def test_emit_critique_prompt_single_file_no_delimiter() -> None:
     result = run_fixture(_VALID_SKILL, "--emit-critique-prompt")
-    assert "skillcheck:critique-prompt:" not in result.stdout
+    assert "tracemantle:critique-prompt:" not in result.stdout
 
 
 def test_ingest_critique_rejects_multiple_paths(tmp_path: Path) -> None:

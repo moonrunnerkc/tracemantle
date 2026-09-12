@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from skillcheck.core.semantic import (
+from tracemantle.core.semantic import (
     INFO_THRESHOLD,
     WARNING_THRESHOLD,
     _find_section_line,
@@ -13,8 +13,8 @@ from skillcheck.core.semantic import (
     merge_diagnostics,
     render_critique_prompt,
 )
-from skillcheck.parser import parse as parse_skill
-from skillcheck.result import Diagnostic, Severity, ValidationResult
+from tracemantle.parser import parse as parse_skill
+from tracemantle.result import Diagnostic, Severity, ValidationResult
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 CRITIQUE_DIR = FIXTURES_DIR / "critique"

@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TraceMantle check evidence version one",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "check_id",
+    "state",
+    "bundle_sha256",
+    "configuration_sha256",
+    "profile_sha256",
+    "checker_sha256",
+    "fixture_sha256",
+    "artifact_sha256",
+    "inputs",
+    "observed_at",
+    "observation_method",
+    "runner",
+    "adapter",
+    "model",
+    "model_revision",
+    "model_immutable",
+    "permissions",
+    "environment",
+    "tokenizer",
+    "reason",
+    "schema_version",
+    "kind"
+  ],
+  "properties": {
+    "check_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "state": {
+      "enum": [
+        "fail",
+        "infrastructure-error",
+        "pass",
+        "skipped",
+        "unknown"
+      ]
+    },
+    "bundle_sha256": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "configuration_sha256": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "profile_sha256": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "checker_sha256": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "fixture_sha256": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "artifact_sha256": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "maxProperties": 10000
+    },
+    "observed_at": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "observation_method": {
+      "enum": [
+        "inferred-trace",
+        "model-judgment",
+        "observed-execution",
+        "static-analysis",
+        "unknown"
+      ]
+    },
+    "runner": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "adapter": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "model_revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "model_immutable": {
+      "type": "boolean"
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "read-bundle",
+          "write-output",
+          "network",
+          "execute-helper"
+        ]
+      },
+      "maxItems": 100,
+      "uniqueItems": true
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "maxProperties": 10000
+    },
+    "tokenizer": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "maxProperties": 10000
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "schema_version": {
+      "const": 1,
+      "type": "integer"
+    },
+    "kind": {
+      "const": "check-evidence"
+    }
+  }
+}

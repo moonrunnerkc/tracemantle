@@ -2,10 +2,11 @@
 
 import pytest
 
-from skillcheck.parser import parse
-from skillcheck.result import Severity
-from skillcheck.rules import get_rules
-from skillcheck.rules.compat import (
+from tests.conftest import FIXTURES_DIR
+from tracemantle.parser import parse
+from tracemantle.result import Severity
+from tracemantle.rules import get_rules
+from tracemantle.rules.compat import (
     check_claude_only_fields,
     check_cursor_description_block_scalar,
     check_cursor_description_block_scalar_warning,
@@ -14,7 +15,6 @@ from skillcheck.rules.compat import (
     make_strict_cursor_rule,
     make_strict_vscode_rule,
 )
-from tests.conftest import FIXTURES_DIR
 
 # ---------------------------------------------------------------------------
 # compat.claude-only

@@ -9,12 +9,12 @@ control characters.
 
 from __future__ import annotations
 
-from skillcheck.agents._ingest import sanitize_ingested_text
-from skillcheck.core.graph import Capability, CapabilityGraph
-from skillcheck.core.graph_render import render_graph_json, render_graph_text
-from skillcheck.core.semantic import ingest_critique_response
-from skillcheck.parser import parse
 from tests.conftest import FIXTURES_DIR
+from tracemantle.agents._ingest import sanitize_ingested_text
+from tracemantle.core.graph import Capability, CapabilityGraph
+from tracemantle.core.graph_render import render_graph_json, render_graph_text
+from tracemantle.core.semantic import ingest_critique_response
+from tracemantle.parser import parse
 
 _ESC = chr(27)
 _ANSI_RESPONSE = FIXTURES_DIR / "critique" / "response_ansi_injection.json"
@@ -38,14 +38,15 @@ def test_sanitize_leaves_normal_text_unchanged() -> None:
     assert sanitize_ingested_text(text) == text
 
 
-def test_ingested_critique_message_has_no_control_chars() -> None:
+def test_ingested_critique_preserves_machine_data_and_escapes_display() -> None:
     skill = parse(FIXTURES_DIR / "valid_basic.md")
     diagnostics = ingest_critique_response(skill, _ANSI_RESPONSE.read_text(encoding="utf-8"))
     context_diags = [d for d in diagnostics if d.rule == "semantic.context.missing"]
     assert context_diags, "expected a semantic.context.missing diagnostic"
     message = context_diags[0].message
-    assert _ESC not in message
-    assert not any(ord(ch) < 0x20 for ch in message)
+    from tracemantle.display import terminal
+    assert _ESC in message
+    assert _ESC not in terminal(message)
     assert "fake PASS" in message  # content preserved, just inert
 
 

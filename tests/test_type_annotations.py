@@ -2,8 +2,8 @@
 
 from collections.abc import Callable
 
-from skillcheck.rules.compat import make_strict_vscode_rule
-from skillcheck.rules.description import make_min_score_rule
+from tracemantle.rules.compat import make_strict_vscode_rule
+from tracemantle.rules.description import make_min_score_rule
 
 
 def test_make_min_score_rule_returns_callable():

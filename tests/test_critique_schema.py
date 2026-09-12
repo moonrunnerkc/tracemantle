@@ -6,12 +6,12 @@ import dataclasses
 
 import pytest
 
-from skillcheck.agents.schema import (
+from tracemantle.agents.schema import (
     Contradiction,
     CritiqueFinding,
     SemanticCritique,
 )
-from skillcheck.result import Severity
+from tracemantle.result import Severity
 
 # ---------------------------------------------------------------------------
 # CritiqueFinding

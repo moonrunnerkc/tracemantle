@@ -12,11 +12,11 @@ from pathlib import Path
 
 import pytest
 
-from tests.conftest import CLI_AVAILABLE, FIXTURES_DIR, SKILLCHECK_CMD
+from tests.conftest import CLI_AVAILABLE, FIXTURES_DIR, TRACEMANTLE_CMD
 
 pytestmark = pytest.mark.skipif(
     not CLI_AVAILABLE,
-    reason="skillcheck not installed; run `pip install -e .` first",
+    reason="tracemantle not installed; run `pip install -e .` first",
 )
 
 GRAPH_FIXTURES = Path(__file__).parent / "fixtures" / "graph"
@@ -24,7 +24,7 @@ GRAPH_FIXTURES = Path(__file__).parent / "fixtures" / "graph"
 
 def _run(*args: str) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [*SKILLCHECK_CMD, "--skip-dirname-check", *args],
+        [*TRACEMANTLE_CMD, "--skip-dirname-check", *args],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -119,7 +119,7 @@ def test_emit_graph_directory_emits_delimiter(tmp_path: Path) -> None:
     (tmp_path / "skill_orphan_capability.md").rename(sub / "SKILL.md")
     result = _run(str(tmp_path), "--emit-graph")
     assert result.returncode == 0
-    assert "# === skillcheck:graph:" in result.stdout
+    assert "# === tracemantle:graph:" in result.stdout
 
 
 # ---------------------------------------------------------------------------

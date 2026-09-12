@@ -18,7 +18,7 @@ pytestmark = pytest.mark.skipif(
 
 
 def _make_repo(tmp_path: Path) -> Path:
-    """Create a minimal git repo with a pre-commit config pointing at local skillcheck."""
+    """Create a minimal git repo with a pre-commit config pointing at local tracemantle."""
     subprocess.run(["git", "init"], cwd=tmp_path, capture_output=True, check=True)
     subprocess.run(["git", "config", "user.email", "test@test.com"], cwd=tmp_path, capture_output=True, check=True)
     subprocess.run(["git", "config", "user.name", "Test"], cwd=tmp_path, capture_output=True, check=True)
@@ -30,9 +30,9 @@ def _make_repo(tmp_path: Path) -> Path:
         repos:
           - repo: local
             hooks:
-              - id: skillcheck
-                name: skillcheck
-                entry: skillcheck
+              - id: tracemantle
+                name: tracemantle
+                entry: tracemantle
                 language: python
                 files: '(^|/)SKILL\\.md$'
                 pass_filenames: true
@@ -63,7 +63,7 @@ def test_pre_commit_pass(tmp_path: Path) -> None:
     _commit_skill(repo, FIXTURES_DIR / "valid_basic.md", dest_dir="valid-skill")
 
     result = subprocess.run(
-        ["pre-commit", "run", "skillcheck", "--all-files"],
+        ["pre-commit", "run", "tracemantle", "--all-files"],
         cwd=repo,
         capture_output=True,
         text=True,
@@ -77,7 +77,7 @@ def test_pre_commit_fail(tmp_path: Path) -> None:
     _commit_skill(repo, FIXTURES_DIR / "bad_name_caps.md", dest_dir="broken-skill")
 
     result = subprocess.run(
-        ["pre-commit", "run", "skillcheck", "--all-files"],
+        ["pre-commit", "run", "tracemantle", "--all-files"],
         cwd=repo,
         capture_output=True,
         text=True,

@@ -1,15 +1,16 @@
-from skillcheck.core import validate
-from skillcheck.parser import ParsedSkill, ParseError
-from skillcheck.result import Diagnostic, Severity, ValidationResult
+"""Deprecated public imports; uninstall the old distribution before installing TraceMantle."""
+import warnings
 
-__version__ = "1.5.0"
+from tracemantle import (
+    Diagnostic,
+    ParsedSkill,
+    ParseError,
+    Severity,
+    ValidationResult,
+    __version__,
+    validate,
+)
 
-__all__ = [
-    "validate",
-    "ValidationResult",
-    "Diagnostic",
-    "Severity",
-    "ParsedSkill",
-    "ParseError",
-    "__version__",
-]
+warnings.warn("skillcheck imports are deprecated; import tracemantle instead", DeprecationWarning, stacklevel=2)
+
+__all__ = ["Diagnostic", "ParseError", "ParsedSkill", "Severity", "ValidationResult", "__version__", "validate"]

@@ -1,6 +1,6 @@
 """Staleness test for compatibility provenance dates.
 
-Each ``_X_DATA_DATE`` constant in ``skillcheck.rules.compat`` records when
+Each ``_X_DATA_DATE`` constant in ``tracemantle.rules.compat`` records when
 the compatibility data for that agent was last verified. If more than 365
 days have passed, the data is stale and needs re-verification.
 
@@ -13,9 +13,9 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.parser import parse
-from skillcheck.rules import compat
-from skillcheck.rules.compat import (
+from tracemantle.parser import parse
+from tracemantle.rules import compat
+from tracemantle.rules.compat import (
     _CLAUDE_DATA_DATE,
     _CODEX_DATA_DATE,
     _CURSOR_DATA_DATE,

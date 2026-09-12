@@ -3,7 +3,7 @@ from __future__ import annotations
 import inspect
 from pathlib import Path
 
-from skillcheck import (
+from tracemantle import (
     Diagnostic,
     ParsedSkill,
     ParseError,
@@ -11,8 +11,8 @@ from skillcheck import (
     ValidationResult,
     validate,
 )
-from skillcheck.agents.base import SelfCritiquePrompt
-from skillcheck.core import graph, history, semantic, symbolic
+from tracemantle.agents.base import SelfCritiquePrompt
+from tracemantle.core import graph, history, semantic, symbolic
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 

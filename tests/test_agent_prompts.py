@@ -6,13 +6,13 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.agents import AGENTS, get_agent_prompt
-from skillcheck.agents.base import worked_example
-from skillcheck.agents.claude import ClaudePrompt
-from skillcheck.agents.codex import CodexPrompt
-from skillcheck.agents.cursor import CursorPrompt
-from skillcheck.agents.parser import parse_critique_response
-from skillcheck.parser import parse
+from tracemantle.agents import AGENTS, get_agent_prompt
+from tracemantle.agents.base import worked_example
+from tracemantle.agents.claude import ClaudePrompt
+from tracemantle.agents.codex import CodexPrompt
+from tracemantle.agents.cursor import CursorPrompt
+from tracemantle.agents.parser import parse_critique_response
+from tracemantle.parser import parse
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 CRITIQUE_DIR = FIXTURES_DIR / "critique"

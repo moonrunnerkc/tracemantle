@@ -1,16 +1,16 @@
 """Tests for Feature 2: Description quality scoring."""
 
 
-from skillcheck.parser import parse
-from skillcheck.result import Severity
-from skillcheck.rules.description import (
+from tests.conftest import FIXTURES_DIR
+from tracemantle.parser import parse
+from tracemantle.result import Severity
+from tracemantle.rules.description import (
     _ACTION_VERBS,
     _score_action_verbs,
     check_description_quality,
     make_min_score_rule,
     score_description,
 )
-from tests.conftest import FIXTURES_DIR
 
 # ---------------------------------------------------------------------------
 # score_description: scoring ranges

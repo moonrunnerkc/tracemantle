@@ -1,8 +1,8 @@
 
 import pytest
 
-from skillcheck.parser import ParseError, parse
 from tests.conftest import FIXTURES_DIR
+from tracemantle.parser import ParseError, parse
 
 
 def test_parses_valid_frontmatter():

@@ -7,9 +7,9 @@ silently suppressed deployment-blocking ERROR checks (directory-name match,
 VS Code dirname, description scoring).
 """
 
-from skillcheck.parser import parse
-from skillcheck.template_detection import is_template
 from tests.conftest import FIXTURES_DIR
+from tracemantle.parser import parse
+from tracemantle.template_detection import is_template
 
 
 def test_bracketed_acronyms_are_not_template():

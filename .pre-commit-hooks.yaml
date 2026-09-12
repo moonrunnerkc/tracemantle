@@ -1,6 +1,6 @@
-- id: skillcheck
-  name: skillcheck
-  entry: skillcheck
+- id: tracemantle
+  name: tracemantle
+  entry: tracemantle
   args: ["--no-color"]
   language: python
   files: '(^|/)SKILL\.md$'

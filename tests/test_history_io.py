@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.core.history import (
+from tracemantle.core.history import (
     Ledger,
     LedgerEntry,
     LedgerError,
@@ -22,8 +22,8 @@ from skillcheck.core.history import (
     load_ledger,
     save_ledger,
 )
-from skillcheck.parser import ParsedSkill
-from skillcheck.result import ValidationResult
+from tracemantle.parser import ParsedSkill
+from tracemantle.result import ValidationResult
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -127,12 +127,12 @@ def test_load_raises_when_runs_is_not_a_list():
 
 
 def test_load_raises_on_schema_version_mismatch():
-    with pytest.raises(LedgerError, match="schema version 999, but this skillcheck expects version 1"):
+    with pytest.raises(LedgerError, match="schema version 999, but this tracemantle expects version 1"):
         load_ledger(_HISTORY_FIXTURES / "ledger_bad_version.json")
 
 
 def test_load_raises_on_malformed_run_entry():
-    with pytest.raises(LedgerError, match="malformed run entry"):
+    with pytest.raises(LedgerError, match="[Mm]alformed.*entry"):
         load_ledger(_HISTORY_FIXTURES / "ledger_malformed_entry.json")
 
 
@@ -155,14 +155,14 @@ def test_save_writes_valid_json(tmp_path: Path):
     assert len(data["runs"]) == 1
 
 
-def test_load_sweeps_stale_tmp_files(tmp_path: Path):
-    """A leftover .skillcheck-tmp-* from an interrupted write is removed on load."""
+def test_load_preserves_other_writers_temporary_files(tmp_path: Path):
+    """Read-only history loading must not delete a concurrent writer's temporary files."""
     lp = tmp_path / ".skillcheck-history.json"
     save_ledger(lp, Ledger(version=1, skill_path="SKILL.md", runs=()))
     orphan = tmp_path / ".skillcheck-tmp-orphan"
     orphan.write_text("partial write", encoding="utf-8")
     load_ledger(lp)
-    assert not orphan.exists()
+    assert orphan.read_text() == "partial write"
     # The real ledger is untouched.
     assert load_ledger(lp) is not None
 

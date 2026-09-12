@@ -1,9 +1,9 @@
-"""Every file skillcheck reads from disk is bounded by one shared guard.
+"""Every file tracemantle reads from disk is bounded by one shared guard.
 
 Only the ingest path was capped before: `--ingest-critique` checked its payload
 against MAX_INGEST_BYTES while the SKILL.md, the history ledger, and
 skillcheck.toml were read with a bare `path.read_text()`. In the case that
-matters, CI running skillcheck over a fork's pull request, all three arrive
+matters, CI running tracemantle over a fork's pull request, all three arrive
 from the branch under test, so an oversized one was read fully into memory
 before any rule ran.
 
@@ -16,17 +16,17 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.config_loader import ConfigError, load_config
-from skillcheck.core.history import LedgerError
-from skillcheck.core.history_io import load_ledger
-from skillcheck.io_limits import (
+from tracemantle.config_loader import ConfigError, load_config
+from tracemantle.core.history import LedgerError
+from tracemantle.core.history_io import load_ledger
+from tracemantle.io_limits import (
     MAX_CONFIG_BYTES,
     MAX_INGEST_BYTES,
     MAX_LEDGER_BYTES,
     MAX_SKILL_BYTES,
     enforce_size_cap,
 )
-from skillcheck.parser import ParseError, parse
+from tracemantle.parser import ParseError, parse
 
 
 class _Boom(Exception):
@@ -87,12 +87,12 @@ def test_caps_are_ordered_by_how_large_each_file_legitimately_gets() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_oversized_skill_is_refused_before_it_is_read(tmp_path: Path) -> None:
+def test_oversized_skill_is_refused_by_bounded_read(tmp_path: Path) -> None:
     skill = _write_bytes(tmp_path / "SKILL.md", MAX_SKILL_BYTES + 1)
     with pytest.raises(ParseError) as exc:
         parse(skill)
     assert "SKILL.md" in str(exc.value)
-    assert "over the" in str(exc.value)
+    assert "limit" in str(exc.value)
 
 
 def test_normal_skill_still_parses(tmp_path: Path) -> None:
@@ -106,7 +106,7 @@ def test_oversized_ledger_is_refused(tmp_path: Path) -> None:
     with pytest.raises(LedgerError) as exc:
         load_ledger(ledger)
     assert "Ledger" in str(exc.value)
-    assert "over the" in str(exc.value)
+    assert "limit" in str(exc.value)
 
 
 def test_oversized_config_is_refused(tmp_path: Path) -> None:
@@ -114,7 +114,7 @@ def test_oversized_config_is_refused(tmp_path: Path) -> None:
     with pytest.raises(ConfigError) as exc:
         load_config(config)
     assert "Config" in str(exc.value)
-    assert "over the" in str(exc.value)
+    assert "limit" in str(exc.value)
 
 
 def test_normal_config_still_loads(tmp_path: Path) -> None:

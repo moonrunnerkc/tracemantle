@@ -7,14 +7,13 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.config_loader import (
+from tests.conftest import CLI_AVAILABLE, TRACEMANTLE_CMD
+from tracemantle.config_loader import (
     ConfigError,
     _parse_without_tomllib,
-    _strip_inline_comment,
     find_config,
     load_config,
 )
-from tests.conftest import CLI_AVAILABLE, SKILLCHECK_CMD
 
 
 def _write(path: Path, text: str) -> Path:
@@ -40,10 +39,10 @@ def test_str_type_error_includes_offending_value(tmp_path: Path) -> None:
         load_config(cfg)
 
 
-def test_strip_inline_comment_respects_quotes() -> None:
-    assert _strip_inline_comment('format = "a#b"  # trailing') == 'format = "a#b"  '
-    assert _strip_inline_comment("# whole line") == ""
-    assert _strip_inline_comment("bare = value") == "bare = value"
+def test_toml_parser_respects_literal_strings_and_comments() -> None:
+    assert _parse_without_tomllib("format = 'a#b' # comment\n# whole line\n") == {'format': 'a#b'}
+    with pytest.raises(ConfigError):
+        _parse_without_tomllib('bare = value')
 
 
 def test_fallback_parser_keeps_hash_inside_quotes() -> None:
@@ -71,7 +70,7 @@ def test_find_config_finds_config_at_git_root(tmp_path: Path) -> None:
     assert find_config(nested / "SKILL.md") == cfg
 
 
-@pytest.mark.skipif(not CLI_AVAILABLE, reason="skillcheck not installed")
+@pytest.mark.skipif(not CLI_AVAILABLE, reason="tracemantle not installed")
 def test_cli_reports_loaded_config_path(tmp_path: Path) -> None:
     skill_dir = tmp_path / "cfg-skill"
     skill_dir.mkdir()
@@ -81,7 +80,7 @@ def test_cli_reports_loaded_config_path(tmp_path: Path) -> None:
     )
     cfg = _write(skill_dir / "skillcheck.toml", "max-lines = 900\n")
     result = subprocess.run(
-        [*SKILLCHECK_CMD, "--skip-dirname-check", str(skill_dir / "SKILL.md")],
+        [*TRACEMANTLE_CMD, "--skip-dirname-check", str(skill_dir / "SKILL.md")],
         capture_output=True,
         text=True,
         encoding="utf-8",

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-09-12 (local candidate, unpublished)
+
+### Changed
+
+- TraceMantle is the canonical distribution, package and CLI (1.6.0). The old distribution must be uninstalled before installing the renamed package; no `skillcheck` executable is installed. Historical v1 schema identifiers remain unchanged.
+- Standard field classification, bounded parsing, report policy and evidence comparison follow the implementation plan. See `docs/implementation-status.md` for executed verification.
+- Repository links and integration examples now use `moonrunnerkc/tracemantle`. Release publishing remains disabled. Cross-platform checkout rules preserve fixture bytes, including the literal CRLF parser control.
+
+The following development notes predate the rename. Old module paths describe that intermediate state; current contracts and verification are recorded in the implementation ledger.
+
 ### Added
 
 - Tests for every rejection path in `skillcheck.toml` loading. Unknown keys, wrong value types, and malformed TOML all raised `ConfigError`, but nothing asserted that the message names the offending key, so a misconfiguration meant reading the loader source to find out which key was wrong. Config discovery is covered too: nearest config wins, a file anchor resolves, and the walk stops at a repository root.

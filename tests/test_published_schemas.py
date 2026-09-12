@@ -1,6 +1,6 @@
-"""Sanity checks for the JSON Schema files shipped under skillcheck/schemas.
+"""Sanity checks for the JSON Schema files shipped under tracemantle/schemas.
 
-The schemas document the contract between skillcheck and any calling agent.
+The schemas document the contract between tracemantle and any calling agent.
 The parser modules (agents/parser.py and agents/graph_parser.py) are the
 authoritative implementation; these tests assert the published schemas
 stay aligned with those parsers so an agent that validates its output
@@ -12,17 +12,17 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from skillcheck.agents import SCHEMAS
-from skillcheck.agents.graph_parser import (
+from tracemantle.agents import SCHEMAS
+from tracemantle.agents.graph_parser import (
     _TOP_LEVEL_FIELDS as _GRAPH_TOP_LEVEL_FIELDS,
 )
-from skillcheck.agents.graph_parser import (
+from tracemantle.agents.graph_parser import (
     _VALID_EDGE_KINDS,
     _VALID_INPUT_KINDS,
     _VALID_OUTPUT_KINDS,
 )
-from skillcheck.agents.parser import _REQUIRED_FIELDS as _CRITIQUE_REQUIRED_FIELDS
-from skillcheck.result import Severity
+from tracemantle.agents.parser import _REQUIRED_FIELDS as _CRITIQUE_REQUIRED_FIELDS
+from tracemantle.result import Severity
 
 
 def _load(name: str) -> dict:

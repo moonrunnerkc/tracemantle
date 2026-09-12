@@ -1,5 +1,16 @@
 {
+  "tool": "TraceMantle",
+  "schema_version": 2,
   "version": "0.0.0-test",
+  "gate": {
+    "exit_code": null,
+    "passed": false
+  },
+  "tokenizer": {
+    "backend": "word-punctuation",
+    "version": "1",
+    "network": "none"
+  },
   "files_checked": 2,
   "files_passed": 1,
   "files_failed": 1,

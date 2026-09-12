@@ -9,17 +9,17 @@ from pathlib import Path
 
 import pytest
 
-from tests.conftest import CLI_AVAILABLE, FIXTURES_DIR, SKILLCHECK_CMD
+from tests.conftest import CLI_AVAILABLE, FIXTURES_DIR, TRACEMANTLE_CMD
 
 pytestmark = pytest.mark.skipif(
     not CLI_AVAILABLE,
-    reason="skillcheck not installed; run `pip install -e .` first",
+    reason="tracemantle not installed; run `pip install -e .` first",
 )
 
 
 def run(*args: str) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [*SKILLCHECK_CMD, "--skip-dirname-check", *args],
+        [*TRACEMANTLE_CMD, "--skip-dirname-check", *args],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -29,13 +29,13 @@ def run(*args: str) -> subprocess.CompletedProcess:
 def test_format_md_outputs_markdown_report() -> None:
     result = run(str(FIXTURES_DIR / "valid_basic.md"), "--format", "md")
     assert result.returncode == 0
-    assert result.stdout.startswith("# skillcheck report")
+    assert result.stdout.startswith("# tracemantle report")
 
 
 def test_format_agent_outputs_agent_report() -> None:
     result = run(str(FIXTURES_DIR / "valid_basic.md"), "--format", "agent")
     assert result.returncode == 0
-    assert "skillcheck agent report" in result.stdout
+    assert "tracemantle agent report" in result.stdout
     assert "next_actions:" in result.stdout
 
 
@@ -63,7 +63,7 @@ def test_activation_hypotheses_json() -> None:
     assert "entropy" in payload
 
 
-def test_skillcheck_toml_applies_defaults(tmp_path: Path) -> None:
+def test_tracemantle_toml_applies_defaults(tmp_path: Path) -> None:
     skill = tmp_path / "SKILL.md"
     shutil.copy(FIXTURES_DIR / "valid_basic.md", skill)
     (tmp_path / "skillcheck.toml").write_text(
@@ -71,7 +71,7 @@ def test_skillcheck_toml_applies_defaults(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     result = subprocess.run(
-        [*SKILLCHECK_CMD, str(skill)],
+        [*TRACEMANTLE_CMD, str(skill)],
         capture_output=True,
         text=True,
         encoding="utf-8",

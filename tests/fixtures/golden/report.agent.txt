@@ -1,4 +1,4 @@
-skillcheck agent report
+tracemantle agent report
 status: fail
 files_checked: 2
 files_failed: 1

@@ -1,5 +1,8 @@
 # v1.0 Field Test: Three Corpora, Real Findings
 
+Historical report. Old names, output and previously reported runs are retained as history, not current verification. The pinned skills-ref reference has a CLI and directory-name validation. Vendor loader claims without a tested runtime version remain unverified.
+
+
 Prepared April 25, 2026. All run artifacts are in `runs/`.
 
 ## What We Ran

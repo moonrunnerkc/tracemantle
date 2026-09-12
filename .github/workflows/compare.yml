@@ -1,0 +1,51 @@
+name: Trusted bundle comparison
+on:
+  workflow_dispatch:
+    inputs:
+      base_revision:
+        description: Full trusted base commit SHA
+        required: true
+      candidate_revision:
+        description: Candidate commit SHA to inspect without executing
+        required: true
+      bundle_path:
+        description: Relative bundle directory in both revisions
+        required: true
+        default: skills/tracemantle
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ inputs.base_revision }}
+          path: trusted
+          persist-credentials: false
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ inputs.candidate_revision }}
+          path: candidate
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: Install only the trusted tool
+        run: pip install -c trusted/constraints-dev.txt ./trusted
+      - name: Compare against immutable trusted policy
+        env:
+          BASE_REVISION: ${{ inputs.base_revision }}
+          BUNDLE_PATH: ${{ inputs.bundle_path }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=()
+          if [ -d candidate/evidence/records ]; then
+            while IFS= read -r -d '' record; do
+              args+=(--evidence "$record")
+            done < <(find candidate/evidence/records -maxdepth 1 -type f -name '*.json' -print0)
+          fi
+          tracemantle compare "trusted/$BUNDLE_PATH" "candidate/$BUNDLE_PATH" \
+            --trusted-root trusted --base-revision "$BASE_REVISION" \
+            --format github "${args[@]}"

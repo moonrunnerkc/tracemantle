@@ -4,7 +4,7 @@ self-host SKILL.md frontmatter must all agree on the current version.
 Also pins the self-host skill to a single path. A second copy at the repo root
 went unmaintained from v1.3.0 to v1.4.1 and drifted to a stale version and a
 weaker description while nothing in CI could see it, because every check here
-and in the Makefile reads skills/skillcheck/SKILL.md."""
+and in the Makefile reads skills/tracemantle/SKILL.md."""
 
 import re
 import subprocess
@@ -14,7 +14,7 @@ import pytest
 import yaml
 
 REPO_ROOT = Path(__file__).parent.parent
-SELF_HOST_SKILL = Path("skills/skillcheck/SKILL.md")
+SELF_HOST_SKILL = Path("skills/tracemantle/SKILL.md")
 
 
 def _pyproject_version() -> str:
@@ -31,9 +31,9 @@ def _pyproject_version() -> str:
 
 
 def _init_version() -> str:
-    text = (REPO_ROOT / "src" / "skillcheck" / "__init__.py").read_text(encoding="utf-8")
+    text = (REPO_ROOT / "src" / "tracemantle" / "__init__.py").read_text(encoding="utf-8")
     match = re.search(r'^__version__\s*=\s*"([^"]+)"', text, re.MULTILINE)
-    assert match, "src/skillcheck/__init__.py has no __version__ assignment"
+    assert match, "src/tracemantle/__init__.py has no __version__ assignment"
     return match.group(1)
 
 
@@ -47,14 +47,14 @@ def _changelog_top_release() -> str:
 
 
 def _self_host_skill_version() -> str:
-    text = (REPO_ROOT / "skills" / "skillcheck" / "SKILL.md").read_text(encoding="utf-8")
+    text = (REPO_ROOT / "skills" / "tracemantle" / "SKILL.md").read_text(encoding="utf-8")
     # Strip the leading "---\n" and find the closing "---"
     if not text.startswith("---"):
-        raise AssertionError("skills/skillcheck/SKILL.md has no frontmatter delimiter")
+        raise AssertionError("skills/tracemantle/SKILL.md has no frontmatter delimiter")
     inner = text[3:]
     end = inner.index("\n---")
     fm = yaml.safe_load(inner[:end])
-    assert "version" in fm, "skills/skillcheck/SKILL.md frontmatter has no version field"
+    assert "version" in fm, "skills/tracemantle/SKILL.md frontmatter has no version field"
     return str(fm["version"])
 
 
@@ -63,7 +63,7 @@ def test_pyproject_and_init_versions_match():
     init = _init_version()
     assert pyproject == init, (
         f"Version mismatch: pyproject.toml has {pyproject!r}, "
-        f"src/skillcheck/__init__.py has {init!r}"
+        f"src/tracemantle/__init__.py has {init!r}"
     )
 
 
@@ -72,7 +72,7 @@ def test_changelog_top_release_matches_init():
     init = _init_version()
     assert changelog == init, (
         f"Version mismatch: CHANGELOG.md top release is {changelog!r}, "
-        f"src/skillcheck/__init__.py has {init!r}"
+        f"src/tracemantle/__init__.py has {init!r}"
     )
 
 
@@ -80,15 +80,15 @@ def test_self_host_skill_version_matches():
     skill = _self_host_skill_version()
     init = _init_version()
     assert skill == init, (
-        f"Version mismatch: skills/skillcheck/SKILL.md frontmatter has {skill!r}, "
-        f"src/skillcheck/__init__.py has {init!r}"
+        f"Version mismatch: skills/tracemantle/SKILL.md frontmatter has {skill!r}, "
+        f"src/tracemantle/__init__.py has {init!r}"
     )
 
 
 def _tracked_skill_files() -> list[Path]:
     """Every tracked SKILL.md outside tests/fixtures, as repo-relative paths."""
     result = subprocess.run(
-        ["git", "ls-files", "*SKILL.md", "SKILL.md"],
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "*SKILL.md", "SKILL.md"],
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
@@ -99,14 +99,14 @@ def _tracked_skill_files() -> list[Path]:
     # Test data is not a second self-host skill. tests/fixtures holds parser
     # inputs and tests/golden holds pinned rule outputs; both legitimately
     # contain files named SKILL.md, and neither is a skill this repo publishes.
-    return [p for p in paths if not {"fixtures", "golden"} & set(p.parts)]
+    return sorted(set(p for p in paths if (REPO_ROOT / p).exists() and not {"fixtures", "golden"} & set(p.parts)))
 
 
 def test_only_one_self_host_skill_is_tracked():
     """One skill definition, so there is nothing to drift against.
 
     The version, description, and body checks above all read
-    skills/skillcheck/SKILL.md. Any other SKILL.md in the tree is unguarded by
+    skills/tracemantle/SKILL.md. Any other SKILL.md in the tree is unguarded by
     them, which is how the former root copy fell two versions behind.
     """
     found = _tracked_skill_files()

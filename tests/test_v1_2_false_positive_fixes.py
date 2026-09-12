@@ -6,24 +6,17 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck import config as runtime_config
-from skillcheck.config_loader import load_config
-from skillcheck.core import validate
-from skillcheck.parser import parse
-from skillcheck.result import Severity
-from skillcheck.rules.frontmatter import (
+from tests.conftest import CLI_AVAILABLE, FIXTURES_DIR, TRACEMANTLE_CMD
+from tracemantle import config as runtime_config
+from tracemantle.config_loader import load_config
+from tracemantle.core import validate
+from tracemantle.parser import DocumentSettings, parse
+from tracemantle.result import Severity
+from tracemantle.rules.frontmatter import (
     check_description_person_voice,
     check_name_reserved_words,
     check_unknown_fields,
 )
-from tests.conftest import CLI_AVAILABLE, FIXTURES_DIR, SKILLCHECK_CMD
-
-
-@pytest.fixture(autouse=True)
-def reset_extension_fields():
-    runtime_config.set_extension_fields(())
-    yield
-    runtime_config.set_extension_fields(())
 
 
 def _rules(path: Path, **kwargs) -> list[str]:
@@ -39,16 +32,19 @@ def _assert_ecosystem_field(path: Path, field: str) -> None:
         for d in diagnostics
     )
     ecosystem = [d for d in diagnostics if d.rule == "frontmatter.field.ecosystem"]
-    assert len(ecosystem) == 1
-    assert ecosystem[0].severity == Severity.INFO
-    assert field in ecosystem[0].message
+    if field in {"license", "metadata"}:
+        assert ecosystem == []  # These are standard fields in the pinned specification.
+    else:
+        assert len(ecosystem) == 1
+        assert ecosystem[0].severity == Severity.INFO
+        assert field in ecosystem[0].message
 
 
-def test_license_field_is_ecosystem_info() -> None:
+def test_license_field_is_standard() -> None:
     _assert_ecosystem_field(FIXTURES_DIR / "license_field.md", "license")
 
 
-def test_metadata_field_is_ecosystem_info() -> None:
+def test_metadata_field_is_standard() -> None:
     skill = parse(FIXTURES_DIR / "metadata_field.md")
     assert skill.frontmatter["metadata"]["marketplace-example"]["featured"] is True
     _assert_ecosystem_field(FIXTURES_DIR / "metadata_field.md", "metadata")
@@ -74,8 +70,7 @@ def test_unknown_field_still_warns() -> None:
 def test_user_extension_field_is_silent() -> None:
     fixture_dir = FIXTURES_DIR / "user_extension"
     loaded_config = load_config(fixture_dir / "skillcheck.toml")
-    runtime_config.set_extension_fields(loaded_config.extension_fields)
-    skill = parse(fixture_dir / "user_extension_field.md")
+    skill = parse(fixture_dir / "user_extension_field.md", settings=DocumentSettings(extension_fields=loaded_config.extension_fields))
     assert check_unknown_fields(skill) == []
 
 
@@ -148,11 +143,11 @@ def test_non_template_placeholder_word_documents_false_positive() -> None:
     )
 
 
-@pytest.mark.skipif(not CLI_AVAILABLE, reason="skillcheck command is not installed")
+@pytest.mark.skipif(not CLI_AVAILABLE, reason="tracemantle command is not installed")
 def test_claude_api_name_cli_exit_code_zero() -> None:
     result = subprocess.run(
         [
-            *SKILLCHECK_CMD,
+            *TRACEMANTLE_CMD,
             "--skip-dirname-check",
             str(FIXTURES_DIR / "claude_api_name.md"),
             "--format",
@@ -169,11 +164,11 @@ def test_claude_api_name_cli_exit_code_zero() -> None:
     assert reserved[0]["severity"] == "warning"
 
 
-@pytest.mark.skipif(not CLI_AVAILABLE, reason="skillcheck command is not installed")
+@pytest.mark.skipif(not CLI_AVAILABLE, reason="tracemantle command is not installed")
 def test_canvas_design_pattern_cli_exit_code_zero() -> None:
     result = subprocess.run(
         [
-            *SKILLCHECK_CMD,
+            *TRACEMANTLE_CMD,
             "--skip-dirname-check",
             str(FIXTURES_DIR / "canvas_design_pattern.md"),
             "--format",

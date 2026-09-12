@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from skillcheck.core.graph import CapabilityGraph, extract_graph_heuristic
-from skillcheck.core.graph_analyzers import (
+from tracemantle.core.graph import CapabilityGraph, extract_graph_heuristic
+from tracemantle.core.graph_analyzers import (
     GRAPH_ANALYZERS,
     check_empty_descriptions,
     check_orphaned_capabilities,
@@ -19,13 +19,13 @@ from skillcheck.core.graph_analyzers import (
     check_unused_inputs,
     run_graph_analyzers,
 )
-from skillcheck.result import Severity
+from tracemantle.result import Severity
 
 FIXTURES = Path(__file__).parent / "fixtures" / "graph"
 
 
 def _graph(filename: str) -> CapabilityGraph:
-    from skillcheck.parser import parse as _parse
+    from tracemantle.parser import parse as _parse
     skill = _parse(FIXTURES / filename)
     return extract_graph_heuristic(skill)
 

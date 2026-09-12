@@ -7,15 +7,15 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.agents.graph_parser import (
+from tracemantle.agents.graph_parser import (
     GraphJSONError,
     GraphParseError,
     GraphSchemaError,
     GraphValueError,
     parse_graph_response,
 )
-from skillcheck.core.graph import CapabilityGraph
-from skillcheck.parser import parse
+from tracemantle.core.graph import CapabilityGraph
+from tracemantle.parser import parse
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 GRAPH_DIR = FIXTURES_DIR / "graph"
@@ -273,7 +273,7 @@ def test_line_equal_to_body_lines_is_valid() -> None:
 
 
 def test_capabilities_over_cap_rejected() -> None:
-    from skillcheck.agents._ingest import MAX_INGEST_LIST_ITEMS
+    from tracemantle.agents._ingest import MAX_INGEST_LIST_ITEMS
     caps = [
         {"id": str(i), "name": "n", "description": "", "line": None}
         for i in range(MAX_INGEST_LIST_ITEMS + 1)

@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.config_loader import ConfigError, find_config, load_config
+from tracemantle.config_loader import ConfigError, find_config, load_config
 
 
 def _config(tmp_path: Path, body: str) -> Path:
@@ -135,14 +135,14 @@ _needs_fallback = pytest.mark.skipif(
 def test_fallback_parser_rejects_a_line_without_an_equals(tmp_path: Path) -> None:
     with pytest.raises(ConfigError) as exc:
         load_config(_config(tmp_path, "[frontmatter]\njust_a_key\n"))
-    assert "missing '='" in str(exc.value)
+    assert "Cannot parse" in str(exc.value)
 
 
 @_needs_fallback
 def test_fallback_parser_rejects_an_unterminated_section_header(tmp_path: Path) -> None:
     with pytest.raises(ConfigError) as exc:
         load_config(_config(tmp_path, "[frontmatter\nextension_fields = []\n"))
-    assert "invalid section header" in str(exc.value)
+    assert "Cannot parse" in str(exc.value)
 
 
 @_needs_fallback

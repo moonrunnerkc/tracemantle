@@ -19,12 +19,12 @@ regen-self-host-fixtures:
 # before committing: a golden that moves without a formatters.py change means
 # something upstream shifted.
 regen-golden:
-	SKILLCHECK_REGEN_GOLDEN=1 python3 -m pytest tests/test_formatter_golden.py -q
+	TRACEMANTLE_REGEN_GOLDEN=1 python3 -m pytest tests/test_formatter_golden.py -q
 
 # Rewrite tests/golden/*/expected.txt from the current rules. Same rule as
 # above: read the diff, a golden that moves on its own is a regression.
 regen-golden-warnings:
-	SKILLCHECK_REGEN_GOLDEN=1 python3 -m pytest tests/test_golden_warnings.py -q
+	TRACEMANTLE_REGEN_GOLDEN=1 python3 -m pytest tests/test_golden_warnings.py -q
 
 lint:
 	ruff check src tests scripts
@@ -37,10 +37,11 @@ verify-release:
 	ruff check src tests scripts
 	mypy
 	python3 -m pytest tests/ -v --cov-fail-under=$(COV_FLOOR)
-	skillcheck --version
-	skillcheck skills/skillcheck/SKILL.md
-	skillcheck skills/skillcheck/SKILL.md --analyze-graph
-	grep -rn "$(LEGACY_VERSION)" --include="*.py" --include="*.toml" --include="*.md" --include="*.yml" src/ pyproject.toml README.md action.yml && echo "FAIL: $(LEGACY_VERSION) references found" && exit 1 || echo "OK: no $(LEGACY_VERSION) references in release files"
-	grep -rn "moonrunnerkc/skillcheck@v0" README.md && echo "FAIL: @v0 reference in README" && exit 1 || echo "OK: no @v0 in README"
+	tracemantle --version
+	tracemantle skills/tracemantle/SKILL.md
+	tracemantle skills/tracemantle/SKILL.md --analyze-graph
+	@if grep -rn "$(LEGACY_VERSION)" --include="*.py" --include="*.toml" --include="*.md" --include="*.yml" src/ pyproject.toml README.md action.yml ; then echo "FAIL: $(LEGACY_VERSION) references found"; exit 1; fi
+	@if grep -En "moonrunnerkc/(skillcheck|tracemantle)@v0" README.md; then echo "FAIL: @v0 reference in README"; exit 1; fi
 	@grep -q "rev: v$(VERSION)" README.md && echo "OK: README pre-commit rev matches v$(VERSION)" || { echo "FAIL: README pre-commit 'rev:' does not match pyproject version v$(VERSION); update the rev in README.md"; exit 1; }
-	@python3 -c "import build" 2>/dev/null && python3 -m build --sdist --wheel || echo "INFO: build module not available, skipping sdist/wheel check"
+	python3 -m build --no-isolation --outdir candidate-dist
+	python3 scripts/verify_artifacts.py candidate-dist

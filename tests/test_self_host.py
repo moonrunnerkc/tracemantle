@@ -1,6 +1,6 @@
-"""Self-host integration tests for skills/skillcheck/SKILL.md.
+"""Self-host integration tests for skills/tracemantle/SKILL.md.
 
-The skill at skills/skillcheck/SKILL.md is the fixture-of-truth for all tests here.
+The skill at skills/tracemantle/SKILL.md is the fixture-of-truth for all tests here.
 Editing the skill may require regenerating tests/fixtures/self_host/graph_clean.json
 via the regen-self-host-fixtures Makefile target.
 """
@@ -12,15 +12,15 @@ import subprocess
 import sys
 from pathlib import Path
 
-from skillcheck import validate
-from skillcheck.core.graph import extract_graph_agent, extract_graph_heuristic
-from skillcheck.core.graph_analyzers import run_divergence_analyzers, run_graph_analyzers
-from skillcheck.core.semantic import ingest_critique_response
-from skillcheck.parser import parse
-from skillcheck.result import Severity
-from skillcheck.rules.description import score_description
+from tracemantle import validate
+from tracemantle.core.graph import extract_graph_agent, extract_graph_heuristic
+from tracemantle.core.graph_analyzers import run_divergence_analyzers, run_graph_analyzers
+from tracemantle.core.semantic import ingest_critique_response
+from tracemantle.parser import parse
+from tracemantle.result import Severity
+from tracemantle.rules.description import score_description
 
-SKILL_PATH = Path(__file__).parent.parent / "skills" / "skillcheck" / "SKILL.md"
+SKILL_PATH = Path(__file__).parent.parent / "skills" / "tracemantle" / "SKILL.md"
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "self_host"
 CRITIQUE_FIXTURE = FIXTURES_DIR / "critique_clean.json"
 GRAPH_FIXTURE = FIXTURES_DIR / "graph_clean.json"
@@ -79,7 +79,7 @@ def test_self_host_full_pipeline_clean() -> None:
     """CLI end-to-end: --ingest-critique + --ingest-graph exits 0 with no ERROR or WARNING."""
     result = subprocess.run(
         [
-            sys.executable, "-m", "skillcheck",
+            sys.executable, "-m", "tracemantle",
             str(SKILL_PATH),
             "--ingest-critique", str(CRITIQUE_FIXTURE),
             "--ingest-graph", str(GRAPH_FIXTURE),
@@ -106,14 +106,14 @@ def test_self_host_full_pipeline_clean() -> None:
 
 def test_self_host_history_round_trip(tmp_path: Path) -> None:
     """--history records a run; --show-history reads it back with exactly one entry."""
-    # Parent directory must be named "skillcheck" to satisfy the dirname rule.
-    skill_dir = tmp_path / "skillcheck"
+    # Parent directory must be named "tracemantle" to satisfy the dirname rule.
+    skill_dir = tmp_path / "tracemantle"
     skill_dir.mkdir()
     skill_copy = skill_dir / "SKILL.md"
     shutil.copy(SKILL_PATH, skill_copy)
 
     record_result = subprocess.run(
-        [sys.executable, "-m", "skillcheck", str(skill_copy), "--history", "--no-color"],
+        [sys.executable, "-m", "tracemantle", str(skill_copy), "--history", "--no-color"],
         capture_output=True,
         text=True,
     )
@@ -122,7 +122,7 @@ def test_self_host_history_round_trip(tmp_path: Path) -> None:
     )
 
     show_result = subprocess.run(
-        [sys.executable, "-m", "skillcheck", str(skill_copy), "--show-history", "--format", "json"],
+        [sys.executable, "-m", "tracemantle", str(skill_copy), "--show-history", "--format", "json"],
         capture_output=True,
         text=True,
     )

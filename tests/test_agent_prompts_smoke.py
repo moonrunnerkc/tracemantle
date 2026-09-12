@@ -22,7 +22,8 @@ import hashlib
 
 import pytest
 
-from skillcheck.agents import (
+from tests.conftest import FIXTURES_DIR
+from tracemantle.agents import (
     ClaudeGraphPrompt,
     ClaudePrompt,
     CodexGraphPrompt,
@@ -30,8 +31,7 @@ from skillcheck.agents import (
     CursorGraphPrompt,
     CursorPrompt,
 )
-from skillcheck.parser import parse
-from tests.conftest import FIXTURES_DIR
+from tracemantle.parser import parse
 
 _FIXTURE = FIXTURES_DIR / "valid_basic.md"
 
@@ -44,11 +44,11 @@ def _digest(text: str) -> str:
 # If you intentionally edit a prompt template, replace the digest below in
 # the same commit that touches the template; do not silently regenerate.
 _EXPECTED: dict[tuple[str, str], str] = {
-    ("critique", "claude"): "c19a2774607cea8b4f9130bd7ddd050edf3576daca14ae97d558e0248e6e46ce",
-    ("critique", "codex"): "f7d596c04930369a7a68ae595b6fa30b7d2ea44211d8e2fc6c2b1d9cb146d982",
+    ("critique", "claude"): "f98fdc648b5c341685a1697eacc54c2955a6e919ca4eeb2a247075a6a95725b9",
+    ("critique", "codex"): "73dbc6ef6d6f33bc5f359102c231d97905a218a2282ebc34089406b6c8d731e6",
     ("critique", "cursor"): "3424ad2f5e9466313be29c83d2fc37319729bd67e0f5e4ee4719f2f42cfc7423",
-    ("graph", "claude"): "7a566442f9f36978397cfa61487271fdca89dbd010e902a6e5150038d4776c9f",
-    ("graph", "codex"): "75c8c44a582d3d9d4f409fedc6159e005097dffb7a44cedcf36dfe915e81edf6",
+    ("graph", "claude"): "fd953535e38214292754d3780edef27adf6e77cb9c787438b71e57ebf7eef4e7",
+    ("graph", "codex"): "92dd29e593ac0e4a2c2d7af90f191596abf061e72547a67767898706bbb1bab9",
     ("graph", "cursor"): "7638fe3f6ce5bae7d37782cdb77eb210fc31473c07cf7942061e45d651af52b0",
 }
 

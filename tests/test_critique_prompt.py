@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from skillcheck.agents.base import SCHEMA_VERSION, SelfCritiquePrompt
-from skillcheck.parser import parse
+from tracemantle.agents.base import SCHEMA_VERSION, SelfCritiquePrompt
+from tracemantle.parser import parse
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 CRITIQUE_DIR = FIXTURES_DIR / "critique"
@@ -123,15 +123,15 @@ def test_render_different_skills_produce_different_prompts() -> None:
 
 
 def test_claude_prompt_agent_id() -> None:
-    from skillcheck.agents.claude import ClaudePrompt
+    from tracemantle.agents.claude import ClaudePrompt
     assert ClaudePrompt.AGENT_ID == "claude"
 
 
 def test_codex_prompt_agent_id() -> None:
-    from skillcheck.agents.codex import CodexPrompt
+    from tracemantle.agents.codex import CodexPrompt
     assert CodexPrompt.AGENT_ID == "codex"
 
 
 def test_cursor_prompt_agent_id() -> None:
-    from skillcheck.agents.cursor import CursorPrompt
+    from tracemantle.agents.cursor import CursorPrompt
     assert CursorPrompt.AGENT_ID == "cursor"

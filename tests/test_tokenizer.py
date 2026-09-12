@@ -2,7 +2,14 @@
 
 from concurrent.futures import ThreadPoolExecutor
 
-from skillcheck.tokenizer import _get_tiktoken_enc, estimate_tokens
+from tracemantle.tokenizer import TokenizerError, _get_tiktoken_enc, estimate_tokens
+
+
+def _optional_encoding():
+    try:
+        return _get_tiktoken_enc()
+    except TokenizerError:
+        return None
 
 
 def test_tokenizer_returns_positive():
@@ -20,8 +27,8 @@ def test_tokenizer_consistent_across_calls():
 
 def test_tiktoken_enc_cached():
     """The encoding object is the same instance across calls (not re-allocated)."""
-    enc1 = _get_tiktoken_enc()
-    enc2 = _get_tiktoken_enc()
+    enc1 = _optional_encoding()
+    enc2 = _optional_encoding()
     # Both are either None (tiktoken not installed) or the SAME object.
     if enc1 is not None:
         assert enc1 is enc2
@@ -42,7 +49,7 @@ def test_tokenizer_concurrent_first_init_is_consistent():
     same object (or all None when tiktoken is not installed).
     """
     with ThreadPoolExecutor(max_workers=8) as pool:
-        results = list(pool.map(lambda _: _get_tiktoken_enc(), range(8)))
+        results = list(pool.map(lambda _: _optional_encoding(), range(8)))
     distinct = {id(r) for r in results}
     assert len(distinct) == 1, (
         f"Concurrent first-init produced different encoding objects: {distinct}"

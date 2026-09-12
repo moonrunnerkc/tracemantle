@@ -12,7 +12,11 @@ from pathlib import Path
 
 import pytest
 
-from tests.conftest import CLI_AVAILABLE, SKILLCHECK_CMD
+from tests.conftest import CLI_AVAILABLE, TRACEMANTLE_CMD
+from tracemantle.core.history import ledger_path_for, load_ledger, render_ledger_json
+from tracemantle.history_store import history_identity
+from tracemantle.parser import parse
+from tracemantle.storage import put_record
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 CRITIQUE_DIR = FIXTURES_DIR / "critique"
@@ -21,7 +25,7 @@ HISTORY_DIR = FIXTURES_DIR / "history"
 
 pytestmark = pytest.mark.skipif(
     not CLI_AVAILABLE,
-    reason="skillcheck not installed; run `pip install -e .` first",
+    reason="tracemantle not installed; run `pip install -e .` first",
 )
 
 _BASE_FLAGS = ["--skip-dirname-check"]
@@ -29,7 +33,7 @@ _BASE_FLAGS = ["--skip-dirname-check"]
 
 def run(*args: str) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [*SKILLCHECK_CMD, *_BASE_FLAGS, *args],
+        [*TRACEMANTLE_CMD, *_BASE_FLAGS, *args],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -37,7 +41,13 @@ def run(*args: str) -> subprocess.CompletedProcess:
 
 
 def _ledger_path(skill_path: Path) -> Path:
-    return skill_path.parent / ".skillcheck-history.json"
+    return ledger_path_for(skill_path)
+
+
+def _ledger_data(path: Path) -> dict:
+    ledger = load_ledger(path)
+    assert ledger is not None
+    return json.loads(render_ledger_json(ledger))
 
 
 # ---------------------------------------------------------------------------
@@ -59,7 +69,7 @@ def test_history_creates_ledger_with_one_run(tmp_path: Path):
     shutil.copy(FIXTURES_DIR / "valid_basic.md", skill)
     run(str(skill), "--history")
     lp = _ledger_path(skill)
-    data = json.loads(lp.read_text(encoding="utf-8"))
+    data = _ledger_data(lp)
     assert len(data["runs"]) == 1
     assert data["runs"][0]["result"]["valid"] is True
 
@@ -70,7 +80,7 @@ def test_history_run_twice_creates_two_entries(tmp_path: Path):
     run(str(skill), "--history")
     run(str(skill), "--history")
     lp = _ledger_path(skill)
-    data = json.loads(lp.read_text(encoding="utf-8"))
+    data = _ledger_data(lp)
     assert len(data["runs"]) == 2
 
 
@@ -90,8 +100,8 @@ def test_history_fans_out_across_multiple_paths(tmp_path: Path):
     ledger_b = _ledger_path(skill_b)
     assert ledger_a.exists(), "Ledger A must be created"
     assert ledger_b.exists(), "Ledger B must be created"
-    data_a = json.loads(ledger_a.read_text(encoding="utf-8"))
-    data_b = json.loads(ledger_b.read_text(encoding="utf-8"))
+    data_a = _ledger_data(ledger_a)
+    data_b = _ledger_data(ledger_b)
     assert len(data_a["runs"]) == 1
     assert len(data_b["runs"]) == 1
 
@@ -120,7 +130,7 @@ def test_history_records_correct_modes_symbolic_only(tmp_path: Path):
     skill = tmp_path / "SKILL.md"
     shutil.copy(FIXTURES_DIR / "valid_basic.md", skill)
     run(str(skill), "--history")
-    data = json.loads(_ledger_path(skill).read_text(encoding="utf-8"))
+    data = _ledger_data(_ledger_path(skill))
     modes = data["runs"][0]["validation_modes"]
     assert modes["symbolic"] is True
     assert modes["critique"] is False
@@ -139,7 +149,7 @@ def test_history_records_both_critique_and_graph_agents(tmp_path: Path):
         "--ingest-graph", graph_response,
     )
     lp = _ledger_path(skill)
-    data = json.loads(lp.read_text(encoding="utf-8"))
+    data = _ledger_data(lp)
     modes = data["runs"][0]["validation_modes"]
     agents = data["runs"][0]["agents"]
     assert modes["symbolic"] is True
@@ -153,7 +163,7 @@ def test_history_schema_keys_present(tmp_path: Path):
     skill = tmp_path / "SKILL.md"
     shutil.copy(FIXTURES_DIR / "valid_basic.md", skill)
     run(str(skill), "--history")
-    data = json.loads(_ledger_path(skill).read_text(encoding="utf-8"))
+    data = _ledger_data(_ledger_path(skill))
     assert "version" in data
     assert "skill_path" in data
     assert "runs" in data
@@ -279,11 +289,13 @@ def test_history_regression_emits_warning(tmp_path: Path):
         ],
     }
     lp = _ledger_path(bad_skill)
-    lp.write_text(json.dumps(pre_seed, indent=2), encoding="utf-8")
+    document = parse(bad_skill)
+    identity = history_identity(document, {"max_lines": None, "max_tokens": None, "ignore_prefixes": [], "skip_ref_check": False, "skip_dirname_check": True, "strict_all": False, "target_agent": "all", "min_desc_score": None, "strict_vscode": False, "strict_cursor": False, "analyze_graph": False, "semantic": False, "critique_agent": None, "graph_agent": None})
+    put_record(lp, {"schema_version": 2, "kind": "validation-history", "run_id": "synthetic-prior", "bundle_sha256": identity[0], "configuration_sha256": identity[1], "entry": pre_seed["runs"][0]})
 
     # Now run with --history on the same bad_desc_empty.md which will fail.
     result = subprocess.run(
-        [*SKILLCHECK_CMD, "--skip-dirname-check", str(bad_skill), "--history"],
+        [*TRACEMANTLE_CMD, "--skip-dirname-check", str(bad_skill), "--history"],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -350,17 +362,19 @@ def test_history_write_failure_warns_but_keeps_exit_code(tmp_path: Path):
     skill = tmp_path / "SKILL.md"
     shutil.copy(FIXTURES_DIR / "valid_basic.md", skill)
 
-    old_mode = tmp_path.stat().st_mode
+    store_parent = ledger_path_for(skill).parent
+    store_parent.mkdir(parents=True, exist_ok=True)
+    old_mode = store_parent.stat().st_mode
     try:
-        os.chmod(tmp_path, stat.S_IRUSR | stat.S_IXUSR)
+        os.chmod(store_parent, stat.S_IRUSR | stat.S_IXUSR)
         result = subprocess.run(
-            [*SKILLCHECK_CMD, "--skip-dirname-check", str(skill), "--history"],
+            [*TRACEMANTLE_CMD, "--skip-dirname-check", str(skill), "--history"],
             capture_output=True,
             text=True,
             encoding="utf-8",
         )
     finally:
-        os.chmod(tmp_path, old_mode)
+        os.chmod(store_parent, old_mode)
 
     # Validation passed; exit code 0, not 1 (write failure is a warning).
     assert result.returncode == 0
@@ -378,14 +392,14 @@ def test_text_output_unchanged_no_history_flag(tmp_path: Path):
     skill = tmp_path / "SKILL.md"
     shutil.copy(FIXTURES_DIR / "valid_basic.md", skill)
     result_with = subprocess.run(
-        [*SKILLCHECK_CMD, "--skip-dirname-check", str(skill)],
+        [*TRACEMANTLE_CMD, "--skip-dirname-check", str(skill)],
         capture_output=True,
         text=True,
         encoding="utf-8",
     )
     # Baseline: run twice without --history and confirm output is stable.
     result_again = subprocess.run(
-        [*SKILLCHECK_CMD, "--skip-dirname-check", str(skill)],
+        [*TRACEMANTLE_CMD, "--skip-dirname-check", str(skill)],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -398,11 +412,11 @@ def test_json_output_unchanged_no_history_flag(tmp_path: Path):
     skill = tmp_path / "SKILL.md"
     shutil.copy(FIXTURES_DIR / "valid_basic.md", skill)
     r1 = subprocess.run(
-        [*SKILLCHECK_CMD, "--skip-dirname-check", "--format", "json", str(skill)],
+        [*TRACEMANTLE_CMD, "--skip-dirname-check", "--format", "json", str(skill)],
         capture_output=True, text=True, encoding="utf-8",
     )
     r2 = subprocess.run(
-        [*SKILLCHECK_CMD, "--skip-dirname-check", "--format", "json", str(skill)],
+        [*TRACEMANTLE_CMD, "--skip-dirname-check", "--format", "json", str(skill)],
         capture_output=True, text=True, encoding="utf-8",
     )
     assert r1.stdout == r2.stdout
@@ -414,11 +428,11 @@ def test_ingest_critique_alone_unchanged(tmp_path: Path):
     shutil.copy(FIXTURES_DIR / "valid_basic.md", skill)
     critique = str(CRITIQUE_DIR / "response_clean.json")
     r1 = subprocess.run(
-        [*SKILLCHECK_CMD, "--skip-dirname-check", str(skill), "--ingest-critique", critique],
+        [*TRACEMANTLE_CMD, "--skip-dirname-check", str(skill), "--ingest-critique", critique],
         capture_output=True, text=True, encoding="utf-8",
     )
     r2 = subprocess.run(
-        [*SKILLCHECK_CMD, "--skip-dirname-check", str(skill), "--ingest-critique", critique],
+        [*TRACEMANTLE_CMD, "--skip-dirname-check", str(skill), "--ingest-critique", critique],
         capture_output=True, text=True, encoding="utf-8",
     )
     assert r1.returncode == r2.returncode
@@ -429,11 +443,11 @@ def test_ingest_graph_alone_unchanged(tmp_path: Path):
     shutil.copy(FIXTURES_DIR / "valid_basic.md", skill)
     graph_r = str(GR_DIR / "response_clean.json")
     r1 = subprocess.run(
-        [*SKILLCHECK_CMD, "--skip-dirname-check", str(skill), "--ingest-graph", graph_r],
+        [*TRACEMANTLE_CMD, "--skip-dirname-check", str(skill), "--ingest-graph", graph_r],
         capture_output=True, text=True, encoding="utf-8",
     )
     r2 = subprocess.run(
-        [*SKILLCHECK_CMD, "--skip-dirname-check", str(skill), "--ingest-graph", graph_r],
+        [*TRACEMANTLE_CMD, "--skip-dirname-check", str(skill), "--ingest-graph", graph_r],
         capture_output=True, text=True, encoding="utf-8",
     )
     assert r1.returncode == r2.returncode

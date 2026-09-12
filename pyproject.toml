@@ -3,8 +3,8 @@ requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
-name = "skillcheck"
-version = "1.5.0"
+name = "tracemantle"
+version = "1.6.0"
 description = "Cross-agent skill quality gate for SKILL.md files conforming to the agentskills.io specification"
 readme = "README.md"
 license = { text = "MIT" }
@@ -15,6 +15,7 @@ authors = [
 ]
 dependencies = [
     "pyyaml>=6.0",
+    "tomli>=2.0; python_version < '3.11'",
 ]
 
 classifiers = [
@@ -30,8 +31,14 @@ classifiers = [
     "Typing :: Typed",
 ]
 
+[project.urls]
+Repository = "https://github.com/moonrunnerkc/tracemantle"
+Issues = "https://github.com/moonrunnerkc/tracemantle/issues"
+
 [project.optional-dependencies]
 dev = [
+    "build>=1.2",
+    "hatchling>=1.27",
     "mypy>=1.10",
     "pre-commit>=3.5",
     "pytest>=8.0",
@@ -44,10 +51,14 @@ tiktoken = [
 ]
 
 [project.scripts]
-skillcheck = "skillcheck.cli:main"
+tracemantle = "tracemantle.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/skillcheck"]
+packages = ["src/tracemantle", "src/skillcheck"]
+
+# Verification digests describe the artifacts and cannot be embedded recursively.
+[tool.hatch.build.targets.sdist]
+exclude = ["/docs/verification/artifacts.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -63,9 +74,10 @@ testpaths = ["tests"]
 # 3.11, a few tests that skip on Windows, and the tiktoken branch, which CI does
 # not install. 80 also holds if subprocess tracing fails outright on some
 # platform, which would drop measurement back to roughly 82.
-addopts = "--cov=skillcheck --cov-report=term-missing"
+addopts = "--cov=tracemantle --cov-report=term-missing"
 
 [tool.ruff]
+extend-exclude = ["tests/fixtures/upstream"]  # Retained third-party source is verified by digest, not rewritten.
 target-version = "py310"
 line-length = 127
 
@@ -79,7 +91,7 @@ python_version = "3.10"
 # The whole scripts/ directory, not a per-file list: an allowlist silently
 # leaves the next script ungated, which is what ruff already avoids by taking
 # the directory.
-files = ["src/skillcheck", "scripts"]
+files = ["src/tracemantle", "scripts"]
 
 [[tool.mypy.overrides]]
 # tiktoken ships no type stubs; tomllib has no typeshed stubs under the pinned
@@ -88,14 +100,14 @@ module = ["tiktoken", "tomllib"]
 ignore_missing_imports = true
 
 [tool.coverage.run]
-source = ["skillcheck"]
-# The CLI tests invoke `python -m skillcheck` as a real subprocess, which is
+source = ["tracemantle"]
+# The CLI tests invoke `python -m tracemantle` as a real subprocess, which is
 # deliberate: it is the only way to assert exit codes and stdout as a user sees
 # them. Those subprocesses were invisible to the tracer, which is why cli.py and
 # commands.py measured near zero while being the most exercised code in the
 # suite. parallel = true makes each subprocess write its own data file, which
 # pytest-cov combines at the end; tests/conftest.py sets COVERAGE_PROCESS_START
-# so the interpreter starts coverage before importing skillcheck.
+# so the interpreter starts coverage before importing tracemantle.
 #
 # __main__.py is no longer omitted: with subprocess tracing it genuinely runs.
 parallel = true

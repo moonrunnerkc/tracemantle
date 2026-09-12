@@ -24,8 +24,8 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.core.symbolic import validate
-from skillcheck.result import Diagnostic
+from tracemantle.core.symbolic import validate
+from tracemantle.result import Diagnostic
 
 GOLDEN_DIR = Path(__file__).parent / "golden"
 
@@ -62,7 +62,7 @@ def test_golden_case(case: str) -> None:
     expected_path = GOLDEN_DIR / case / "expected.txt"
     actual = _actual(case)
 
-    if os.environ.get("SKILLCHECK_REGEN_GOLDEN"):
+    if os.environ.get("TRACEMANTLE_REGEN_GOLDEN"):
         expected_path.write_text(actual, encoding="utf-8")
         pytest.skip(f"regenerated {case}/expected.txt")
 
@@ -96,7 +96,7 @@ def test_every_case_directory_has_an_expected_file() -> None:
     ("case", "rule"),
     [
         ("unknown-fields", "frontmatter.field.unknown"),
-        ("unknown-fields", "frontmatter.field.ecosystem"),
+        ("unknown-fields", "frontmatter.field.unknown"),  # license is now standard.
         ("claude-doc-helper", "frontmatter.name.reserved-word"),
         ("person-voice-first", "frontmatter.description.person-voice"),
         ("person-voice-second", "frontmatter.description.person-voice"),

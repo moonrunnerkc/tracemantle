@@ -7,10 +7,10 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.config import DESCRIPTION_SCORE_WEIGHTS
-from skillcheck.formatters import _format_text
-from skillcheck.result import Diagnostic, Severity, ValidationResult
-from skillcheck.rules.description import score_description
+from tracemantle.config import DESCRIPTION_SCORE_WEIGHTS
+from tracemantle.formatters import _format_text
+from tracemantle.result import Diagnostic, Severity, ValidationResult
+from tracemantle.rules.description import score_description
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -74,7 +74,7 @@ def test_json_breakdown_present():
     """JSON output should include 'breakdown' for description.quality-score diagnostics."""
     skill_file = FIXTURES_DIR / "valid_good_desc.md"
     result = subprocess.run(
-        [sys.executable, "-m", "skillcheck", str(skill_file), "--format", "json"],
+        [sys.executable, "-m", "tracemantle", str(skill_file), "--format", "json"],
         capture_output=True,
         text=True,
         cwd=str(FIXTURES_DIR.parent.parent),
@@ -108,7 +108,7 @@ def test_text_flag_off_suppresses_breakdown():
     """Without --explain-score, text output should NOT show breakdown dimension lines."""
     skill_file = FIXTURES_DIR / "valid_good_desc.md"
     result = subprocess.run(
-        [sys.executable, "-m", "skillcheck", str(skill_file)],
+        [sys.executable, "-m", "tracemantle", str(skill_file)],
         capture_output=True,
         text=True,
         cwd=str(FIXTURES_DIR.parent.parent),
@@ -128,7 +128,7 @@ def test_text_explain_score_shows_breakdown():
     """With --explain-score, text output should show the per-dimension breakdown."""
     skill_file = FIXTURES_DIR / "valid_good_desc.md"
     result = subprocess.run(
-        [sys.executable, "-m", "skillcheck", str(skill_file), "--explain-score"],
+        [sys.executable, "-m", "tracemantle", str(skill_file), "--explain-score"],
         capture_output=True,
         text=True,
         cwd=str(FIXTURES_DIR.parent.parent),

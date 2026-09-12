@@ -6,11 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.agents import GRAPH_AGENTS, get_graph_prompt
-from skillcheck.agents.graph_claude import ClaudeGraphPrompt
-from skillcheck.agents.graph_codex import CodexGraphPrompt
-from skillcheck.agents.graph_cursor import CursorGraphPrompt
-from skillcheck.parser import parse
+from tracemantle.agents import GRAPH_AGENTS, get_graph_prompt
+from tracemantle.agents.graph_claude import ClaudeGraphPrompt
+from tracemantle.agents.graph_codex import CodexGraphPrompt
+from tracemantle.agents.graph_cursor import CursorGraphPrompt
+from tracemantle.parser import parse
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 GRAPH_DIR = FIXTURES_DIR / "graph"

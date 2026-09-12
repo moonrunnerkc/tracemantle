@@ -4,7 +4,7 @@ The audit that prompted this found two uncaught crashes. A ledger or a
 skillcheck.toml containing non-UTF-8 bytes raised UnicodeDecodeError straight
 out of `path.read_text`, printing a traceback and exiting 1. The config case is
 the worse of the two: `find_config` discovers skillcheck.toml by walking up from
-the scanned path, so a poisoned file sitting next to a skill crashed skillcheck
+the scanned path, so a poisoned file sitting next to a skill crashed tracemantle
 for anyone who scanned that tree, with no flag involved.
 
 `read_guarded_text` now checks size, UTF-8 validity, and control characters, in
@@ -18,10 +18,11 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.config_loader import ConfigError, load_config
-from skillcheck.core.history import LedgerError
-from skillcheck.core.history_io import load_ledger
-from skillcheck.io_limits import (
+from tests.conftest import TRACEMANTLE_CMD
+from tracemantle.config_loader import ConfigError, load_config
+from tracemantle.core.history import LedgerError
+from tracemantle.core.history_io import load_ledger
+from tracemantle.io_limits import (
     MAX_CONFIG_BYTES,
     MAX_LEDGER_BYTES,
     UntrustedInputError,
@@ -29,7 +30,6 @@ from skillcheck.io_limits import (
     read_guarded_text,
     reject_control_characters,
 )
-from tests.conftest import SKILLCHECK_CMD
 
 REPO_ROOT = Path(__file__).parents[1]
 
@@ -153,10 +153,11 @@ def test_caller_error_type_is_preserved(tmp_path: Path) -> None:
         read_guarded_text(target, max_bytes=1024, what="Ledger", error_cls=LedgerError)
 
 
-def test_os_errors_propagate_for_the_caller_to_word(tmp_path: Path) -> None:
+def test_os_errors_are_normalized_with_their_cause(tmp_path: Path) -> None:
     """Callers already wrap read failures with permission-specific wording."""
-    with pytest.raises(OSError):
+    with pytest.raises(UntrustedInputError) as error:
         read_guarded_text(tmp_path / "absent.json", max_bytes=1024, what="Thing")
+    assert isinstance(error.value.__cause__, OSError)
 
 
 def test_control_check_works_on_already_decoded_text() -> None:
@@ -256,7 +257,7 @@ def test_valid_config_at_exactly_the_cap_still_loads(tmp_path: Path) -> None:
 
 
 def _run(*args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run([*SKILLCHECK_CMD, *args], capture_output=True, text=True, cwd=REPO_ROOT)
+    return subprocess.run([*TRACEMANTLE_CMD, *args], capture_output=True, text=True, cwd=REPO_ROOT)
 
 
 def test_poisoned_discovered_config_exits_two_without_a_traceback(tmp_path: Path) -> None:
@@ -295,7 +296,7 @@ def test_nul_laden_ingest_response_exits_two(tmp_path: Path) -> None:
 def test_nul_laden_stdin_ingest_exits_two(tmp_path: Path) -> None:
     skill = _skill(tmp_path / "proj", name="proj")
     result = subprocess.run(
-        [*SKILLCHECK_CMD, str(skill), "--ingest-critique", "-"],
+        [*TRACEMANTLE_CMD, str(skill), "--ingest-critique", "-"],
         input='{"findings": [], "x": "a\x00b"}',
         capture_output=True,
         text=True,

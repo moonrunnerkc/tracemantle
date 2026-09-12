@@ -1,14 +1,14 @@
 """Tests for Feature 4: Progressive disclosure budget validation."""
 
 
-from skillcheck.parser import parse
-from skillcheck.result import Severity
-from skillcheck.rules.disclosure import (
+from tests.conftest import FIXTURES_DIR
+from tracemantle.parser import parse
+from tracemantle.result import Severity
+from tracemantle.rules.disclosure import (
     check_body_bloat,
     check_body_budget,
     check_metadata_budget,
 )
-from tests.conftest import FIXTURES_DIR
 
 # ---------------------------------------------------------------------------
 # disclosure.metadata-budget
@@ -104,7 +104,7 @@ def test_body_bloat_flags_large_table(tmp_path):
 
 def test_body_bloat_does_not_sum_separate_small_tables(tmp_path):
     """Three separate small tables must not be summed into one false count."""
-    from skillcheck import config
+    from tracemantle import config
 
     rows_each = config.BLOAT_TABLE_ROWS // 2 + 1  # under threshold individually
 

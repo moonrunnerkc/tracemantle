@@ -28,9 +28,9 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from skillcheck.config import DESCRIPTION_SCORE_WEIGHTS  # noqa: E402
-from skillcheck.parser import ParseError, parse  # noqa: E402
-from skillcheck.rules.description import score_description  # noqa: E402
+from tracemantle.config import DESCRIPTION_SCORE_WEIGHTS  # noqa: E402
+from tracemantle.parser import ParseError, parse  # noqa: E402
+from tracemantle.rules.description import score_description  # noqa: E402
 
 REPO_ROOT = Path(__file__).parent.parent
 

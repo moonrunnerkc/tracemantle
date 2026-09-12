@@ -11,9 +11,9 @@ them early with a clear fix (quote the value).
 """
 
 
-from skillcheck.parser import parse
-from skillcheck.result import Severity
-from skillcheck.rules.frontmatter import check_description_type, check_name_type
+from tracemantle.parser import parse
+from tracemantle.result import Severity
+from tracemantle.rules.frontmatter import check_description_type, check_name_type
 
 # ---------------------------------------------------------------------------
 # frontmatter.name.type

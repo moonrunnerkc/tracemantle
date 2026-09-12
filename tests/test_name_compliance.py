@@ -4,14 +4,14 @@ Covers leading/trailing hyphens, consecutive hyphens, and directory-name matchin
 """
 
 
-from skillcheck.parser import parse
-from skillcheck.result import Severity
-from skillcheck.rules.frontmatter import (
+from tests.conftest import FIXTURES_DIR
+from tracemantle.parser import parse
+from tracemantle.result import Severity
+from tracemantle.rules.frontmatter import (
     check_name_consecutive_hyphens,
     check_name_directory_match,
     check_name_leading_trailing_hyphen,
 )
-from tests.conftest import FIXTURES_DIR
 
 # ---------------------------------------------------------------------------
 # name.leading-trailing-hyphen

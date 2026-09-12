@@ -8,14 +8,14 @@ from pathlib import Path
 
 import pytest
 
-from tests.conftest import CLI_AVAILABLE, SKILLCHECK_CMD
+from tests.conftest import CLI_AVAILABLE, TRACEMANTLE_CMD
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 CRITIQUE_DIR = FIXTURES_DIR / "critique"
 
 pytestmark = pytest.mark.skipif(
     not CLI_AVAILABLE,
-    reason="skillcheck not installed; run `pip install -e .` first",
+    reason="tracemantle not installed; run `pip install -e .` first",
 )
 
 _SKILL = str(FIXTURES_DIR / "valid_basic.md")
@@ -25,7 +25,7 @@ _FLAGS = ["--skip-dirname-check"]
 
 def run(*args: str) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [*SKILLCHECK_CMD, *_FLAGS, *args],
+        [*TRACEMANTLE_CMD, *_FLAGS, *args],
         capture_output=True,
         text=True,
         encoding="utf-8",

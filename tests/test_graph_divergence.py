@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from skillcheck.agents.graph_parser import parse_graph_response
-from skillcheck.core.graph import (
+from tracemantle.agents.graph_parser import parse_graph_response
+from tracemantle.core.graph import (
     Capability,
     CapabilityGraph,
     Edge,
@@ -13,13 +13,13 @@ from skillcheck.core.graph import (
     Output,
     extract_graph_heuristic,
 )
-from skillcheck.core.graph_analyzers import (
+from tracemantle.core.graph_analyzers import (
     GRAPH_DIVERGENCE_ANALYZERS,
     check_heuristic_disagreement,
     run_divergence_analyzers,
 )
-from skillcheck.parser import parse
-from skillcheck.result import Severity
+from tracemantle.parser import parse
+from tracemantle.result import Severity
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 GRAPH_DIR = FIXTURES_DIR / "graph"

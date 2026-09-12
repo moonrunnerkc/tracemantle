@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.core.graph import (
+from tracemantle.core.graph import (
     IMPERATIVE_VERBS,
     INPUT_SECTION_ALIASES,
     OUTPUT_SECTION_ALIASES,
@@ -20,7 +20,7 @@ from skillcheck.core.graph import (
     _strip_section_prefix,
     extract_graph_heuristic,
 )
-from skillcheck.parser import parse
+from tracemantle.parser import parse
 
 GRAPH_DIR = Path(__file__).parent / "fixtures" / "graph"
 
@@ -533,12 +533,12 @@ def test_input_line_is_body_relative() -> None:
 
 
 def test_core_exports_extract_graph_heuristic() -> None:
-    from skillcheck.core import graph as graph_module
+    from tracemantle.core import graph as graph_module
     assert hasattr(graph_module, "extract_graph_heuristic")
 
 
 def test_import_path_smoke() -> None:
-    from skillcheck.core.graph import (  # noqa: F401
+    from tracemantle.core.graph import (  # noqa: F401
         Capability,
         CapabilityGraph,
         Edge,

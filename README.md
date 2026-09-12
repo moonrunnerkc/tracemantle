@@ -3,148 +3,153 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/banner.svg">
   <source media="(prefers-color-scheme: light)" srcset=".github/banner.svg">
-  <img alt="skillcheck" src=".github/banner.svg" width="600">
+  <img alt="TraceMantle" src=".github/banner.svg" width="600">
 </picture>
 
 <br/>
 
-<img src="https://img.shields.io/pypi/v/skillcheck?style=flat-square" alt="PyPI version"> <img src="https://img.shields.io/pypi/pyversions/skillcheck?style=flat-square" alt="Python"> <img src="https://img.shields.io/github/actions/workflow/status/moonrunnerkc/skillcheck/ci.yml?style=flat-square" alt="CI status"> <img src="https://img.shields.io/github/license/moonrunnerkc/skillcheck?style=flat-square" alt="License">
+<img src="https://img.shields.io/github/actions/workflow/status/moonrunnerkc/tracemantle/ci.yml?branch=main&style=flat-square" alt="CI status"> <img src="https://img.shields.io/github/license/moonrunnerkc/tracemantle?style=flat-square" alt="License">
 
 </div>
 
-Static analyzer for `SKILL.md` files. Validates frontmatter, body sizing, file references, and cross-agent compatibility against the [agentskills.io specification](https://agentskills.io/specification). No network calls. No LLM API calls. No file mutations.
+TraceMantle validates agent skills, identifies changes to their packaged resources, and compares release evidence against a trusted policy. It analyzes files locally and imports evaluator output; it does not execute skills or run agents.
 
-1058 tests cover all rule modules.
+1168 tests cover all rule modules and the bundle/evidence workflow.
 
 ## Install
 
-```bash
-pip install skillcheck
-```
-
-Requires Python 3.10 or later. For more accurate token estimates, install the optional extra:
+This checkout prepares version 1.6.0 locally. The TraceMantle distribution has not been published as part of this implementation.
 
 ```bash
-pip install "skillcheck[tiktoken]"
+git clone https://github.com/moonrunnerkc/tracemantle.git
+cd tracemantle
+python -m venv .venv
+. .venv/bin/activate
+python -m pip install .
+tracemantle --version
+python -m tracemantle --help
 ```
 
-### Token estimation accuracy
-
-Token counts are estimates, and the sizing rules report them as such. The bands below are measured, not estimated: `scripts/measure_token_error.py` compares the offline heuristic against `tiktoken` `cl100k_base` across a corpus of 61 real `SKILL.md` files, for the three spans the rules actually size.
-
-| Span | Rule | Median error | p95 error | Direction |
-|---|---|---:|---:|---|
-| Whole file | `sizing.total-tokens` | 23.0% | 30.7% | over-estimates 61/61 |
-| Frontmatter | `disclosure.metadata-budget` | 25.9% | 35.3% | over-estimates 61/61 |
-| Body | `disclosure.body-budget` | 22.7% | 30.7% | over-estimates 61/61 |
-
-The bias is one-directional: the offline heuristic read high on every file in the corpus. For a budget check that is the safer direction, since it warns early rather than missing a skill that is genuinely over, but it means a warning close to a threshold is as likely to be the estimator as the file.
-
-**Install the tiktoken extra before trusting a diagnostic near a budget limit.** With `pip install "skillcheck[tiktoken]"` the counts come from `cl100k_base` directly instead of the heuristic. tiktoken downloads its vocabulary on first use and caches it, so it is offline only once that cache is warm; the heuristic never touches the network.
-
-Neither option reproduces Claude's own tokenizer, because Anthropic's vocabulary is not published, so the residual error against what Claude actually counts is unknown and not measured here. That is why token-based diagnostics are WARNING severity while line-based ones are not, and why messages carry the estimate and the threshold (`got 612 tokens`) so you can judge the margin yourself.
-
-One measured result is worth flagging: the plain `chars / 4` rule of thumb scored a 6.3% median error on the same corpus, against the word-run heuristic's 23.0%. The comment in `tokenizer.py` claimed the opposite. Changing the estimator would move every token diagnostic, so it has not been changed here; the number is recorded so the decision can be made deliberately.
+Requires Python 3.10 or later. The required runtime dependencies are PyYAML and, on Python 3.10 only, tomli. See [migration instructions](docs/migration.md) before replacing the old SkillCheck distribution. The default install creates no `skillcheck` executable.
 
 ## Usage
 
 ```bash
-skillcheck SKILL.md            # validate one file
-skillcheck skills/             # scan a directory for files named SKILL.md
-skillcheck SKILL.md --format json
-skillcheck --help              # full flag reference
+tracemantle skills/tracemantle/SKILL.md
+tracemantle skills/ --analyze-graph --format json
+tracemantle skills/tracemantle/SKILL.md --strict --ignore graph
 ```
 
-Sample output:
+Checks cover standard frontmatter, optional quality advice, line/token budgets, resource links, versioned compatibility advice, and heuristic capability graphs. `license`, `metadata`, and `compatibility` are standard fields. Keyword scores describe textual features; they do not establish trigger reliability or task success. Vendor runtime behavior without versioned evidence is marked unverified. See [profiles and conformance](docs/profiles.md) and the [generated CLI, configuration and rule reference](docs/generated-reference.md).
 
-```
-✔ PASS  skills/claude-api/SKILL.md
-  line 2   ⚠ warning  frontmatter.name.reserved-word  Name contains the term 'claude'.
-  line 4   · info     frontmatter.field.ecosystem      Field 'license' is ecosystem-common.
+The shared document model uses one bounded source read and YAML parse per validation. Markdown resource parsing supports links, reference definitions, HTML links, directives and path-like inline code, with source spans; fenced examples and external schemes are distinguished. Reference depth means a chain through resources, not directory nesting. Limits and unsupported syntax are documented in [input and report contracts](docs/contracts.md).
 
-Checked 18 files: 18 passed, 0 failed, 29 warnings
+## Compare bundles and evidence
+
+```bash
+tracemantle manifest skills/tracemantle --format json
+tracemantle import-evidence evaluator-export.json --bundle path/to/skill --store evidence/ --format json
+tracemantle compare baseline/skill candidate/skill \
+  --trusted-root trusted-checkout --base-revision FULL_BASE_COMMIT_SHA \
+  --evidence evidence/records/RECORD_SHA256.json --format json
 ```
+
+The import example returns `unknown` until the export rows have complete identity bindings and trusted approval. The supported adapter is Promptfoo 0.118.10, results schema 3. The retained upstream fixture contains model judgments, so it cannot prove that an agent invoked a skill. Complete import bindings, policy fields, trust boundaries and runnable fixture examples are in [the evidence workflow](docs/evidence-workflow.md).
+
+A bundle digest covers full file contents, normalized relative paths and executable bits. Changing a helper or schema changes the bundle even when SKILL.md stays the same. Missing or incompatible required evidence blocks release as `unknown`. Static reuse requires matching declared inputs; behavioral reuse also requires compatible execution conditions, freshness and an immutable model revision.
+
+Comparison reads policy and checker bytes from a full trusted base commit SHA. Candidate-only policy or checker changes cannot weaken this gate. The tool never runs imported provider configuration, assertions, extensions, scripts or agent instructions.
+
+## Configuration and token counting
+
+Use `[tool.tracemantle]` in `pyproject.toml`, or `tracemantle.toml`. Legacy `skillcheck.toml` and `[tool.skillcheck]` are accepted with a stderr deprecation notice. Precedence is defaults, legacy fields, canonical fields, explicitly supplied CLI fields. Explicit default values such as `--format text` win. Settings are immutable and scoped to one project root; ambiguous mixed-root scans are rejected unless `--config` supplies a single explicit configuration.
+
+```toml
+[tool.tracemantle]
+max-lines = 500
+max-tokens = 8000
+tokenizer = "heuristic"
+
+[tool.tracemantle.frontmatter]
+extension_fields = ["my-org-tag"]
+reserved_words = ["acme", "internal"]
+```
+
+The default word/punctuation estimator is always offline. Installing an optional dependency never changes thresholds or selects a different backend. To explicitly select cl100k_base:
+
+```bash
+pip install '.[tiktoken]'
+tracemantle skills/tracemantle/SKILL.md --tokenizer tiktoken --format json
+```
+
+Tiktoken may download its vocabulary on a cold cache. An unavailable backend produces a clear tool diagnostic; it never silently falls back. Both backends accept literal special-token markers as ordinary text. JSON reports identify the backend/version. Neither backend establishes another vendor's token count.
+
+On the eight authored held-out texts in corpus v1, the unchanged heuristic has 37.4% median absolute relative error against cl100k_base. Across 24 budget decisions it produced zero false positives and one false negative. This small population is insufficient for broad calibration claims. [Measurements and corpus hashes](docs/verification/calibration-v1.json) separate token error, budget-decision error and semantic abstentions.
+
+## Writes and history
+
+Ordinary validation and comparison are read-only. Explicit `--history` writes immutable records under the skill directory's parent `.tracemantle/history/` directory, outside the bundle. Explicit import, migration and output destinations write only to the selected paths. Source artifacts and legacy ledgers are preserved. Concurrent history writers create separate records.
+
+```bash
+tracemantle skills/tracemantle/SKILL.md --history
+tracemantle skills/tracemantle/SKILL.md --show-history --format json
+tracemantle migrate-history path/to/skill/.skillcheck-history.json --store evidence/legacy
+```
+
+Legacy history does not contain sufficient identity for release evidence; migrating it records `unknown` comparability. No ordinary scan silently moves, migrates or deletes it.
+
+## Exit codes and reports
+
+Validation uses `0` for no errors, `1` for errors or strict warnings, `2` for input/tool errors, and `3` for semantic-only imported contradictions. Nonsemantic errors take priority over `3`. Filtering and final gate calculation happen after graph, imported and history diagnostics are merged. Each file's validity is separate from the overall gate.
+
+Comparison uses `0` pass, `1` fail, `2` infrastructure-error, `4` unknown and `5` skipped. Required skipped checks become unknown and block release. Missing evidence does not assert that the skill itself failed. Text, versioned JSON and GitHub annotations derive from the same comparison result. Batch JSON is one parseable document.
 
 ## GitHub Action
 
+The repository is [moonrunnerkc/tracemantle](https://github.com/moonrunnerkc/tracemantle). The old GitHub URL redirects here; existing tags still contain their original SkillCheck code. The composite [Action](action.yml) installs from its own checkout. Use `uses: ./` to test the unpublished source. [Trusted comparison workflow](.github/workflows/compare.yml) installs only the trusted tool and reads candidate files without execution.
+
+After a separately authorized release creates `v1.6.0`, the Action reference will be:
+
 ```yaml
-- uses: moonrunnerkc/skillcheck@v1
+- uses: moonrunnerkc/tracemantle@v1.6.0
   with:
     path: skills/
 ```
 
-Diagnostics appear as inline PR annotations. Inputs documented in [`action.yml`](action.yml).
+For the unpublished candidate, replace the tag with a full CI-verified commit SHA. Do not use `@v1` to select TraceMantle until a TraceMantle release has updated that tag. Diagnostics appear as inline PR annotations; inputs are documented in [action.yml](action.yml).
 
 ## pre-commit
 
+After the corresponding release tag exists, the pre-commit configuration is:
+
 ```yaml
 repos:
-  - repo: https://github.com/moonrunnerkc/skillcheck
-    rev: v1.5.0
+  - repo: https://github.com/moonrunnerkc/tracemantle
+    rev: v1.6.0
     hooks:
-      - id: skillcheck
+      - id: tracemantle
 ```
-
-The hook passes `--no-color` by default so the captured pre-commit log stays clean. Override or extend with `args:` in your `.pre-commit-config.yaml` (for example, `args: ["--no-color", "--strict"]`).
-
-## What it checks
-
-- **Frontmatter**: required fields, types, name and description length limits, reserved-word collisions.
-- **Description quality**: 0-100 score across action verbs, trigger phrases, keywords, specificity, and length.
-- **Sizing**: line and token thresholds against the agentskills.io disclosure budgets. Token figures are estimates; see [token estimation accuracy](#token-estimation-accuracy).
-- **References**: broken links, escapes outside the skill directory, depth limits.
-- **Cross-agent compatibility**: Claude Code, VS Code, Codex, Cursor.
-- **Capability graph** (`--analyze-graph`): orphaned capabilities, unused inputs, unproduced outputs, unreferenced tools.
-- **History ledger** (`--history`): per-skill append-only JSON file tracking validation results across runs.
-
-## Agent modes
-
-When the calling agent can run a prompt, skillcheck can ingest its response and merge findings into the report:
-
-```bash
-skillcheck SKILL.md --emit-critique-prompt > prompt.txt
-# hand prompt.txt to the agent, then:
-skillcheck SKILL.md --ingest-critique response.json
-```
-
-The same flow exists for capability graph extraction (`--emit-graph-prompt` / `--ingest-graph`). Prompt variants are tuned per agent via `--critique-agent` and `--graph-agent` (`claude`, `codex`, `cursor`).
-
-An ingested response describes exactly one skill, so `--ingest-critique` and `--ingest-graph` require a single resolved SKILL.md. Pointing them at a directory that expands to more than one skill exits `2`. Run the ingest once per skill.
-
-## Exit codes
-
-| Code | Meaning |
-|---|---|
-| `0` | No errors. Warnings alone exit 0 unless `--strict` is set. |
-| `1` | One or more errors. Also: warnings with `--strict` (the umbrella `--strict-vscode` / `--strict-cursor` only escalate their own diagnostics; the umbrella additionally escalates any warning-only run). Also: `history.skill.regressed` with `--fail-on-regression`. Also: any ingest parse failure. |
-| `2` | Input or argument error (missing path, conflicting flags, malformed input, an ingest flag pointed at more than one skill). |
-| `3` | Symbolic checks passed but an ingested critique reported semantic errors. |
-
-When both `1` and `3` would apply, `1` wins so CI consumers see the higher-severity signal.
-
-## Configuration
-
-Defaults live in a `skillcheck.toml` discovered upward from the validated path. Override per invocation with `--config PATH`. Organization-specific frontmatter keys belong under `[frontmatter] extension_fields`. Override the name reserved-word list with `[frontmatter] reserved_words = ["acme", "internal"]` (an empty array reverts to the defaults).
-
-`--ignore PREFIX` suppresses any diagnostic whose rule ID starts with `PREFIX`. The prefix is matched against the full dotted rule ID, so all three levels work: a top-level category (`--ignore sizing`), a category-and-field pair (`--ignore frontmatter.name`), or a fully-qualified rule (`--ignore compat.unverified`). The flag is repeatable.
-
-## Documentation
-
-- [`CONTRIBUTING.md`](CONTRIBUTING.md): testing, maintainer workflows, rule-authoring conventions.
-- [`docs/case-study-v1-real-world-runs.md`](docs/case-study-v1-real-world-runs.md): runs against the Anthropic skills corpus.
-- [`docs/case-study-silent-skill-failure.md`](docs/case-study-silent-skill-failure.md): VS Code dirname-mismatch incident.
-- [`skills/skillcheck/SKILL.md`](skills/skillcheck/SKILL.md): a SKILL.md that passes every rule.
 
 ## Releases
 
-Pushing a version tag (`v1.2.3`) runs `.github/workflows/release.yml`, which builds the wheel and sdist, issues a SLSA build provenance attestation via `actions/attest-build-provenance`, and publishes to PyPI through trusted publishing. To verify a release artifact before installing:
+`make verify-release` runs lint, strict typing, the full coverage gate, self-host checks, packaging and clean installed-artifact verification. Release candidates reuse the complete CI workflow; publishing consumes its exact verified artifacts and retains attestations/trusted publishing. The Release workflow is disabled in GitHub, and `TRACEMANTLE_PUBLISH_ENABLED=false`. Enabling it, creating release tags and publishing require a separate explicit instruction after the new PyPI publisher is verified. See [the owner rename checklist](docs/rename-checklist.md).
+
+After an authorized release, verify each downloaded artifact against this repository and the full immutable release commit:
 
 ```bash
-gh attestation verify dist/skillcheck-*.whl --owner moonrunnerkc
+gh attestation verify dist/tracemantle-1.6.0-py3-none-any.whl \
+  --repo moonrunnerkc/tracemantle --source-digest FULL_RELEASE_COMMIT_SHA
 ```
 
-This confirms the wheel was built by `moonrunnerkc/skillcheck` CI from the source at the tagged commit. Untagged builds (PR and main-branch CI) are not attested or published.
+Ordinary CI artifacts are not attested or published. PyPI badges will be restored only after the new distribution exists.
+
+## Documentation
+
+- [Implementation ledger](docs/implementation-status.md) and [rename checklist](docs/rename-checklist.md).
+- [Migration](docs/migration.md) and [contributor instructions](CONTRIBUTING.md).
+- [Historical corpus runs](docs/case-study-v1-real-world-runs.md) and [dirname-mismatch case study](docs/case-study-silent-skill-failure.md).
+- [Installed skill](skills/tracemantle/SKILL.md).
 
 ## License
 
-MIT. See [`LICENSE`](LICENSE).
+MIT. See [LICENSE](LICENSE).

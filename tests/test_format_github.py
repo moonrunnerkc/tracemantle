@@ -5,9 +5,9 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-from skillcheck.formatters import _escape_data, _escape_property, _format_github
-from skillcheck.result import Diagnostic, Severity, ValidationResult
-from tests.conftest import FIXTURES_DIR, SKILLCHECK_CMD
+from tests.conftest import FIXTURES_DIR, TRACEMANTLE_CMD
+from tracemantle.formatters import _escape_data, _escape_property, _format_github
+from tracemantle.result import Diagnostic, Severity, ValidationResult
 
 
 class TestEscapeData:
@@ -54,23 +54,23 @@ class TestFormatGithub:
     def test_error_diagnostic_produces_error_command(self) -> None:
         d = Diagnostic(rule="frontmatter.name.required", severity=Severity.ERROR, message="name is required", line=1)
         output = _format_github(self._make_result(d))
-        assert output.startswith("::error file=SKILL.md,line=1,title=skillcheck%3A frontmatter.name.required::name is required")
+        assert output.startswith("::error file=SKILL.md,line=1,title=tracemantle%3A frontmatter.name.required::name is required")
 
     def test_warning_diagnostic_produces_warning_command(self) -> None:
         d = Diagnostic(rule="frontmatter.name.reserved-word", severity=Severity.WARNING, message="reserved word", line=3)
         output = _format_github(self._make_result(d))
-        assert output.startswith("::warning file=SKILL.md,line=3,title=skillcheck%3A frontmatter.name.reserved-word::reserved word")
+        assert output.startswith("::warning file=SKILL.md,line=3,title=tracemantle%3A frontmatter.name.reserved-word::reserved word")
 
     def test_info_diagnostic_produces_notice_command(self) -> None:
         d = Diagnostic(rule="frontmatter.field.ecosystem", severity=Severity.INFO, message="ecosystem field", line=5)
         output = _format_github(self._make_result(d))
-        assert output.startswith("::notice file=SKILL.md,line=5,title=skillcheck%3A frontmatter.field.ecosystem::ecosystem field")
+        assert output.startswith("::notice file=SKILL.md,line=5,title=tracemantle%3A frontmatter.field.ecosystem::ecosystem field")
 
     def test_no_line_omits_line_property(self) -> None:
         d = Diagnostic(rule="some.rule", severity=Severity.WARNING, message="no line")
         output = _format_github(self._make_result(d))
         assert "line=" not in output
-        assert output.startswith("::warning file=SKILL.md,title=skillcheck%3A some.rule::no line")
+        assert output.startswith("::warning file=SKILL.md,title=tracemantle%3A some.rule::no line")
 
     def test_message_with_special_chars_escaped(self) -> None:
         d = Diagnostic(rule="test.escape", severity=Severity.ERROR, message="100%\r\n:,", line=2)
@@ -94,7 +94,7 @@ class TestFormatGithub:
 
 def _run(*args: str) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [*SKILLCHECK_CMD, *args],
+        [*TRACEMANTLE_CMD, *args],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -105,7 +105,7 @@ def test_format_github_cli_produces_gha_commands() -> None:
     result = _run(str(FIXTURES_DIR / "bad_name_caps.md"), "--format", "github", "--skip-dirname-check")
     assert result.returncode == 1
     assert "::error " in result.stdout
-    assert "title=skillcheck%3A" in result.stdout
+    assert "title=tracemantle%3A" in result.stdout
 
 
 def test_format_github_cli_with_warning() -> None:

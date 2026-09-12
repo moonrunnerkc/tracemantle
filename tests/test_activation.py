@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.core.activation import (
+from tracemantle.core.activation import (
     ActivationHypothesis,
     ActivationReport,
     _clean_phrase,
@@ -23,12 +23,12 @@ from skillcheck.core.activation import (
     _keywords,
     generate_activation_hypotheses,
 )
-from skillcheck.core.activation_render import (
+from tracemantle.core.activation_render import (
     render_activation_json,
     render_activation_markdown,
     render_activation_text,
 )
-from skillcheck.parser import parse
+from tracemantle.parser import parse
 
 
 def _skill(tmp_path: Path, *, name: str = "deploy-runner", description: str, body: str = "") -> object:

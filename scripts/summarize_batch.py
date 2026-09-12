@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Summarize skillcheck batch-run artifacts."""
+"""Summarize tracemantle batch-run artifacts."""
 from __future__ import annotations
 
 import argparse

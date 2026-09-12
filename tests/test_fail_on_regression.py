@@ -1,31 +1,32 @@
 """Tests for --fail-on-regression: exit code escalation on history.skill.regressed."""
 
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
-from skillcheck.core.history import (
-    LEDGER_SCHEMA_VERSION,
-    Ledger,
+import pytest
+
+from tracemantle.core.history import (
     LedgerEntry,
     ResultCounts,
     RunAgents,
     ValidationModes,
     check_regression,
     ledger_path_for,
-    save_ledger,
 )
-from skillcheck.parser import parse as _parse
-from skillcheck.result import Severity
+from tracemantle.history_store import append_history, history_identity
+from tracemantle.parser import parse as _parse
+from tracemantle.result import Severity
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 GOOD_SKILL = FIXTURES_DIR / "valid_good_desc.md"
 
 
-def _run_cli(*extra_args: str) -> subprocess.CompletedProcess:
-    """Run skillcheck CLI and return the CompletedProcess."""
+def _run_cli(skill_path: Path, *extra_args: str) -> subprocess.CompletedProcess:
+    """Run tracemantle CLI and return the CompletedProcess."""
     return subprocess.run(
-        [sys.executable, "-m", "skillcheck", str(GOOD_SKILL), "--skip-dirname-check", *extra_args],
+        [sys.executable, "-m", "tracemantle", str(skill_path), "--skip-dirname-check", *extra_args],
         capture_output=True,
         text=True,
         cwd=str(FIXTURES_DIR.parent.parent),
@@ -45,7 +46,7 @@ def _write_prior_passing_ledger(skill_path: Path) -> None:
         exit_code=0,
     )
     # Use a deterministic hash that matches the current content
-    from skillcheck.core.history import compute_skill_hash
+    from tracemantle.core.history import compute_skill_hash
     real_hash = compute_skill_hash(skill)
     entry = LedgerEntry(
         timestamp_utc="2025-01-01T00:00:00Z",
@@ -56,20 +57,18 @@ def _write_prior_passing_ledger(skill_path: Path) -> None:
         result=ResultCounts(error=0, warning=0, info=0, valid=True),
         exit_code=0,
     )
-    ledger = Ledger(
-        version=LEDGER_SCHEMA_VERSION,
-        skill_path=skill_path.name,
-        runs=(entry,),
-    )
-    lp = ledger_path_for(skill_path)
-    save_ledger(lp, ledger)
+    identity = history_identity(skill, {"max_lines": None, "max_tokens": None, "ignore_prefixes": [], "skip_ref_check": False, "skip_dirname_check": True, "strict_all": False, "target_agent": "all", "min_desc_score": None, "strict_vscode": False, "strict_cursor": False, "analyze_graph": False, "semantic": False, "critique_agent": None, "graph_agent": None})
+    append_history(ledger_path_for(skill_path), skill, entry, identity)
 
 
 def _cleanup_ledger(skill_path: Path) -> None:
     """Remove the ledger file if it exists."""
     lp = ledger_path_for(skill_path)
     if lp.exists():
-        lp.unlink()
+        if lp.is_dir():
+            shutil.rmtree(lp)
+        else:
+            lp.unlink()
 
 
 # ---------------------------------------------------------------------------
@@ -135,13 +134,10 @@ def test_no_regression_when_passing():
 class TestFailOnRegressionCLI:
     """Integration tests for --fail-on-regression with real CLI."""
 
-    def setup_method(self):
-        """Ensure no stale ledger."""
-        _cleanup_ledger(GOOD_SKILL)
-
-    def teardown_method(self):
-        """Clean up ledger after each test."""
-        _cleanup_ledger(GOOD_SKILL)
+    @pytest.fixture(autouse=True)
+    def isolated_skill(self, tmp_path):
+        self.skill = tmp_path / 'SKILL.md'
+        shutil.copy(GOOD_SKILL, self.skill)
 
     def test_flag_set_fires_exit_1(self):
         """--fail-on-regression should cause exit 1 when history.skill.regressed fires.
@@ -158,12 +154,13 @@ class TestFailOnRegressionCLI:
         cause the description to score below threshold, producing a WARNING that
         with --strict becomes ERROR, making the result invalid.
         """
-        _write_prior_passing_ledger(GOOD_SKILL)
+        _write_prior_passing_ledger(self.skill)
 
         # Run with --history and --fail-on-regression and --strict to force failure
         # The prior entry says "valid=True", the current run with --strict makes it
         # fail (warnings escalate to errors), so regression is detected.
         result = _run_cli(
+            self.skill,
             "--history",
             "--fail-on-regression",
             "--strict",
@@ -178,7 +175,7 @@ class TestFailOnRegressionCLI:
     def test_flag_set_no_regression_exits_0(self):
         """--fail-on-regression with no regression should still exit 0 on a passing skill."""
         # Run without history (no prior records, so no regression possible)
-        result = _run_cli("--history", "--fail-on-regression")
+        result = _run_cli(self.skill, "--history", "--fail-on-regression")
         # valid_good_desc.md should pass, no regression with empty history
         assert result.returncode == 0, (
             f"Expected exit 0, got {result.returncode}. "
@@ -187,11 +184,11 @@ class TestFailOnRegressionCLI:
 
     def test_flag_unset_regression_warns_exit_0(self):
         """Without --fail-on-regression, a regression warning should still exit 0 (if it's warning-only)."""
-        _write_prior_passing_ledger(GOOD_SKILL)
+        _write_prior_passing_ledger(self.skill)
 
         # Run with --history but WITHOUT --fail-on-regression
         # If the skill passes (no --strict), exit should be 0 even if regression fires
-        result = _run_cli("--history", "--format", "json")
+        result = _run_cli(self.skill, "--history", "--format", "json")
         # The skill passes validation normally, so exit 0.
         # If regression fires, it's a WARNING only, no exit code change.
         assert result.returncode == 0, (

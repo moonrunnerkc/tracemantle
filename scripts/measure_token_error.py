@@ -28,8 +28,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from skillcheck.parser import ParseError, parse  # noqa: E402
-from skillcheck.tokenizer import _PUNCT_RE, _WORD_RE  # noqa: E402
+from tracemantle.parser import ParseError, parse  # noqa: E402
+from tracemantle.tokenizer import _PUNCT_RE, _WORD_RE  # noqa: E402
 
 REPO_ROOT = Path(__file__).parent.parent
 
@@ -94,7 +94,7 @@ def main(argv: list[str]) -> int:
         import tiktoken
     except ModuleNotFoundError:
         print(
-            'tiktoken is required. Install it with: pip install "skillcheck[tiktoken]"',
+            'tiktoken is required. Install it with: pip install "tracemantle[tiktoken]"',
             file=sys.stderr,
         )
         return 2

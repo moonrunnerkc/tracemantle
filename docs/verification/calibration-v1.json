@@ -1,0 +1,84 @@
+{
+  "corpus": "tracemantle-held-out-v1",
+  "license": "MIT",
+  "population": "8 authored held-out texts; four prose languages, two code forms, small and large inputs",
+  "tokenizer": {
+    "backend": "tiktoken",
+    "version": "0.14.0",
+    "encoding": "cl100k_base",
+    "network": "cold cache may download vocabulary"
+  },
+  "heuristic_before": "word-punctuation-v1",
+  "heuristic_after": "word-punctuation-v1 (unchanged)",
+  "median_absolute_relative_error": 0.3739393939393939,
+  "budget_decisions": {
+    "true_positive": 11,
+    "true_negative": 12,
+    "false_positive": 0,
+    "false_negative": 1,
+    "abstentions": 0
+  },
+  "keyword_quality": {
+    "abstentions": 8,
+    "reason": "No independent semantic quality labels; calibration is insufficient."
+  },
+  "scope": "Token error against cl100k_base is not trigger reliability or task success.",
+  "cases": [
+    {
+      "case": "code-json.txt",
+      "sha256": "de8042be9daa8a7d2698604a9a0c1419835ccd40561721148b5d19f955b13a6e",
+      "heuristic": 2390,
+      "cl100k_base": 1700,
+      "relative_error": 0.40588235294117647
+    },
+    {
+      "case": "code-python.txt",
+      "sha256": "7fb0ee5f40a1f625cede2aa02da012f235b2aef8acf1885def78b92dc1521a4c",
+      "heuristic": 2090,
+      "cl100k_base": 1500,
+      "relative_error": 0.3933333333333333
+    },
+    {
+      "case": "large.txt",
+      "sha256": "81ff3040f627043af090612909011abb248a4d51db923086d2001cf6f8eda0c8",
+      "heuristic": 17880,
+      "cl100k_base": 13200,
+      "relative_error": 0.35454545454545455
+    },
+    {
+      "case": "prose-ar.txt",
+      "sha256": "7cd0802b0243b5051c1f6b1bf96ceca079d402374288e16ed7ca6f0d06f6c3db",
+      "heuristic": 396,
+      "cl100k_base": 1290,
+      "relative_error": -0.6930232558139535
+    },
+    {
+      "case": "prose-en.txt",
+      "sha256": "6d8f5411054d4627687fe51696f1fe558484f19dd52e3001146875d9eccb85f1",
+      "heuristic": 519,
+      "cl100k_base": 390,
+      "relative_error": 0.33076923076923076
+    },
+    {
+      "case": "prose-es.txt",
+      "sha256": "6845eb91ee5d64bc8dc9c8d512f549879207b223c8c8348bec82960259dc3f14",
+      "heuristic": 558,
+      "cl100k_base": 630,
+      "relative_error": -0.11428571428571428
+    },
+    {
+      "case": "prose-ja.txt",
+      "sha256": "b9f26319ba3c5101d52c342848e58db1ad312c562be0277113109268dd947fd0",
+      "heuristic": 168,
+      "cl100k_base": 750,
+      "relative_error": -0.776
+    },
+    {
+      "case": "small.txt",
+      "sha256": "8a5ab631390c1201af4c982cf10bba0764beb4998b15110f6c0d386ab87b3c74",
+      "heuristic": 4,
+      "cl100k_base": 4,
+      "relative_error": 0.0
+    }
+  ]
+}

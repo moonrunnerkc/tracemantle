@@ -1,0 +1,5 @@
+# Keep source and digest-verified fixtures identical on every CI platform.
+* text=auto eol=lf
+# This parser control must retain its literal CRLF bytes.
+tests/fixtures/tracemantle/cases/valid-crlf.md -text whitespace=cr-at-eol
+*.docx binary

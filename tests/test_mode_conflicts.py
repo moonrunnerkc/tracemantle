@@ -1,7 +1,7 @@
 """The declarative mode table must reproduce the hand-written checks exactly.
 
 tests/fixtures/mode_conflicts.json was captured from the CLI before the rules
-moved into skillcheck.modes: every unordered pair of the ten mode flags, its
+moved into tracemantle.modes: every unordered pair of the ten mode flags, its
 exit code, and its exact stderr. Refactoring a set of conditionals into a table
 is only safe if the wording survives, so the fixture is replayed here rather
 than the new behavior being described afresh.
@@ -22,8 +22,9 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.cli import _build_parser
-from skillcheck.modes import (
+from tests.conftest import TRACEMANTLE_CMD
+from tracemantle.cli import _build_parser
+from tracemantle.modes import (
     GROUP_AUGMENT,
     GROUP_EMIT,
     GROUP_LEDGER,
@@ -32,7 +33,6 @@ from skillcheck.modes import (
     active_flags,
     find_mode_conflict,
 )
-from tests.conftest import SKILLCHECK_CMD
 
 REPO_ROOT = Path(__file__).parents[1]
 FIXTURE = REPO_ROOT / "tests" / "fixtures" / "mode_conflicts.json"
@@ -193,7 +193,7 @@ def test_agent_reason_stops_being_an_emit_mode_with_an_ingest_flag(ingest: str) 
 
 def test_cli_still_exits_two_and_prints_the_message() -> None:
     result = subprocess.run(
-        [*SKILLCHECK_CMD, MISSING_PATH, "--emit-graph", "--analyze-graph"],
+        [*TRACEMANTLE_CMD, MISSING_PATH, "--emit-graph", "--analyze-graph"],
         capture_output=True,
         text=True,
         cwd=REPO_ROOT,
@@ -206,7 +206,7 @@ def test_cli_still_exits_two_and_prints_the_message() -> None:
 def test_cli_reports_the_multi_emit_case_before_the_pairwise_table() -> None:
     """Ordering is user-visible when several conflicts apply at once."""
     result = subprocess.run(
-        [*SKILLCHECK_CMD, MISSING_PATH, "--emit-graph", "--emit-graph-prompt", "--analyze-graph"],
+        [*TRACEMANTLE_CMD, MISSING_PATH, "--emit-graph", "--emit-graph-prompt", "--analyze-graph"],
         capture_output=True,
         text=True,
         cwd=REPO_ROOT,

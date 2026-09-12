@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 
-from skillcheck.core.history import (
+from tracemantle.core.history import (
     LedgerEntry,
     ResultCounts,
     RunAgents,
@@ -13,8 +13,8 @@ from skillcheck.core.history import (
     build_entry,
     check_regression,
 )
-from skillcheck.parser import ParsedSkill
-from skillcheck.result import Severity, ValidationResult
+from tracemantle.parser import ParsedSkill
+from tracemantle.result import Severity, ValidationResult
 
 # ---------------------------------------------------------------------------
 # Helpers

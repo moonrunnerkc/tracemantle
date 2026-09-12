@@ -1,0 +1,80 @@
+{
+  "tool": "TraceMantle",
+  "schema_version": 2,
+  "version": "1.6.0",
+  "gate": {
+    "exit_code": 0,
+    "passed": true
+  },
+  "tokenizer": {
+    "backend": "word-punctuation",
+    "version": "1",
+    "network": "none"
+  },
+  "files_checked": 1,
+  "files_passed": 1,
+  "files_failed": 0,
+  "graph_source": {
+    "mode": "heuristic"
+  },
+  "results": [
+    {
+      "path": "skills/tracemantle/SKILL.md",
+      "valid": true,
+      "diagnostics": [
+        {
+          "rule": "frontmatter.field.ecosystem",
+          "severity": "info",
+          "message": "Field 'version' is ecosystem-common but not in the agentskills.io spec. Add it to tracemantle.toml under [frontmatter] extension_fields if intentional.",
+          "line": 4,
+          "context": "version: ...",
+          "source": "advisory",
+          "confidence": "medium"
+        },
+        {
+          "rule": "frontmatter.field.ecosystem",
+          "severity": "info",
+          "message": "Field 'author' is ecosystem-common but not in the agentskills.io spec. Add it to tracemantle.toml under [frontmatter] extension_fields if intentional.",
+          "line": 5,
+          "context": "author: ...",
+          "source": "advisory",
+          "confidence": "medium"
+        },
+        {
+          "rule": "description.quality-score",
+          "severity": "info",
+          "message": "Description quality score: 100/100.",
+          "line": null,
+          "context": null,
+          "source": "advisory",
+          "confidence": "medium",
+          "breakdown": {
+            "action": 25,
+            "trigger": 25,
+            "keywords": 25,
+            "specificity": 15,
+            "length": 10
+          }
+        },
+        {
+          "rule": "compat.unverified",
+          "severity": "info",
+          "message": "Behavior of field 'version' in codex, cursor is unverified (as of Codex: 2026-04-20; Cursor: 2026-04-20).",
+          "line": null,
+          "context": null,
+          "source": "advisory",
+          "confidence": "medium"
+        },
+        {
+          "rule": "compat.unverified",
+          "severity": "info",
+          "message": "Behavior of field 'author' in codex, cursor is unverified (as of Codex: 2026-04-20; Cursor: 2026-04-20).",
+          "line": null,
+          "context": null,
+          "source": "advisory",
+          "confidence": "medium"
+        }
+      ]
+    }
+  ]
+}

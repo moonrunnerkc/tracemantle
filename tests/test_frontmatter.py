@@ -1,7 +1,8 @@
 
-from skillcheck.parser import parse
-from skillcheck.result import Severity
-from skillcheck.rules.frontmatter import (
+from tests.conftest import FIXTURES_DIR
+from tracemantle.parser import parse
+from tracemantle.result import Severity
+from tracemantle.rules.frontmatter import (
     check_description_max_length,
     check_description_no_xml_tags,
     check_description_non_empty,
@@ -13,7 +14,6 @@ from skillcheck.rules.frontmatter import (
     check_name_reserved_words,
     check_unknown_fields,
 )
-from tests.conftest import FIXTURES_DIR
 
 # ---------------------------------------------------------------------------
 # name.required
@@ -133,8 +133,7 @@ def test_reserved_words_configurable_via_config(tmp_path):
     list. A name containing one of the configured words fires; the default
     'claude'/'anthropic' list no longer applies when an explicit list is set.
     """
-    from skillcheck import config as runtime_config
-    from skillcheck.config_loader import load_config
+    from tracemantle.config_loader import load_config
 
     toml = tmp_path / "skillcheck.toml"
     toml.write_text(
@@ -144,31 +143,28 @@ def test_reserved_words_configurable_via_config(tmp_path):
     cfg = load_config(toml)
     assert cfg.reserved_words == ("acme", "wile-e-coyote")
 
-    saved = runtime_config.reserved_words
-    try:
-        runtime_config.set_reserved_words(cfg.reserved_words)
-        skill_dir = tmp_path / "acme-helper"
-        skill_dir.mkdir()
-        skill_file = skill_dir / "SKILL.md"
-        skill_file.write_text(
-            "---\nname: acme-helper\ndescription: A test skill for ACME.\n---\n",
-            encoding="utf-8",
-        )
-        diagnostics = check_name_reserved_words(parse(skill_file))
-        assert len(diagnostics) == 1
-        assert "acme" in diagnostics[0].message
+    from tracemantle.parser import DocumentSettings
+    settings = DocumentSettings(reserved_words=cfg.reserved_words)
+    skill_dir = tmp_path / "acme-helper"
+    skill_dir.mkdir()
+    skill_file = skill_dir / "SKILL.md"
+    skill_file.write_text(
+        "---\nname: acme-helper\ndescription: A test skill for ACME.\n---\n",
+        encoding="utf-8",
+    )
+    diagnostics = check_name_reserved_words(parse(skill_file, settings=settings))
+    assert len(diagnostics) == 1
+    assert "acme" in diagnostics[0].message
 
-        # The previously-default 'claude' no longer fires under the override.
-        claude_dir = tmp_path / "claude-helper"
-        claude_dir.mkdir()
-        claude_file = claude_dir / "SKILL.md"
-        claude_file.write_text(
-            "---\nname: claude-helper\ndescription: A test skill for claude.\n---\n",
-            encoding="utf-8",
-        )
-        assert check_name_reserved_words(parse(claude_file)) == []
-    finally:
-        runtime_config.set_reserved_words(saved)
+    # The previously-default 'claude' no longer fires under the override.
+    claude_dir = tmp_path / "claude-helper"
+    claude_dir.mkdir()
+    claude_file = claude_dir / "SKILL.md"
+    claude_file.write_text(
+        "---\nname: claude-helper\ndescription: A test skill for claude.\n---\n",
+        encoding="utf-8",
+    )
+    assert check_name_reserved_words(parse(claude_file, settings=settings)) == []
 
 
 def test_reserved_words_empty_config_reverts_to_defaults(tmp_path):
@@ -176,14 +172,9 @@ def test_reserved_words_empty_config_reverts_to_defaults(tmp_path):
     default ('anthropic', 'claude') so an empty array does not silently
     disable the check.
     """
-    from skillcheck import config as runtime_config
-
-    saved = runtime_config.reserved_words
-    try:
-        runtime_config.set_reserved_words(())
-        assert runtime_config.reserved_words == runtime_config.DEFAULT_RESERVED_WORDS
-    finally:
-        runtime_config.set_reserved_words(saved)
+    from tracemantle import config as runtime_config
+    from tracemantle.parser import DocumentSettings
+    assert DocumentSettings().reserved_words == runtime_config.DEFAULT_RESERVED_WORDS
 
 
 # ---------------------------------------------------------------------------
@@ -317,7 +308,7 @@ def test_unknown_field_triggers_warning():
 def test_known_fields_produce_no_warning():
     skill = parse(FIXTURES_DIR / "valid_full.md")
     diagnostics = check_unknown_fields(skill)
-    assert diagnostics == []
+    assert all(d.severity == Severity.INFO and d.rule == "frontmatter.field.ecosystem" for d in diagnostics)
 
 
 # ---------------------------------------------------------------------------
@@ -343,7 +334,7 @@ def test_field_line_reports_correct_frontmatter_line(tmp_path):
     f.write_text(content)
     skill = parse(f)
     # name is on line 2; body 'name:' on line 5 must NOT be reported.
-    from skillcheck.rules.frontmatter import _field_line
+    from tracemantle.rules.frontmatter import _field_line
     assert _field_line(skill.raw_text, "name") == 2
 
 

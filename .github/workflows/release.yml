@@ -12,7 +12,12 @@ permissions:
   contents: read
 
 jobs:
+  quality:
+    uses: ./.github/workflows/ci.yml
+
   release:
+    needs: quality
+    if: vars.TRACEMANTLE_PUBLISH_ENABLED == 'true'
     runs-on: ubuntu-latest
     # Trusted publishing resolves against this environment on the PyPI side.
     environment: pypi
@@ -28,23 +33,37 @@ jobs:
         with:
           python-version: "3.12"
 
-      # Runs before the build so a CHANGELOG that release-notes.yml cannot
+      # Runs before publishing so a CHANGELOG that release-notes.yml cannot
       # promote stops the release instead of shipping unrecorded entries.
       # See scripts/check_changelog_release.py for the two rejected states.
       - name: Verify the CHANGELOG can be promoted for this tag
         run: python3 scripts/check_changelog_release.py "${GITHUB_REF_NAME}"
 
-      - name: Install build tools
-        run: pip install hatchling
+      - name: Download the exact quality-gated artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: tracemantle-dist
+          path: dist
 
-      - name: Build sdist and wheel
-        run: python -m hatchling build
+      - name: Refuse the legacy distribution
+        run: |
+          python - <<'PYCODE'
+          import pathlib, zipfile
+          artifacts = sorted(pathlib.Path("dist").iterdir())
+          assert len(artifacts) == 2
+          assert all(p.name.startswith("tracemantle-") for p in artifacts)
+          for path in artifacts:
+              if path.suffix == ".whl":
+                  with zipfile.ZipFile(path) as wheel:
+                      metadata = next(n for n in wheel.namelist() if n.endswith(".dist-info/METADATA"))
+                      assert "\nName: tracemantle\n" in "\n" + wheel.read(metadata).decode()
+          PYCODE
 
       - name: Verify wheel installs and version matches the tag
         run: |
           set -euo pipefail
-          pip install dist/skillcheck-*.whl
-          installed="$(skillcheck --version | awk '{print $NF}')"
+          pip install -c constraints-dev.txt dist/tracemantle-*.whl
+          installed="$(tracemantle --version | awk '{print $NF}')"
           tag="${GITHUB_REF_NAME#v}"
           if [ "$installed" != "$tag" ]; then
             echo "Built version '$installed' does not match tag '$tag'." >&2
@@ -56,8 +75,8 @@ jobs:
         uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
         with:
           subject-path: |
-            dist/skillcheck-*.whl
-            dist/skillcheck-*.tar.gz
+            dist/tracemantle-*.whl
+            dist/tracemantle-*.tar.gz
 
       - name: Publish to PyPI
         # Pinned to a version tag, not a commit SHA: this action runs a Docker
@@ -67,13 +86,13 @@ jobs:
         # would pin nothing anyway since the image is fetched by tag regardless.
         #
         # Keep this current with the build backend. The step above installs
-        # hatchling unpinned, so the wheel carries whatever Metadata-Version
-        # that hatchling emits. v1.12.4 (January 2025) bundles a twine that
+        # hatchling with constraints, so the wheel carries the Metadata-Version
+        # that the selected hatchling emits. v1.12.4 (January 2025) bundles a twine that
         # rejects Metadata-Version 2.5, which is what hatchling writes today,
         # and it failed the 1.5.0 publish with "not a valid metadata version".
         uses: pypa/gh-action-pypi-publish@v1.14.2
 
-  # README and CONTRIBUTING both tell Action users to pin `@v1`, so the moving
+  # After a TraceMantle release, Action users may select `@v1`, so the moving
   # major tag has to follow every patch release. Moving it by hand was missed
   # for v1.3.0 and v1.4.1, which left `@v1` resolving to v1.2.3 for two months
   # while the action installs from its own checkout. This job runs only after a

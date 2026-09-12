@@ -4,7 +4,7 @@
 Writes tests/fixtures/mode_conflicts.json: for each unordered pair of mode
 flags, the exit code and the exact stderr the CLI produced. The fixture is the
 ground truth that tests/test_mode_conflicts.py replays, so the declarative
-table in skillcheck.modes has to reproduce the pre-refactor wording byte for
+table in tracemantle.modes has to reproduce the pre-refactor wording byte for
 byte rather than merely rejecting the same combinations.
 
 Every pair is run against a path that does not exist. Conflict detection runs
@@ -49,7 +49,7 @@ MODE_FLAGS: dict[str, list[str]] = {
 def capture() -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
     for flag_a, flag_b in combinations(sorted(MODE_FLAGS), 2):
-        argv = [sys.executable, "-m", "skillcheck", MISSING_PATH]
+        argv = [sys.executable, "-m", "tracemantle", MISSING_PATH]
         argv += MODE_FLAGS[flag_a] + MODE_FLAGS[flag_b]
         result = subprocess.run(argv, capture_output=True, text=True, cwd=REPO_ROOT)
         rows.append(

@@ -4,9 +4,9 @@ import sys
 
 import pytest
 
-from skillcheck.parser import parse
-from skillcheck.result import Severity
-from skillcheck.rules.references import (
+from tracemantle.parser import parse
+from tracemantle.result import Severity
+from tracemantle.rules.references import (
     _extract_references,
     _reference_depth,
     check_broken_references,
@@ -73,7 +73,7 @@ def test_backtick_skips_code_block_content():
     The non-greedy match catches the block content; the multi-line / space
     filter then drops it.
     """
-    body = "```bash\nskillcheck scripts/foo.py --help\n```\nSee `scripts/bar.py`."
+    body = "```bash\ntracemantle scripts/foo.py --help\n```\nSee `scripts/bar.py`."
     refs = _extract_references(body)
     assert "scripts/bar.py" in refs
     # The block body must not slip through.
@@ -165,7 +165,7 @@ def test_no_refs_passes(tmp_path):
 # check_reference_depth
 # ---------------------------------------------------------------------------
 
-def test_deep_ref_flagged(tmp_path):
+def test_directory_nesting_is_not_reference_depth(tmp_path):
     skill_dir = tmp_path / "my-skill"
     skill_dir.mkdir()
     f = skill_dir / "SKILL.md"
@@ -175,8 +175,7 @@ def test_deep_ref_flagged(tmp_path):
     )
     skill = parse(f)
     diagnostics = check_reference_depth(skill)
-    assert len(diagnostics) >= 1
-    assert any(d.rule == "references.depth-exceeded" for d in diagnostics)
+    assert diagnostics == []
 
 
 def test_parent_traversal_flagged(tmp_path):
@@ -188,12 +187,12 @@ def test_parent_traversal_flagged(tmp_path):
         "See [parent](../../other/file.py) for context.\n"
     )
     skill = parse(f)
-    diagnostics = check_reference_depth(skill)
+    diagnostics = check_broken_references(skill)
     # ../../other/file.py is depth 3; the depth check catches it.
     # Only one diagnostic should fire (no duplicate from startswith check).
     assert len(diagnostics) == 1
-    assert diagnostics[0].rule == "references.depth-exceeded"
-    assert "3 levels deep" in diagnostics[0].message
+    assert diagnostics[0].rule == "references.escape"
+    assert "outside the skill directory" in diagnostics[0].message
 
 
 def test_single_dotdot_traversal_flagged(tmp_path):
@@ -206,9 +205,9 @@ def test_single_dotdot_traversal_flagged(tmp_path):
         "See [up](../notes.txt) for context.\n"
     )
     skill = parse(f)
-    diagnostics = check_reference_depth(skill)
+    diagnostics = check_broken_references(skill)
     assert len(diagnostics) == 1
-    assert "traverses above" in diagnostics[0].message
+    assert "outside the skill directory" in diagnostics[0].message
 
 
 def test_shallow_ref_passes(tmp_path):

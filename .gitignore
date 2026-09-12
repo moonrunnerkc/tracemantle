@@ -21,7 +21,7 @@ launch-post/
 LAUNCH_CHECKLIST.md
 LAUNCH_POST_*.md
 
-# Per-skill history ledgers written by `skillcheck --history`; running the tool
+# Per-skill history ledgers written by `tracemantle --history`; running the tool
 # against a file in the repo drops one next to it and it must never be committed.
 .skillcheck-history.json
 
@@ -32,3 +32,6 @@ LAUNCH_POST_*.md
 .codex
 review.md
 .venv/
+
+candidate-dist/
+.tracemantle/

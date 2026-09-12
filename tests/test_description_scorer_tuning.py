@@ -22,8 +22,8 @@ from __future__ import annotations
 
 import pytest
 
-from skillcheck.config import DESCRIPTION_SCORE_WEIGHTS
-from skillcheck.rules.description import (
+from tracemantle.config import DESCRIPTION_SCORE_WEIGHTS
+from tracemantle.rules.description import (
     _CONTEXTUAL_TRIGGER_PATTERNS,
     _STRONG_TRIGGER_PATTERNS,
     _is_action_verb,

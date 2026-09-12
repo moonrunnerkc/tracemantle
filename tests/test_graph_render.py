@@ -11,9 +11,9 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.core.graph import CapabilityGraph, extract_graph_heuristic
-from skillcheck.core.graph_render import render_graph_json, render_graph_text
-from skillcheck.parser import parse as _parse
+from tracemantle.core.graph import CapabilityGraph, extract_graph_heuristic
+from tracemantle.core.graph_render import render_graph_json, render_graph_text
+from tracemantle.parser import parse as _parse
 
 FIXTURES = Path(__file__).parent / "fixtures" / "graph"
 
@@ -44,7 +44,7 @@ def test_render_graph_text_section_headers(basic_io_graph: CapabilityGraph) -> N
 
 def test_render_graph_text_capability_name_and_line(basic_io_graph: CapabilityGraph) -> None:
     text = render_graph_text(basic_io_graph)
-    assert "Generate report [line 8]" in text
+    assert "Generate report [line 15]" in text
 
 
 def test_render_graph_text_capability_description(basic_io_graph: CapabilityGraph) -> None:
@@ -54,16 +54,16 @@ def test_render_graph_text_capability_description(basic_io_graph: CapabilityGrap
 
 def test_render_graph_text_input_kind(basic_io_graph: CapabilityGraph) -> None:
     text = render_graph_text(basic_io_graph)
-    assert "db_client [tool, line 4]" in text
-    assert "DB_URL [env, line 5]" in text
-    assert "schema.sql [file, line 6]" in text
+    assert "db_client [tool, line 11]" in text
+    assert "DB_URL [env, line 12]" in text
+    assert "schema.sql [file, line 13]" in text
 
 
 def test_render_graph_text_output_kind(basic_io_graph: CapabilityGraph) -> None:
     text = render_graph_text(basic_io_graph)
-    assert "report.json [file, line 14]" in text
-    assert "execution summary [artifact, line 15]" in text
-    assert "record_count [return, line 16]" in text
+    assert "report.json [file, line 21]" in text
+    assert "execution summary [artifact, line 22]" in text
+    assert "record_count [return, line 23]" in text
 
 
 def test_render_graph_text_edges(basic_io_graph: CapabilityGraph) -> None:
@@ -116,7 +116,7 @@ def test_render_graph_json_capability_structure(basic_io_graph: CapabilityGraph)
     parsed = json.loads(render_graph_json(basic_io_graph))
     cap = parsed["capabilities"][0]
     assert cap["name"] == "Generate report"
-    assert cap["line"] == 8
+    assert cap["line"] == 15
     assert "description" in cap
     assert "id" in cap
 

@@ -1,5 +1,8 @@
 # Case Study: The Skill That Silently Disappeared in VS Code
 
+Historical report. Old names, output and previously reported runs are retained as history, not current verification. The pinned skills-ref reference has a CLI and directory-name validation. Vendor loader claims without a tested runtime version remain unverified.
+
+
 **A deploy skill worked in Claude Code but never loaded in VS Code/Copilot. No error. No warning. It just wasn't there.**
 
 ## The Setup
@@ -131,15 +134,11 @@ The fix isn't just running `skillcheck` once. It's adding it to CI so this class
     skillcheck .github/skills/ --quiet
 ```
 
-`--quiet` suppresses output and uses only the exit code. The pipeline fails if any skill has errors. The team deploys with confidence that every skill works across every agent.
+`--quiet` suppresses output and uses only the exit code. The pipeline fails if any skill has errors. Passing this check establishes the static naming contract, not behavior across every agent.
 
-## Why No Other Tool Catches This
+## Reference validation and scope
 
-The [agentskills.io reference library](https://github.com/agentskills/agentskills/tree/main/skills-ref) (`skills-ref`) validates frontmatter fields (name length, character constraints, required fields) but it is a parsing library, not a CLI linter. It does not check whether the name matches the parent directory because that's a filesystem concern outside its scope.
-
-Claude Code's built-in validation doesn't check it because Claude Code doesn't require it. The constraint is a VS Code requirement derived from the spec, and Claude Code doesn't enforce VS Code's loading rules.
-
-`skillcheck` is the only tool that validates a SKILL.md will work across agents *before you ship it*. That's the gap this exists to fill.
+The Agent Skills reference includes `skills-ref validate` and validates directory-name matching. TraceMantle also checks that contract and adds advisory analysis and explicit evidence comparison. Static validation does not guarantee that a skill works across every agent. The earlier exclusivity and reference-library claims in this case study were incorrect.
 
 ---
 

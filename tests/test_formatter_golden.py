@@ -1,6 +1,6 @@
 """Golden-file tests for the five report renderers.
 
-formatters.py is the whole user-facing surface of skillcheck: it is what CI
+formatters.py is the whole user-facing surface of tracemantle: it is what CI
 logs show, what `--format json` consumers parse, and what GitHub renders as PR
 annotations. It had almost no direct coverage. The existing formatter tests
 check individual escaping helpers (`test_format_github.py`), which catches a
@@ -27,14 +27,14 @@ from pathlib import Path, PureWindowsPath
 
 import pytest
 
-from skillcheck.formatters import (
+from tracemantle.formatters import (
     _format_agent,
     _format_github,
     _format_json,
     _format_markdown,
     _format_text,
 )
-from skillcheck.result import Diagnostic, Severity, ValidationResult
+from tracemantle.result import Diagnostic, Severity, ValidationResult
 
 GOLDEN_DIR = Path(__file__).parent / "fixtures" / "golden"
 
@@ -167,7 +167,7 @@ RENDERERS = ["text", "text_plain", "json", "markdown", "github", "agent"]
 def test_renderer_matches_golden(name: str) -> None:
     golden = GOLDEN_DIR / f"report.{name}.txt"
     actual = _to_posix_paths(_render(name)) + "\n"
-    if os.environ.get("SKILLCHECK_REGEN_GOLDEN"):
+    if os.environ.get("TRACEMANTLE_REGEN_GOLDEN"):
         golden.parent.mkdir(parents=True, exist_ok=True)
         golden.write_text(actual, encoding="utf-8")
         pytest.skip(f"regenerated {golden.name}")

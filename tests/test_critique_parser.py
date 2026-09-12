@@ -7,15 +7,15 @@ from pathlib import Path
 
 import pytest
 
-from skillcheck.agents.parser import (
+from tracemantle.agents.parser import (
     CritiqueJSONError,
     CritiqueParseError,
     CritiqueSchemaError,
     CritiqueValueError,
     parse_critique_response,
 )
-from skillcheck.agents.schema import SemanticCritique
-from skillcheck.result import Severity
+from tracemantle.agents.schema import SemanticCritique
+from tracemantle.result import Severity
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 CRITIQUE_DIR = FIXTURES_DIR / "critique"
@@ -69,14 +69,14 @@ def test_parse_response_with_missing_context() -> None:
 
 
 def test_missing_context_over_cap_rejected() -> None:
-    from skillcheck.agents._ingest import MAX_INGEST_LIST_ITEMS
+    from tracemantle.agents._ingest import MAX_INGEST_LIST_ITEMS
     payload = dict(_MINIMAL_VALID, missing_context=["x"] * (MAX_INGEST_LIST_ITEMS + 1))
     with pytest.raises(CritiqueSchemaError, match="missing_context.*over the .*-item cap"):
         parse_critique_response(_json(payload))
 
 
 def test_findings_over_cap_rejected() -> None:
-    from skillcheck.agents._ingest import MAX_INGEST_LIST_ITEMS
+    from tracemantle.agents._ingest import MAX_INGEST_LIST_ITEMS
     finding = {"section": "s", "issue": "i", "severity": "info", "suggestion": "x"}
     payload = dict(_MINIMAL_VALID, findings=[finding] * (MAX_INGEST_LIST_ITEMS + 1))
     with pytest.raises(CritiqueSchemaError, match="findings.*over the .*-item cap"):
@@ -84,7 +84,7 @@ def test_findings_over_cap_rejected() -> None:
 
 
 def test_list_exactly_at_cap_is_accepted() -> None:
-    from skillcheck.agents._ingest import MAX_INGEST_LIST_ITEMS
+    from tracemantle.agents._ingest import MAX_INGEST_LIST_ITEMS
     payload = dict(_MINIMAL_VALID, missing_context=["x"] * MAX_INGEST_LIST_ITEMS)
     result = parse_critique_response(_json(payload))
     assert len(result.missing_context) == MAX_INGEST_LIST_ITEMS
