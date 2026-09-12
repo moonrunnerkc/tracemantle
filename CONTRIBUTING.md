@@ -1,5 +1,7 @@
 # Contributing
 
+Use `moonrunnerkc` as the Git author name for the repository owner's work. Other contributors retain their own attribution.
+
 ## Testing
 
 Run the suite from the repo root after installing the dev extras:

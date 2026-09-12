@@ -1,6 +1,6 @@
 name: "TraceMantle"
 description: "Cross-agent skill quality gate for SKILL.md files. Validates against the agentskills.io specification."
-author: "Brad Kinnard (moonrunnerkc), Aftermath Technologies Ltd"
+author: "moonrunnerkc, Aftermath Technologies Ltd"
 
 branding:
   icon: "check-circle"
