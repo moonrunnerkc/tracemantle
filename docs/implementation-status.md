@@ -61,7 +61,9 @@ Post-rename local acceptance passed in clean constrained environments:
 
 The original local `.venv` contains stale pre-rename executable paths and was preserved. Verification used `/tmp/tracemantle-post-rename-310` and `/tmp/tracemantle-py312`; recreate a moved checkout's virtual environment before using its console scripts.
 
-The implementation is ready to commit and push to `main`. Full remote CI on the pushed commit is still pending; local results do not establish remote success.
+Implementation commit `bd62f5dedb70ead010f921d1d94c63502581cfc6` was pushed directly to `main`. [Initial remote CI](https://github.com/moonrunnerkc/tracemantle/actions/runs/34725943611) completed: all 12 OS/Python test cells and the tokenizer job passed. Strict typing failed because Python 3.12 did not install the Python 3.10 `tomli` runtime dependency; the dependent packaging job correctly skipped.
+
+The fix includes `tomli` in development extras because mypy targets Python 3.10 regardless of its host interpreter. Fresh Python 3.12 strict typing, Ruff, generated docs, rebuilt wheel/source and both clean artifact installs passed. Full remote CI must pass on the corrected commit before completion.
 
 ## External prerequisites and completion boundary
 

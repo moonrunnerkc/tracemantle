@@ -45,6 +45,7 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.6",
     "types-PyYAML>=6.0",
+    "tomli>=2.0",  # Mypy targets Python 3.10 even when run on a newer interpreter.
 ]
 tiktoken = [
     "tiktoken>=0.7",

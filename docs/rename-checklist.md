@@ -12,7 +12,8 @@ The owner renamed the repository to [moonrunnerkc/tracemantle](https://github.co
 - [x] Review release automation: only immutable version-tag pushes trigger Release; the publish job depends on the full quality workflow and the enable variable. Moving `v1` depends on successful publishing. Release-note promotion runs only after a public release and opens a changelog PR. Existing tags/releases remain historical; latest is `v1.5.0`.
 - [x] Update the attestation verification example to require `--repo moonrunnerkc/tracemantle` and `--source-digest FULL_RELEASE_COMMIT_SHA`. An actual attestation can only be verified after a separately authorized release; ordinary CI does not attest artifacts.
 - [x] Run local acceptance: CPython 3.10 full release gate, CPython 3.12 optional tokenizer, calibration/conformance, generated docs, local links and unchanged plan bytes passed.
-- [ ] Commit and push the intended implementation to `main`, then monitor full remote CI on the final commit. Results are recorded in [implementation status](implementation-status.md). A previous local pass is not remote evidence.
+- [x] Commit and push the intended implementation to `main` with a short commit message.
+- [ ] Monitor full remote CI to success on the final commit. The initial run passed all 12 test cells and the tokenizer job, but exposed a missing development dependency in strict typing; packaging correctly skipped. The fix and verification are recorded in [implementation status](implementation-status.md). A previous local pass is not remote evidence.
 - [ ] Inspect/configure the **tracemantle** PyPI trusted publisher. Public project JSON returned HTTP 404; that does not establish name availability, ownership or pending-publisher status. No connected browser or PyPI account connector is available, so account configuration could not be inspected or changed.
 
 ## Exact owner prerequisites
