@@ -1,6 +1,6 @@
 # TraceMantle implementation status
 
-Operative plan: [original DOCX](SkillCheck_Technical_Debt_and_Product_Plan.docx), preserved under its original filename. Baseline commit: `b540a3f047bf411170e8cb95bbe630ca7bf96c14`, version 1.5.0. Version: **TraceMantle 1.6.0**. Published on PyPI and marked Latest on GitHub on 2026-09-13 UTC following explicit owner authorization. Implementation, local acceptance, full remote CI and release verification are complete; evidence is recorded below.
+Operative plan: [original DOCX](SkillCheck_Technical_Debt_and_Product_Plan.docx), preserved under its original filename. Baseline commit: `b540a3f047bf411170e8cb95bbe630ca7bf96c14`, version 1.5.0. Version: **TraceMantle 1.6.0**. Published on PyPI and marked Latest on GitHub on 2026-09-13 UTC following explicit owner authorization. The historical 1.6.0 release verification is recorded below. A fresh audit from `0c18c10` found remaining defects and unexecuted acceptance criteria; the post-release record supersedes earlier general completion statements for those criteria.
 
 The complete plan, including both tables, was read before implementation. Instruction discovery covered ancestors, hidden directories, scoped instructions and case variants; `.github/CLAUDE.md` was the only repository instruction file. Contributor guidance, build workflows and historical remediation were also read. The supplied DOCX and unrelated local files were preserved. Those implementation-stage results predate the owner's repository rename; post-rename work is recorded below. No publication occurred during that initial implementation stage; the later authorized release is recorded below.
 
@@ -27,6 +27,12 @@ The complete plan, including both tables, was read before implementation. Instru
 | P02 | Implemented, locally verified | Narrow Promptfoo 0.118.10/results-v3 adapter tested with byte-exact attributable upstream export and license. Four authentic riddle rubric results are model judgments, not skill execution. Strict bindings, source preservation and data-only parsing verified. |
 | P03 | Implemented, locally verified | Conservative five-state comparison, freshness/context/coverage checks, governed input and routing invalidation, missing-evidence blocking, alias reuse refusal, conflicting-record policy and required-rerun reasons. Twenty initial scenario fixtures plus hardening tests. |
 | P04 | Implemented, locally verified; remote workflow unexecuted | Integrated manifest/import/compare/migrate commands render one analysis as text, JSON or GitHub annotations. Real temporary-Git end-to-end tests show candidate policy cannot weaken the selected base/checker. Trusted comparison workflow installs only trusted code. |
+
+## Post-release audit
+
+The [post-release checklist and verification record](verification/audit-1.6.1/acceptance.md) reconciles every requirement against current source, distinguishes baseline implementation from remaining verification, and records corrections to D03–D07, D09, D11 and P01–P04. D12 gains an isolated nonpublishing failed-prerequisite check. The existing `tomli` dev fix was confirmed and retained. The original requirement table above describes the initial implementation; its broad verified labels do not establish the newly reproduced error paths or live evaluation.
+
+Fixes remain under `[Unreleased]`, intended for the next patch after 1.6.0. Package versions and released install/Action references remain at 1.6.0 until release preparation. The original DOCX, published artifacts, tags and publishing guards are preserved. Current local and exact-commit remote evidence is recorded in the linked audit directory; historical results below are not reused as new measurements.
 
 ## Executed verification
 
@@ -75,7 +81,7 @@ The rewritten tip has its own [CI run](https://github.com/moonrunnerkc/tracemant
 
 No publication blocker remains for 1.6.0. Direct PyPI account UI access is unavailable, but successful trusted publishing and both public provenance records confirm **moonrunnerkc / tracemantle / release.yml / pypi**. The configured identity needed no change. Publishing safeguards are disabled again; any future publication requires another explicit instruction.
 
-The trusted comparison workflow, a deliberately failed remote release run and live agent/skill evaluation remain unexecuted. Their configuration and local tests do not establish live behavior. Live behavioral claims require an authorized runtime and actual observed evidence approved through the documented trust boundary. These are evaluation boundaries, not prerequisites for this package release.
+At the 1.6.0 release, the trusted comparison workflow, a deliberately failed remote release run and live agent/skill evaluation remained unexecuted. Subsequent nonpublishing comparison and failed-prerequisite acceptance is tracked in the post-release audit; the real Release workflow stays disabled. Live agent/skill evaluation remains unexecuted. Their configuration and local tests do not establish live behavior. Live behavioral claims require an authorized runtime and actual observed evidence approved through the documented trust boundary. These are evaluation boundaries, not prerequisites for this package release.
 
 ## Authorized release verification
 

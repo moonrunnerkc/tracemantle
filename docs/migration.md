@@ -19,6 +19,8 @@ The documented top-level imports (`validate`, `Diagnostic`, `Severity`, `Validat
 
 Configuration is merged per field at the selected project root: defaults, `skillcheck.toml` and `[tool.skillcheck]`, `[tool.tracemantle]`, `tracemantle.toml`, then explicit CLI arguments. Canonical standalone fields take precedence over canonical pyproject fields. Legacy use warns on stderr, preserving machine stdout. Rename the standalone file or move its fields under `[tool.tracemantle]`; frontmatter options go under `[tool.tracemantle.frontmatter]`. An explicit `--config` selects one file for the invocation. Projects with different discovered config roots require separate invocations.
 
+The fixes under `[Unreleased]` retain this installation and migration sequence; released examples continue to pin 1.6.0. Source verification builds still carry the baseline package version until release preparation and must be identified by their source revision and artifact digest. They are not replacements for published artifacts. Automatic discovery now reports malformed `tool` tables as input errors; `--format json` preserves a machine-readable error envelope.
+
 Test regeneration environment settings are now `TRACEMANTLE_REGEN_GOLDEN`. No runtime environment-based configuration was added. Third-party tokenizer cache settings retain their own names.
 
 Legacy `.skillcheck-history.json` files remain readable. To migrate, select a destination outside the evaluated skill directory:

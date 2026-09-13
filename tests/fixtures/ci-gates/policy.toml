@@ -1,0 +1,17 @@
+[tool.tracemantle.release]
+schema_version=1
+trusted_evidence=["07afe03bab1e2af207b70ac5034e89c6b41da0ac807c42f69ad7b8e572944590"]
+[[tool.tracemantle.release.checks]]
+id="static-control"
+kind="static"
+inputs=["SKILL.md", "helper.py"]
+coverage_complete=true
+checker_path="tests/fixtures/ci-gates/checker.py"
+checker_sha256="951e02ad6ec9c2308b9b84a70acb3d235890a3fbe46622d8670cdcb9529ee280"
+configuration_sha256="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+fixture_sha256="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+profile_sha256="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+max_age_seconds=31536000
+required=true
+routing_neighbors=[]
+context={permissions="read-bundle"}

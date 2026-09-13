@@ -1,0 +1,216 @@
+[
+  {
+    "arguments": [
+      "manifest",
+      "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/bundle"
+    ],
+    "exit_code": 0,
+    "report": {
+      "tool": "TraceMantle",
+      "version": "1.6.0",
+      "schema_version": 1,
+      "command": "manifest",
+      "exit_code": 0,
+      "result": {
+        "schema_version": 1,
+        "bundle_sha256": "b55a9e7c6951dcefdae3e2bf74136dd28e36613a94c3509407e3ccdf8dfae349",
+        "files": [
+          {
+            "path": "SKILL.md",
+            "sha256": "61db7b7ae735590bbcb2c17f55ffa7040b48f3fff02fb018d349f086e5131f38",
+            "executable": false,
+            "size": 274
+          },
+          {
+            "path": "helper.py",
+            "sha256": "d1f6701dbb77157114af027850d4cf0c2fcf78f44aab45b7eab3fafff72101b2",
+            "executable": false,
+            "size": 26
+          }
+        ],
+        "description_sha256": "bb38ae1115cec704dbfeaabd5375ea78614afc3c727c7ae077524d819394d63a",
+        "dependencies": [
+          [
+            "SKILL.md",
+            "helper.py"
+          ]
+        ],
+        "complete": true,
+        "issues": []
+      }
+    }
+  },
+  {
+    "arguments": [
+      "import-evidence",
+      "/Users/brad/projects/tracemantle/tests/fixtures/upstream/promptfoo-0.118.10/sample-export.json",
+      "--bundle",
+      "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/bundle",
+      "--bindings",
+      "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/bindings.json",
+      "--store",
+      "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/evidence"
+    ],
+    "exit_code": 4,
+    "report": {
+      "tool": "TraceMantle",
+      "version": "1.6.0",
+      "schema_version": 1,
+      "command": "import-evidence",
+      "exit_code": 4,
+      "result": {
+        "artifact_sha256": "60f4c9f191453cbc3ddaa95474828c48734d34f31eaee9e110f27970fe22a9e7",
+        "source_copy": "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/evidence/sources/60f4c9f191453cbc3ddaa95474828c48734d34f31eaee9e110f27970fe22a9e7.json",
+        "records": [
+          "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/evidence/records/de45c653812c43b4a5e0aeea3157434d4c475c0791d01b0f7cfdd424cdb9a8ec.json",
+          "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/evidence/records/672759ba824f6515dde85a8bfe46f8560f0cb1839c4c8eb03f6093b5b3f2224c.json",
+          "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/evidence/records/a45df33f03735fe379c1e4c8737b53236da7e197e98ba01a84629f8d84c73ef9.json",
+          "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/evidence/records/01bc48819958a20ee22792eb429a3cc6ec0b1166198ce2ccf3ba86dfd504e78f.json"
+        ],
+        "issues": [],
+        "state": "unknown",
+        "reason": "Imported claims require trusted-base approval before behavioral gating."
+      }
+    }
+  },
+  {
+    "arguments": [
+      "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/bundle",
+      "--skip-dirname-check",
+      "--history"
+    ],
+    "exit_code": 0,
+    "report": {
+      "tool": "TraceMantle",
+      "schema_version": 2,
+      "version": "1.6.0",
+      "gate": {
+        "exit_code": 0,
+        "passed": true
+      },
+      "tokenizer": {
+        "backend": "word-punctuation",
+        "version": "1",
+        "network": "none"
+      },
+      "files_checked": 1,
+      "files_passed": 1,
+      "files_failed": 0,
+      "results": [
+        {
+          "path": "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/bundle/SKILL.md",
+          "valid": true,
+          "diagnostics": [
+            {
+              "rule": "description.quality-score",
+              "severity": "info",
+              "message": "Description quality score: 95/100.",
+              "line": null,
+              "context": null,
+              "source": "advisory",
+              "confidence": "medium",
+              "breakdown": {
+                "action": 25,
+                "trigger": 20,
+                "keywords": 25,
+                "specificity": 15,
+                "length": 10
+              }
+            },
+            {
+              "rule": "compat.vscode-dirname",
+              "severity": "info",
+              "message": "VS Code requires the name field ('control') to match the parent directory ('bundle'). This skill would not conform to the standard naming contract; loader behavior is unverified (historical profile 2026-04-20).",
+              "line": null,
+              "context": null,
+              "source": "advisory",
+              "confidence": "medium"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "arguments": [
+      "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/bundle",
+      "--show-history"
+    ],
+    "exit_code": 0,
+    "report": {
+      "version": 1,
+      "skill_path": "/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/.tracemantle/history/59056f4d909809fae29f944a941ab24d7c4a3245a5a75f4fc1e03660c4e8ae54",
+      "runs": [
+        {
+          "timestamp_utc": "2026-09-13T02:01:26Z",
+          "skillcheck_version": "1.6.0",
+          "skill_content_hash": "61db7b7ae735590b",
+          "validation_modes": {
+            "symbolic": true,
+            "critique": false,
+            "graph": false
+          },
+          "agents": {
+            "critique_agent": null,
+            "graph_agent": null
+          },
+          "result": {
+            "error": 0,
+            "warning": 0,
+            "info": 2,
+            "valid": true
+          },
+          "exit_code": 0
+        }
+      ]
+    }
+  },
+  {
+    "arguments": [
+      "migrate-history",
+      "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/legacy/ledger.json",
+      "--store",
+      "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/migrated"
+    ],
+    "exit_code": 0,
+    "report": {
+      "tool": "TraceMantle",
+      "version": "1.6.0",
+      "schema_version": 1,
+      "command": "migrate-history",
+      "exit_code": 0,
+      "result": {
+        "source_preserved": "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/legacy/ledger.json",
+        "source_copy": "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/migrated/sources/2a51d09dfe6b95e881726848cebda3d52af9b0cf6edc136c68c7eb3ab2bfcb1d.json",
+        "records": [
+          "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/migrated/records/a79583c0b3bb36b6df60d98b2181a90d3b79edd06b9647742ff43132ee23da6b.json"
+        ],
+        "state": "unknown"
+      }
+    }
+  },
+  {
+    "arguments": [
+      "migrate-history",
+      "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/legacy/ledger.json",
+      "--store",
+      "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/migrated"
+    ],
+    "exit_code": 0,
+    "report": {
+      "tool": "TraceMantle",
+      "version": "1.6.0",
+      "schema_version": 1,
+      "command": "migrate-history",
+      "exit_code": 0,
+      "result": {
+        "source_preserved": "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/legacy/ledger.json",
+        "source_copy": "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/migrated/sources/2a51d09dfe6b95e881726848cebda3d52af9b0cf6edc136c68c7eb3ab2bfcb1d.json",
+        "records": [
+          "/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/tracemantle-audit-cli-rov3p72q/migrated/records/a79583c0b3bb36b6df60d98b2181a90d3b79edd06b9647742ff43132ee23da6b.json"
+        ],
+        "state": "unknown"
+      }
+    }
+  }
+]

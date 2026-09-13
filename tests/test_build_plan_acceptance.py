@@ -5,6 +5,7 @@ import cProfile
 import json
 import os
 import pstats
+import socket
 import subprocess
 import sys
 from dataclasses import replace
@@ -46,14 +47,28 @@ def test_manifest_reuses_source_parse(tmp_path: Path) -> None:
 
 def test_cold_offline_tokenizer_is_explicit(tmp_path: Path) -> None:
     bundle = _bundle(tmp_path / 'bundle')
-    environment = {**os.environ, 'TIKTOKEN_CACHE_DIR': str(tmp_path / 'empty-cache'), 'HTTPS_PROXY': 'http://127.0.0.1:1', 'HTTP_PROXY': 'http://127.0.0.1:1', 'NO_PROXY': ''}
-    result = _cli(str(bundle), '--skip-dirname-check', '--tokenizer', 'tiktoken', '--format', 'json', env=environment)
-    assert result.returncode != 0
-    assert 'Traceback' not in result.stdout + result.stderr
-    assert 'heuristic' in result.stdout + result.stderr
-    fallback = _cli(str(bundle), '--skip-dirname-check', '--tokenizer', 'heuristic', '--format', 'json', env=environment)
-    assert fallback.returncode == 0
-    assert json.loads(fallback.stdout)['tokenizer']['backend'] == 'word-punctuation'
+    # requests prefers lowercase proxies; bypass/all-proxy settings and the
+    # alternate cache must not leak in from the developer's environment.
+    environment = {key: value for key, value in os.environ.items()
+                   if not key.lower().endswith('_proxy') and key not in {'TIKTOKEN_CACHE_DIR', 'DATA_GYM_CACHE_DIR'}}
+    cache = tmp_path / 'empty-cache'
+    cache.mkdir()
+    environment.update(TIKTOKEN_CACHE_DIR=str(cache), DATA_GYM_CACHE_DIR=str(cache))
+    # Reserve a real local port without listening so no unrelated service can
+    # accept the proxy connection, including on Windows.
+    with socket.socket() as blocked_proxy:
+        blocked_proxy.bind(('127.0.0.1', 0))
+        proxy = f'http://127.0.0.1:{blocked_proxy.getsockname()[1]}'
+        for key in ('http_proxy', 'https_proxy', 'all_proxy'):
+            environment[key] = environment[key.upper()] = proxy
+        environment['no_proxy'] = environment['NO_PROXY'] = ''
+        result = _cli(str(bundle), '--skip-dirname-check', '--tokenizer', 'tiktoken', '--format', 'json', env=environment)
+        assert result.returncode != 0
+        assert 'Traceback' not in result.stdout + result.stderr
+        assert 'heuristic' in result.stdout + result.stderr
+        fallback = _cli(str(bundle), '--skip-dirname-check', '--tokenizer', 'heuristic', '--format', 'json', env=environment)
+        assert fallback.returncode == 0
+        assert json.loads(fallback.stdout)['tokenizer']['backend'] == 'word-punctuation'
 
 
 @pytest.mark.parametrize('flag', ['--emit-graph', '--emit-critique-prompt', '--emit-graph-prompt', '--agent-reason', '--activation-hypotheses'])

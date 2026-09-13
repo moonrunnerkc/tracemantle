@@ -1,0 +1,124 @@
+{
+  "python": "3.12.13 (main, Mar  3 2026, 12:39:30) [Clang 21.0.0 (clang-2100.0.123.102)]",
+  "reference_revision": "69ef37e9424c0a7ea9dd2293b559e43ec8176379",
+  "reference_version": "0.1.0",
+  "source": "https://github.com/agentskills/agentskills/tree/69ef37e9424c0a7ea9dd2293b559e43ec8176379/skills-ref",
+  "cases": [
+    {
+      "case": "valid",
+      "reference_errors": [],
+      "tracemantle_errors": [],
+      "intentional_divergence": null
+    },
+    {
+      "case": "optional",
+      "reference_errors": [],
+      "tracemantle_errors": [],
+      "intentional_divergence": null
+    },
+    {
+      "case": "uppercase",
+      "reference_errors": [
+        "Skill name 'CONTROL' must be lowercase"
+      ],
+      "tracemantle_errors": [
+        "frontmatter.name.invalid-chars"
+      ],
+      "intentional_divergence": null
+    },
+    {
+      "case": "consecutive-hyphen",
+      "reference_errors": [
+        "Skill name cannot contain consecutive hyphens"
+      ],
+      "tracemantle_errors": [
+        "frontmatter.name.consecutive-hyphens"
+      ],
+      "intentional_divergence": null
+    },
+    {
+      "case": "missing-name",
+      "reference_errors": [
+        "Missing required field in frontmatter: name"
+      ],
+      "tracemantle_errors": [
+        "frontmatter.name.required"
+      ],
+      "intentional_divergence": null
+    },
+    {
+      "case": "missing-description",
+      "reference_errors": [
+        "Missing required field in frontmatter: description"
+      ],
+      "tracemantle_errors": [
+        "frontmatter.description.required"
+      ],
+      "intentional_divergence": null
+    },
+    {
+      "case": "long-name",
+      "reference_errors": [
+        "Skill name 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' exceeds 64 character limit (65 chars)"
+      ],
+      "tracemantle_errors": [
+        "frontmatter.name.max-length"
+      ],
+      "intentional_divergence": null
+    },
+    {
+      "case": "long-description",
+      "reference_errors": [
+        "Description exceeds 1024 character limit (1025 chars)"
+      ],
+      "tracemantle_errors": [
+        "frontmatter.description.max-length"
+      ],
+      "intentional_divergence": null
+    },
+    {
+      "case": "long-compatibility",
+      "reference_errors": [
+        "Compatibility exceeds 500 character limit (501 chars)"
+      ],
+      "tracemantle_errors": [
+        "frontmatter.compatibility.type"
+      ],
+      "intentional_divergence": null
+    },
+    {
+      "case": "nonstring-compatibility",
+      "reference_errors": [
+        "Field 'compatibility' must be a string"
+      ],
+      "tracemantle_errors": [
+        "frontmatter.compatibility.type"
+      ],
+      "intentional_divergence": null
+    },
+    {
+      "case": "unicode-name",
+      "reference_errors": [],
+      "tracemantle_errors": [
+        "frontmatter.name.invalid-chars"
+      ],
+      "intentional_divergence": "TraceMantle portable naming profile intentionally accepts ASCII only; reference normalizes NFKC and accepts Unicode alphanumerics."
+    },
+    {
+      "case": "metadata-value",
+      "reference_errors": [],
+      "tracemantle_errors": [
+        "frontmatter.metadata.type"
+      ],
+      "intentional_divergence": "TraceMantle enforces specification string metadata values; this reference revision does not validate metadata contents."
+    },
+    {
+      "case": "empty-compatibility",
+      "reference_errors": [],
+      "tracemantle_errors": [
+        "frontmatter.compatibility.type"
+      ],
+      "intentional_divergence": "TraceMantle enforces the specification minimum length of one; reference revision checks maximum length only."
+    }
+  ]
+}

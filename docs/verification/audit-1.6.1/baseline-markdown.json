@@ -1,0 +1,19 @@
+{
+  "python": "3.12.13 (main, Mar  3 2026, 12:39:30) [Clang 21.0.0 (clang-2100.0.123.102)]",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "corpus_sha256": "5a5b1d5dd96dab68b3f60a0599dcc455354eadf29d70d9f6cc7d68b8b06c7494",
+  "corpus_bytes": 110559,
+  "repeats": 5,
+  "seconds": [
+    0.0164865410188213,
+    0.016406040987931192,
+    0.015904500032775104,
+    0.01632599998265505,
+    0.01591854204889387
+  ],
+  "median": 0.01632599998265505,
+  "spread": 0.000582040986046195,
+  "peak_python_bytes": 1190161,
+  "resource_count": 4000,
+  "uncertain": false
+}

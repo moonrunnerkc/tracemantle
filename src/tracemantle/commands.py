@@ -185,7 +185,7 @@ def read_ingest_raw(ingest_path: str) -> str:
         print(terminal(f"Error: {exc}"), file=sys.stderr)
         sys.exit(2)
     except OSError as exc:
-        print(f"Error: cannot read {display_path(p)}: {exc}", file=sys.stderr)
+        print(terminal(f"Error: cannot read {display_path(p)}: {exc}"), file=sys.stderr)
         sys.exit(2)
 
 
@@ -361,9 +361,9 @@ def run_show_history(args: argparse.Namespace, paths: list[Path]) -> None:
     """
     if len(paths) > 1:
         print(
-            f"warning: --show-history reads one ledger; ignoring extra paths: "
+            terminal(f"warning: --show-history reads one ledger; ignoring extra paths: "
             f"{', '.join(str(p) for p in paths[1:])}. "
-            f"Run --show-history once per skill to read its ledger.",
+            f"Run --show-history once per skill to read its ledger."),
             file=sys.stderr,
         )
     target_path = paths[0]
@@ -375,8 +375,8 @@ def run_show_history(args: argparse.Namespace, paths: list[Path]) -> None:
             print('Reading legacy history; use tracemantle migrate-history to copy it explicitly.', file=sys.stderr)
     if not lp.exists():
         print(
-            f"No history ledger found for {target_path}. "
-            f"Run 'tracemantle {target_path} --history' to start tracking.",
+            terminal(f"No history ledger found for {target_path}. "
+            f"Run 'tracemantle {target_path} --history' to start tracking."),
             file=sys.stderr,
         )
         sys.exit(2)
@@ -389,7 +389,7 @@ def run_show_history(args: argparse.Namespace, paths: list[Path]) -> None:
         print(terminal(f"Error: {exc}"), file=sys.stderr)
         sys.exit(2)
     if ledger is None:
-        print(f"No history ledger found for {target_path}.", file=sys.stderr)
+        print(terminal(f"No history ledger found for {target_path}."), file=sys.stderr)
         sys.exit(2)
     if not args.quiet:
         if args.format == "json":

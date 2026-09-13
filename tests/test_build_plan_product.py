@@ -245,6 +245,10 @@ def test_cli_trusted_base_cannot_be_weakened_by_candidate(tmp_path: Path) -> Non
     revision = _trusted_repository(trust, record)
     policy = load_trusted_policy(trust, revision)
     assert policy.revision == revision
+    # Candidate attempts to remove checks or replace checker code are data.
+    marker = tmp_path / 'candidate-executed'
+    (candidate / 'pyproject.toml').write_text('[tool.tracemantle.release]\nchecks=[]\n')
+    (candidate / 'checker.py').write_text(f'from pathlib import Path\nPath({str(marker)!r}).touch()\n')
     # Working-tree replacement cannot alter the immutable Git policy/checker.
     (trust / 'pyproject.toml').write_text('[tool.tracemantle.release]\nchecks=[]\n')
     (trust / 'checker.py').write_text('candidate checker')
@@ -252,6 +256,7 @@ def test_cli_trusted_base_cannot_be_weakened_by_candidate(tmp_path: Path) -> Non
     result = subprocess.run(command, capture_output=True, text=True)
     assert result.returncode == 0, result.stdout + result.stderr
     assert json.loads(result.stdout)['result']['state'] == 'pass'
+    assert not marker.exists()
     (candidate / 'helper.py').write_text('changed')
     changed = subprocess.run(command, capture_output=True, text=True)
     assert changed.returncode == 4

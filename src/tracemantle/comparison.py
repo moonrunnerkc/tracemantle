@@ -63,8 +63,17 @@ def _compatible(record: Evidence, check: RequiredCheck, candidate: BundleManifes
         reasons.append('Declared input coverage or content digests do not match the evaluated bundle.')
     if check.kind != 'static' and record.observation_method != 'observed-execution':
         reasons.append('Required behavioral evidence needs observed execution; inferred traces and model judgments cannot satisfy it.')
-    if check.kind != 'static' and (any(getattr(record, name).lower() == 'unknown' for name in ('runner', 'adapter', 'model', 'model_revision')) or not record.environment or not record.tokenizer):
-        reasons.append('Behavioral execution identity or environment/tokenizer assumptions are incomplete.')
+    if check.kind != 'static':
+        # All imported records are historical reuse. Approval and equal bundle
+        # hashes establish neither a new execution nor immutable model identity.
+        identity = [getattr(record, name) for name in ('runner', 'adapter', 'model', 'model_revision')]
+        context_values = [value for _, value in (*record.environment, *record.tokenizer)]
+        if not record.environment or not record.tokenizer or any(
+            not value.strip() or value.strip().casefold() == 'unknown' for value in (*identity, *context_values)
+        ):
+            reasons.append('Behavioral execution identity or environment/tokenizer assumptions are incomplete.')
+        if not record.model_immutable:
+            reasons.append('Hosted model aliases are not immutable model revisions; behavioral reuse is unavailable.')
     if check.kind == 'static' and record.observation_method != 'static-analysis':
         reasons.append('Static evidence requires a declared static analysis observation.')
     age = (now - timestamp(record.observed_at)).total_seconds()
@@ -88,8 +97,6 @@ def _compatible(record: Evidence, check: RequiredCheck, candidate: BundleManifes
             reasons.append('Declared helper, schema or skill inputs changed.')
         if any(p in changed and p in check.routing_neighbors for p in changed) or (check.kind == 'routing' and baseline.description_sha256 != candidate.description_sha256):
             reasons.append('Description/routing inputs changed; rerun this case and its declared neighboring skills.')
-        if check.kind != 'static' and (not record.model_immutable or record.model_revision == 'unknown'):
-            reasons.append('Hosted model aliases are not immutable model revisions; behavioral reuse is unavailable.')
     return reasons
 
 

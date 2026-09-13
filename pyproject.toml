@@ -59,7 +59,7 @@ packages = ["src/tracemantle", "src/skillcheck"]
 
 # Verification digests describe the artifacts and cannot be embedded recursively.
 [tool.hatch.build.targets.sdist]
-exclude = ["/docs/verification/artifacts.json"]
+exclude = ["/docs/verification/artifacts.json", "/docs/verification/**/artifacts*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

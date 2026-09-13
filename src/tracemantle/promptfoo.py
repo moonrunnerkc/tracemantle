@@ -37,7 +37,7 @@ def import_promptfoo(raw: bytes, bindings: dict[str, Any]) -> ImportedExport:
     rows = result['results']
     if not isinstance(rows, list) or not rows or len(rows) > 10000:
         raise EvidenceError('Promptfoo results must be a nonempty array of at most 10000 rows.')
-    if not isinstance(bindings, dict) or set(bindings) != {'schema_version', 'rows'} or bindings['schema_version'] != 1 or not isinstance(bindings['rows'], dict):
+    if not isinstance(bindings, dict) or set(bindings) != {'schema_version', 'rows'} or type(bindings['schema_version']) is not int or bindings['schema_version'] != 1 or not isinstance(bindings['rows'], dict):
         raise EvidenceError('Import bindings require schema_version=1 and a rows mapping keyed by export result ID.')
     artifact = hashlib.sha256(raw).hexdigest()
     records = []
@@ -56,6 +56,20 @@ def import_promptfoo(raw: bytes, bindings: dict[str, Any]) -> ImportedExport:
             raise EvidenceError('Promptfoo gradingResult.pass must be boolean.')
         if grading is not None and grading['pass'] != row['success']:
             raise EvidenceError('Promptfoo success conflicts with gradingResult.pass.')
+        components = (grading or {}).get('componentResults', [])
+        if not isinstance(components, list):
+            raise EvidenceError('Promptfoo gradingResult.componentResults must be an array.')
+        model_judgment = False
+        for component in components:
+            if not isinstance(component, dict):
+                raise EvidenceError('Promptfoo gradingResult.componentResults entries must be objects.')
+            assertion = component.get('assertion', {})
+            if not isinstance(assertion, dict):
+                raise EvidenceError('Promptfoo componentResults.assertion must be an object.')
+            assertion_type = assertion.get('type', '')
+            if not isinstance(assertion_type, str):
+                raise EvidenceError('Promptfoo componentResults.assertion.type must be a string.')
+            model_judgment |= assertion_type == 'llm-rubric'
         if row['id'] not in bindings['rows']:
             issues.append(f"Unknown identity for result {row['id']}; no evidence record created.")
             continue
@@ -70,7 +84,7 @@ def import_promptfoo(raw: bytes, bindings: dict[str, Any]) -> ImportedExport:
                   'model': row['provider'].get('id', 'unknown'),
                   'reason': str((grading or {}).get('reason') or row.get('error') or 'Evaluator reported success')}
         # A generic export observes responses, not the invocation of a skill.
-        record['observation_method'] = 'model-judgment' if any(c.get('assertion', {}).get('type') == 'llm-rubric' for c in (grading or {}).get('componentResults', []) if isinstance(c, dict)) else 'unknown'
+        record['observation_method'] = 'model-judgment' if model_judgment else 'unknown'
         records.append(evidence_from_dict(record))
     if set(bindings['rows']) - ids:
         raise EvidenceError('Bindings contain result IDs absent from the export.')

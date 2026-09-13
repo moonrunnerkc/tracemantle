@@ -1,0 +1,29 @@
+{
+  "check_id": "static-control",
+  "state": "pass",
+  "bundle_sha256": "552b8d82e874420ab26767d4cc1dc01315072c0c927eed9e51202d42f2e101b5",
+  "configuration_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "checker_sha256": "951e02ad6ec9c2308b9b84a70acb3d235890a3fbe46622d8670cdcb9529ee280",
+  "fixture_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "inputs": {
+    "SKILL.md": "acbba75397f4cf3075d5891b2df77fe6a7852acdf51a1d9c07e788a1a2acf1d6",
+    "helper.py": "16ab537e6ac2ee81b63034ae88304be2f93198caceda35f84a2b9aa62b6cb514"
+  },
+  "observed_at": "2026-09-13T00:00:00Z",
+  "observation_method": "static-analysis",
+  "runner": "synthetic-fixture",
+  "adapter": "fixture/v1",
+  "model": "unknown",
+  "model_revision": "unknown",
+  "model_immutable": false,
+  "permissions": [
+    "read-bundle"
+  ],
+  "environment": {},
+  "tokenizer": {},
+  "reason": "Synthetic static gate control, not an executed evaluator result.",
+  "schema_version": 1,
+  "kind": "check-evidence"
+}

@@ -91,7 +91,7 @@ def render_product(payload: dict[str, Any], fmt: str, path: Path | None) -> str:
     result = payload['result']
     state = result.get('state', 'pass' if payload['exit_code'] == 0 else 'unknown')
     lines = [f"TraceMantle {payload['command']}: {state} (exit {payload['exit_code']})"]
-    if payload['command'] == 'manifest':
+    if payload['command'] == 'manifest' and 'bundle_sha256' in result:
         lines.append(f"Bundle {result['bundle_sha256']}: {len(result['files'])} files")
     for check in result.get('checks', []):
         lines.append(f"{check['check_id']}: {check['state']}; " + '; '.join(check['reasons']))

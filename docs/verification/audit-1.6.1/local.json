@@ -1,0 +1,21 @@
+{
+  "baseline": "0c18c10",
+  "observed_at": "2026-09-13 UTC",
+  "lint": "ruff check src tests scripts passed",
+  "typing": "mypy passed, 73 source files, also in fresh 3.12 dev-only environment",
+  "generated_reference": "python scripts/generate_reference.py --check passed, no CLI/rule output changes",
+  "whitespace": "git diff --check passed",
+  "legacy_artifact": {
+    "path": "/tmp/tracemantle-legacy-dist/skillcheck-1.5.0-py3-none-any.whl",
+    "sha256": "dd0c43afd934d1b64e24b5d0441dc4d6cde1640a40c3906ff5b63dca8c1c67db"
+  },
+  "make_verify_release": {
+    "environment": "/tmp/tracemantle-audit-312-minimal",
+    "result": "passed",
+    "passed": 1262,
+    "skipped": 4,
+    "coverage_percent": 87.82
+  },
+  "release_version": "1.6.0, unchanged; all audit fixes unreleased",
+  "full_release_log": "/tmp/tracemantle-audit-verify-release.log"
+}

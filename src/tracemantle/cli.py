@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -315,6 +316,11 @@ def _apply_config(args: argparse.Namespace, parser: argparse.ArgumentParser) -> 
             if other_paths != paths:
                 raise ConfigError("Mixed project roots are ambiguous. Validate each project separately or supply --config.")
     except (ConfigError, OSError, RuntimeError) as exc:
+        if args.format == 'json':
+            print(json.dumps({'tool': 'TraceMantle', 'version': __version__, 'schema_version': 2,
+                              'gate': {'passed': False, 'exit_code': 2}, 'results': [],
+                              'errors': [{'error': str(exc)}]}))
+            sys.exit(2)
         parser.error(terminal(str(exc)))
     for path in paths:
         print(terminal(f"Loaded config from {path}"), file=sys.stderr)

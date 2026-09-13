@@ -82,7 +82,7 @@ def load_trusted_policy(root: Path, revision: str, path: str = 'pyproject.toml')
             raise EvidenceError('Each trusted check must contain exactly the documented check fields.')
         value: dict[str, Any] = dict(row)
         text_field(value['id'], 'check.id')
-        if value['kind'] not in {'static', 'behavioral', 'routing'}:
+        if not isinstance(value['kind'], str) or value['kind'] not in {'static', 'behavioral', 'routing'}:
             raise EvidenceError('Check kind must be static, behavioral or routing.')
         for name in ('coverage_complete', 'required'):
             if type(value[name]) is not bool:

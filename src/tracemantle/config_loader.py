@@ -229,6 +229,8 @@ def project_configs(start: Path) -> tuple[Path, ...]:
                     namespaces = tomllib.loads(raw).get("tool", {})
                 except tomllib.TOMLDecodeError as exc:
                     raise ConfigError(f"Invalid project TOML at {path}: {exc}") from exc
+                if not isinstance(namespaces, dict):
+                    raise ConfigError("Config section 'tool' must be a table.")
                 if not any(name in namespaces for name in ("tracemantle", "skillcheck")):
                     continue
             found_list.append(path)

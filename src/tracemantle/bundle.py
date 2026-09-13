@@ -65,6 +65,14 @@ def create_manifest(root: Path, *, document: ParsedSkill | None = None) -> Bundl
         raise EvidenceError(f'Cannot manifest invalid skill: {exc}') from exc
     if document.path.resolve() != root / 'SKILL.md':
         raise EvidenceError('Parsed document does not belong to this bundle SKILL.md.')
+    description = document.frontmatter.get('description')
+    # Null remains hashable for history of skills with an empty/missing field;
+    # ordinary validation still reports the required description diagnostic.
+    if description is not None and not isinstance(description, str):
+        raise EvidenceError(
+            f'Cannot manifest description of type {type(description).__name__}; '
+            'description must be a string. Quote date-like text in YAML.'
+        )
     files: list[BundleFile] = []
     issues: list[str] = []
     seen: set[str] = set()
@@ -104,7 +112,6 @@ def create_manifest(root: Path, *, document: ParsedSkill | None = None) -> Bundl
         issues.extend(d.message for d in dependencies.diagnostics if d.severity.value == 'error')
         if not dependencies.complete:
             issues.append('Resource dependency coverage is incomplete; rerun the full relevant suite.')
-        description = skill.frontmatter.get('description')
         return BundleManifest(tuple(sorted(files, key=lambda f: f.path)), digest(description), dependencies.edges,
                               not issues, tuple(sorted(set(issues))))
     except ParseError as exc:

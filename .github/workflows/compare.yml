@@ -12,6 +12,14 @@ on:
         description: Relative bundle directory in both revisions
         required: true
         default: skills/tracemantle
+      policy_relative:
+        description: Tracked policy path in the trusted base
+        required: true
+        default: pyproject.toml
+      evidence_directory:
+        description: Candidate directory containing approved records
+        required: true
+        default: evidence/records
 permissions:
   contents: read
 jobs:
@@ -37,15 +45,17 @@ jobs:
         env:
           BASE_REVISION: ${{ inputs.base_revision }}
           BUNDLE_PATH: ${{ inputs.bundle_path }}
+          POLICY_RELATIVE: ${{ inputs.policy_relative }}
+          EVIDENCE_DIRECTORY: ${{ inputs.evidence_directory }}
         shell: bash
         run: |
           set -euo pipefail
           args=()
-          if [ -d candidate/evidence/records ]; then
+          if [ -d "candidate/$EVIDENCE_DIRECTORY" ]; then
             while IFS= read -r -d '' record; do
               args+=(--evidence "$record")
-            done < <(find candidate/evidence/records -maxdepth 1 -type f -name '*.json' -print0)
+            done < <(find "candidate/$EVIDENCE_DIRECTORY" -maxdepth 1 -type f -name '*.json' -print0)
           fi
           tracemantle compare "trusted/$BUNDLE_PATH" "candidate/$BUNDLE_PATH" \
-            --trusted-root trusted --base-revision "$BASE_REVISION" \
+            --trusted-root trusted --base-revision "$BASE_REVISION" --policy-relative "$POLICY_RELATIVE" \
             --format github "${args[@]}"
