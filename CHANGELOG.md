@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Approved historical behavioral evidence now requires immutable model identity and meaningful environment/tokenizer values even when bundle hashes match. Incompatible required evidence remains unknown (exit 4); static reuse is unchanged.
-- Pinned Promptfoo imports reject malformed component arrays and assertion objects with bounded domain errors. Automatic config discovery rejects a non-table `tool`, with an error envelope in JSON mode. Manifest creation rejects non-string description values such as unquoted YAML dates without a traceback; null descriptions remain available for invalid-skill history.
+- Pinned Promptfoo imports reject malformed component arrays and assertion objects with bounded domain errors. Automatic config discovery rejects a non-table `tool`, with an error envelope in JSON mode. Invalid YAML date/time and oversized integer conversions now produce bounded parse diagnostics and preserve batch continuation. Manifest creation rejects non-string description values such as unquoted YAML dates without a traceback; null descriptions remain available for invalid-skill history.
 - History warnings and missing-ledger diagnostics escape terminal controls, including with `--no-color`. Manifest text/annotation errors and malformed trusted check kinds also fail cleanly.
 - Markdown code spans and indented code examples no longer create false dependencies. Exact backtick delimiters and source lines are preserved; standalone inline resource paths still participate in dependency checks.
 - The cold-offline tokenizer test isolates uppercase/lowercase proxy and cache settings and reserves a local non-listening proxy port.

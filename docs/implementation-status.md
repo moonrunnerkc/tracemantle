@@ -30,7 +30,7 @@ The complete plan, including both tables, was read before implementation. Instru
 
 ## Post-release audit
 
-The [post-release checklist and verification record](verification/audit-1.6.1/acceptance.md) reconciles every requirement against current source, distinguishes baseline implementation from remaining verification, and records corrections to D03–D07, D09, D11 and P01–P04. D12 gains an isolated nonpublishing failed-prerequisite check. The existing `tomli` dev fix was confirmed and retained. The original requirement table above describes the initial implementation, with the P04 remote status updated after execution; its broad verified labels do not establish the newly reproduced error paths or live evaluation.
+The [post-release checklist and verification record](verification/audit-1.6.1/acceptance.md) reconciles every requirement against current source, distinguishes baseline implementation from remaining verification, and records corrections to D02–D07, D09, D11 and P01–P04. D12 gains an isolated nonpublishing failed-prerequisite check. The existing `tomli` dev fix was confirmed and retained. The original requirement table above describes the initial implementation, with the P04 remote status updated after execution; its broad verified labels do not establish the newly reproduced error paths or live evaluation.
 
 Fixes remain under `[Unreleased]`, intended for the next patch after 1.6.0. Package versions and released install/Action references remain at 1.6.0 until release preparation. The original DOCX, published artifacts, tags and publishing guards are preserved. Current local and exact-commit remote evidence is recorded in the linked audit directory; historical results below are not reused as new measurements.
 

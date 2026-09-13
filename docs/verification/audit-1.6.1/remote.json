@@ -284,6 +284,169 @@
           }
         ]
       }
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 34732747534,
+      "headSha": "d010692c45816e0b8646a62cea06f23b5ef03409",
+      "jobs": [
+        {
+          "name": "tokenizer",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534/job/103658468101"
+        },
+        {
+          "name": "test (ubuntu-latest, 3.13)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534/job/103658468220"
+        },
+        {
+          "name": "lint",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534/job/103658468246"
+        },
+        {
+          "name": "test (ubuntu-latest, 3.11)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534/job/103658468295"
+        },
+        {
+          "name": "test (macos-latest, 3.12)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534/job/103658468306"
+        },
+        {
+          "name": "test (windows-latest, 3.11)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534/job/103658468307"
+        },
+        {
+          "name": "test (windows-latest, 3.10)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534/job/103658468316"
+        },
+        {
+          "name": "test (windows-latest, 3.13)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534/job/103658468317"
+        },
+        {
+          "name": "test (ubuntu-latest, 3.10)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534/job/103658468334"
+        },
+        {
+          "name": "test (ubuntu-latest, 3.12)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534/job/103658468335"
+        },
+        {
+          "name": "test (macos-latest, 3.13)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534/job/103658468340"
+        },
+        {
+          "name": "test (macos-latest, 3.10)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534/job/103658468344"
+        },
+        {
+          "name": "test (windows-latest, 3.12)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534/job/103658468365"
+        },
+        {
+          "name": "test (macos-latest, 3.11)",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534/job/103658468390"
+        },
+        {
+          "name": "package",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534/job/103658863637"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732747534",
+      "workflowName": "CI",
+      "expected": "15 CI jobs pass",
+      "artifact_verification": {
+        "python": "3.12.14 (main, Aug 13 2026, 02:47:42) [GCC 13.3.0]",
+        "checks": [
+          {
+            "artifact": "tracemantle-1.6.0-py3-none-any.whl",
+            "sha256": "e039e128a02df01e70195eb988e663a042569730ab955429928f15394f195047",
+            "version": "1.6.0",
+            "clean_install": "passed",
+            "legacy_migration": "not requested"
+          },
+          {
+            "artifact": "tracemantle-1.6.0.tar.gz",
+            "sha256": "ed048cfd8e42321c617dca47a89359713fa5173ec9e43097e33557ba3efadc1e",
+            "version": "1.6.0",
+            "clean_install": "passed",
+            "legacy_migration": "not requested"
+          }
+        ]
+      }
+    },
+    {
+      "conclusion": "failure",
+      "databaseId": 34732773381,
+      "headSha": "d010692c45816e0b8646a62cea06f23b5ef03409",
+      "jobs": [
+        {
+          "name": "compare",
+          "conclusion": "failure",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732773381/job/103658541375"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732773381",
+      "workflowName": "Trusted bundle comparison",
+      "expected": "Candidate tampering: unknown, exit 4"
+    },
+    {
+      "conclusion": "failure",
+      "databaseId": 34732774309,
+      "headSha": "d010692c45816e0b8646a62cea06f23b5ef03409",
+      "jobs": [
+        {
+          "name": "quality",
+          "conclusion": "failure",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732774309/job/103658544342"
+        },
+        {
+          "name": "verify",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732774309/job/103658557971"
+        },
+        {
+          "name": "publishing-sentinel",
+          "conclusion": "skipped",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732774309/job/103658558348"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732774309",
+      "workflowName": "Verify nonpublishing release guard",
+      "expected": "Quality failure, sentinel skipped, verification passes"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 34732775199,
+      "headSha": "d010692c45816e0b8646a62cea06f23b5ef03409",
+      "jobs": [
+        {
+          "name": "compare",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732775199/job/103658548235"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732775199",
+      "workflowName": "Trusted bundle comparison",
+      "expected": "Trusted static control passes"
     }
   ]
 }

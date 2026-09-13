@@ -86,6 +86,20 @@ class _Loader(yaml.SafeLoader):
         finally:
             self.depth -= 1
 
+    def construct_object(self, node: yaml.Node, deep: bool = False) -> Any:
+        try:
+            return super().construct_object(node, deep=deep)
+        except ValueError as exc:
+            # PyYAML's numeric/date constructors use Python conversions that
+            # can reject scalar input without raising a YAMLError.
+            if node.tag not in {'tag:yaml.org,2002:int', 'tag:yaml.org,2002:float', 'tag:yaml.org,2002:timestamp'}:
+                raise
+            kind = node.tag.rsplit(':', 1)[-1]
+            raise ParseError(
+                f'Invalid YAML {kind} scalar: {str(exc)[:240]}. Correct the value or quote literal text.',
+                node.start_mark.line + 2,
+            ) from exc
+
     def construct_mapping(self, node: yaml.MappingNode, deep: bool = False) -> dict[Hashable, Any]:
         result: dict[Hashable, Any] = {}
         for key_node, value_node in node.value:

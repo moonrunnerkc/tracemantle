@@ -53,3 +53,25 @@ The final source was measured again after preserving parentheses/brackets in exp
 | immutable_history_1000_read | 32.851 | -10.5% | 10.062 |
 
 All final medians remain within the 10% regression budget. The code-context workload retains exactly 2,000 real dependencies, at 15.485 ms median (-5.2%) with 0.531 ms spread. Its peak Python allocation is 2,828,847 bytes; the 1,000-skill report peak is 5,801,900 bytes. No new performance exception was needed.
+
+## YAML scalar conversion correction
+
+The first scalar-corrected run (`scalar-performance.json`) overlapped clean artifact installation. Compared with the original baseline, unchanged legacy/immutable history reads were 27.4%/24.0% slower. No history implementation changed. To separate host/filesystem variability from the parser correction, both baseline and candidate were rerun serially after other verification finished, with five repetitions each. All original samples are retained; the paired repeat is in `baseline-performance-repeat.json` and `scalar-performance-repeat.json`.
+
+| Workload | Repeated baseline ms | Scalar-corrected median ms | Change | Corrected spread ms |
+|---|---:|---:|---:|---:|
+| cold-cli-1 | 55.236 | 55.149 | -0.2% | 0.872 |
+| warm-batch-1 | 0.221 | 0.221 | +0.1% | 0.404 |
+| graph-report-1 | 0.223 | 0.219 | -1.7% | 0.141 |
+| cold-cli-100 | 94.773 | 94.243 | -0.6% | 2.911 |
+| warm-batch-100 | 19.071 | 19.095 | +0.1% | 1.104 |
+| graph-report-100 | 17.291 | 17.354 | +0.4% | 0.653 |
+| cold-cli-1000 | 444.123 | 446.716 | +0.6% | 4.927 |
+| warm-batch-1000 | 194.702 | 190.054 | -2.4% | 4.047 |
+| graph-report-1000 | 171.943 | 173.411 | +0.9% | 4.111 |
+| large_references | 31.506 | 31.410 | -0.3% | 3.271 |
+| near_limit_import | 1.144 | 1.154 | +0.8% | 0.025 |
+| legacy_history_1000_read | 6.313 | 6.539 | +3.6% | 2.249 |
+| immutable_history_1000_read | 32.255 | 32.479 | +0.7% | 9.910 |
+
+The isolated paired repeat keeps every median within budget (largest increase 3.6%). Peak Python allocation for 1,000 reports is 5,802,024 to 5,801,101 bytes. The unchanged history code and disappearing outlier support host/filesystem contention as the explanation for the earlier sample, rather than a new history regression. The Markdown tokenizer bytes are unchanged from `final-markdown.json`; its code-context measurement remains applicable.

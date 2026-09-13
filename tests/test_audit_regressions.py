@@ -284,3 +284,27 @@ def test_malformed_trusted_check_kind_is_domain_error(tmp_path: Path) -> None:
         load_trusted_policy(trusted, revision)
     result = _cli('compare', str(bundle), str(bundle), '--trusted-root', str(trusted), '--base-revision', revision, '--format', 'json')
     assert result.returncode == 2 and json.loads(result.stdout)['result']['state'] == 'infrastructure-error'
+
+
+@pytest.mark.parametrize('scalar', [
+    pytest.param('2026-99-12', id='invalid-month'),
+    pytest.param('2026-09-12T25:00:00Z', id='invalid-hour'),
+    pytest.param('2026-09-12T12:00:00+25:00', id='invalid-timezone'),
+    pytest.param('9' * 5000, id='integer-conversion-limit'),
+])
+def test_yaml_scalar_conversion_errors_are_bounded_and_batch_continues(tmp_path: Path, scalar: str) -> None:
+    import os
+    bad = _bundle(tmp_path / 'bad')
+    (bad / 'SKILL.md').write_text(f'---\nname: control\ndescription: {scalar}\n---\nBody.\n')
+    good = _bundle(tmp_path / 'good')
+    environment = {**os.environ, 'PYTHONINTMAXSTRDIGITS': '4300'}
+    result = _cli(str(bad), str(good), '--skip-dirname-check', '--format', 'json', env=environment)
+    assert result.returncode == 1 and 'Traceback' not in result.stderr
+    report = json.loads(result.stdout)
+    assert len(report['results']) == 2
+    assert sum(item['valid'] for item in report['results']) == 1
+    diagnostic = next(d for item in report['results'] for d in item['diagnostics'] if d['rule'] == 'parse.error')
+    assert diagnostic['line'] == 3 and len(diagnostic['message']) < 500
+    manifest = _cli('manifest', str(bad), '--format', 'json', env=environment)
+    assert manifest.returncode == 2 and 'Traceback' not in manifest.stderr
+    assert json.loads(manifest.stdout)['result']['state'] == 'infrastructure-error'

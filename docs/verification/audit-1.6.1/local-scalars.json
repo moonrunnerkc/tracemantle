@@ -1,0 +1,30 @@
+{
+  "source_base": "d010692c45816e0b8646a62cea06f23b5ef03409",
+  "source_snapshot": "source-scalars.json",
+  "tests": {
+    "python310": {
+      "passed": 1275,
+      "skipped": 0,
+      "coverage_percent": 87.82
+    },
+    "python312_tiktoken": {
+      "passed": 1271,
+      "skipped": 4,
+      "coverage_percent": 87.72
+    },
+    "python312_no_tiktoken_verify_release": {
+      "passed": 1271,
+      "skipped": 4,
+      "coverage_percent": 87.74
+    }
+  },
+  "coverage_gate_percent": 80,
+  "ruff": "passed",
+  "strict_mypy": "passed, 73 source files",
+  "generated_reference": "passed, unchanged",
+  "diff_check": "passed",
+  "conformance_and_calibration": "reexecuted; byte-identical to the retained audit reports",
+  "migration": "rebuilt wheel/source migration passed on both interpreters; artifacts-scalars-python*.json",
+  "performance": "baseline-performance-repeat.json and scalar-performance-repeat.json; 5 repetitions each, serial after other verification finished",
+  "release": "unreleased source; publishing guards unchanged"
+}
