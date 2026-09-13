@@ -1,0 +1,29 @@
+{
+  "scope": "Final resource-path compatibility correction; source-final.json identifies runtime bytes.",
+  "source_base": "f0187a2cf5f71eed39d1cfdd09f94cc040a60ed8",
+  "tests": {
+    "python310": {
+      "passed": 1271,
+      "skipped": 0,
+      "coverage_percent": 87.9
+    },
+    "python312_tiktoken": {
+      "passed": 1267,
+      "skipped": 4,
+      "coverage_percent": 87.79
+    },
+    "python312_no_tiktoken_verify_release": {
+      "passed": 1267,
+      "skipped": 4,
+      "coverage_percent": 87.82
+    }
+  },
+  "coverage_gate_percent": 80,
+  "ruff": "passed",
+  "strict_mypy": "passed, 73 source files",
+  "generated_reference": "passed, unchanged",
+  "diff_check": "passed",
+  "migration": "fresh final wheel and source uninstall/install sequence passed on 3.10 and 3.12; artifacts-final-python*.json",
+  "performance": "final-performance.json and final-markdown.json, 5 repetitions each; all median regression budgets met",
+  "release": "unreleased source, no new version/tag/artifact published"
+}

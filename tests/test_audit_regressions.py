@@ -137,6 +137,7 @@ def test_history_paths_escape_controls(tmp_path: Path, no_color: bool, branch: s
 
 @pytest.mark.parametrize('example', [
     '`[label](missing.md)`', '``[label](missing.md)``', '`` `[label](missing.md)` ``',
+    '`[label](scripts/missing.md)`', '`[label/path]`', '`include:scripts/missing.md`',
     '`![label](missing.png)`', '`<a href="missing.md">`', '`include: missing.md`',
     '`[label]: missing.md`\n[label]', '    [label](missing.md)', '\t[label](missing.md)',
     '    [label]: missing.md\n\n[label]', '    <img src="missing.png">',
@@ -151,6 +152,8 @@ def test_markdown_code_examples_are_not_dependencies(example: str) -> None:
 
 @pytest.mark.parametrize('body,target,kind,line', [
     ('`scripts/helper.py`', 'scripts/helper.py', 'resource', 8),
+    ('`assets(v1)/helper.py`', 'assets(v1)/helper.py', 'resource', 8),
+    ('`scripts/helper[old].py`', 'scripts/helper[old].py', 'resource', 8),
     ('``scripts/helper.py``', 'scripts/helper.py', 'resource', 8),
     ('`report.json`', 'report.json', 'generated', 8),
     ('`example` [real](actual.md)', 'actual.md', 'link', 8),

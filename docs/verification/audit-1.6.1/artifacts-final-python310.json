@@ -1,0 +1,19 @@
+{
+  "python": "3.10.14 (main, May  3 2026, 14:11:01) [Clang 21.0.0 (clang-2100.0.123.102)]",
+  "checks": [
+    {
+      "artifact": "tracemantle-1.6.0-py3-none-any.whl",
+      "sha256": "e039e128a02df01e70195eb988e663a042569730ab955429928f15394f195047",
+      "version": "1.6.0",
+      "clean_install": "passed",
+      "legacy_migration": "passed"
+    },
+    {
+      "artifact": "tracemantle-1.6.0.tar.gz",
+      "sha256": "9884de5e24bf5126b4675c5918b1dca4c66620e88dc68881d90778f24eec2d43",
+      "version": "1.6.0",
+      "clean_install": "passed",
+      "legacy_migration": "passed"
+    }
+  ]
+}

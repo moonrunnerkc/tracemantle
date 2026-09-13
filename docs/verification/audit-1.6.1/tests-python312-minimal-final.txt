@@ -1,0 +1,135 @@
+tests/test_yaml_anchors.py::test_ampersand_and_asterisk_in_quoted_value_not_flagged PASSED [ 99%]
+tests/test_yaml_types.py::test_name_boolean_detected PASSED              [ 99%]
+tests/test_yaml_types.py::test_name_integer_detected PASSED              [ 99%]
+tests/test_yaml_types.py::test_name_float_detected PASSED                [ 99%]
+tests/test_yaml_types.py::test_name_string_passes PASSED                 [ 99%]
+tests/test_yaml_types.py::test_name_none_skipped PASSED                  [ 99%]
+tests/test_yaml_types.py::test_name_quoted_true_passes PASSED            [ 99%]
+tests/test_yaml_types.py::test_description_boolean_detected PASSED       [ 99%]
+tests/test_yaml_types.py::test_description_integer_detected PASSED       [ 99%]
+tests/test_yaml_types.py::test_description_string_passes PASSED          [ 99%]
+tests/test_yaml_types.py::test_description_none_skipped PASSED           [100%]
+
+================================ tests coverage ================================
+______________ coverage: platform darwin, python 3.12.13-final-0 _______________
+
+Name                                               Stmts   Miss  Cover   Missing
+--------------------------------------------------------------------------------
+src/tracemantle/__init__.py                            5      0   100%
+src/tracemantle/__main__.py                            1      0   100%
+src/tracemantle/agents/__init__.py                    29      0   100%
+src/tracemantle/agents/_ingest.py                     35      1    97%   134
+src/tracemantle/agents/_response_text.py              12      0   100%
+src/tracemantle/agents/base.py                        17      0   100%
+src/tracemantle/agents/claude.py                       4      0   100%
+src/tracemantle/agents/codex.py                        8      0   100%
+src/tracemantle/agents/cursor.py                       8      0   100%
+src/tracemantle/agents/graph_base.py                  17      0   100%
+src/tracemantle/agents/graph_claude.py                 4      0   100%
+src/tracemantle/agents/graph_codex.py                  8      0   100%
+src/tracemantle/agents/graph_cursor.py                 8      0   100%
+src/tracemantle/agents/graph_parser.py               107      8    93%   125, 138, 154, 176, 198, 243, 288, 295
+src/tracemantle/agents/parser.py                      71      2    97%   144, 149
+src/tracemantle/agents/schema.py                      35      0   100%
+src/tracemantle/bundle.py                            128     23    82%   61, 64-65, 67, 81, 86, 91, 94, 100, 102-103, 108, 117-118, 123, 125, 127, 131, 133, 139, 141, 146, 148
+src/tracemantle/cli.py                               128     26    80%   315-317, 320-323, 350-351, 362, 364, 367-369, 378-379, 382, 384, 386, 388, 399, 402, 412-413, 417-418, 422-423
+src/tracemantle/commands.py                          392    151    61%   105, 110, 121-122, 125-127, 129-130, 136, 138, 140-142, 156-158, 160-165, 173, 180-181, 187-189, 200-204, 213-252, 256, 260, 264, 274-276, 286, 289-317, 328-329, 333, 337, 340-345, 347, 363, 377-382, 398, 421, 430, 433, 470, 484-485, 493-501, 506, 519-520, 543, 566-568, 572, 577-578, 601, 627-643, 651, 659-660, 672-673, 696-697, 712, 716-717, 731
+src/tracemantle/comparison.py                        117      6    95%   63, 78, 95, 137, 139-140
+src/tracemantle/config.py                             18      0   100%
+src/tracemantle/config_loader.py                     165     11    93%   13-14, 103-104, 154, 159, 166, 170, 178, 230-231
+src/tracemantle/core/__init__.py                      11      0   100%
+src/tracemantle/core/activation.py                    76      3    96%   168-170
+src/tracemantle/core/activation_render.py             20      0   100%
+src/tracemantle/core/graph.py                        156      5    97%   234, 356, 368, 381, 407
+src/tracemantle/core/graph_analyzers.py               88      3    97%   266, 271, 301
+src/tracemantle/core/graph_model.py                   54      0   100%
+src/tracemantle/core/graph_render.py                  42      0   100%
+src/tracemantle/core/history.py                       89     19    79%   274-307
+src/tracemantle/core/history_io.py                   113     18    84%   45, 50-52, 54, 57, 94, 122, 159, 169, 209-214, 251-254
+src/tracemantle/core/semantic.py                      42      0   100%
+src/tracemantle/core/symbolic.py                      19      5    74%   46-47, 72-73, 76
+src/tracemantle/dependencies.py                       82      6    93%   46-47, 62, 67-69
+src/tracemantle/display.py                             7      0   100%
+src/tracemantle/evidence.py                           90      2    98%   35, 77
+src/tracemantle/formatters.py                        145      5    97%   95-96, 204-206
+src/tracemantle/history_store.py                      62      5    92%   40, 43, 45, 54, 72
+src/tracemantle/io_limits.py                          61      3    95%   90-91, 186
+src/tracemantle/markdown.py                          114      5    96%   118-119, 122-124
+src/tracemantle/modes.py                              46      0   100%
+src/tracemantle/parser.py                            111      1    99%   137
+src/tracemantle/policy.py                            106     23    78%   15-16, 53, 57, 59, 61-62, 64, 72-73, 75, 77, 82, 89, 91, 94, 97, 102, 105, 108, 110, 114, 117
+src/tracemantle/product_commands.py                  121     83    31%   27-49, 53-85, 90, 95, 97, 100, 102, 109, 113-139
+src/tracemantle/promptfoo.py                          74      8    89%   31, 36, 39, 41, 48, 58, 78, 90
+src/tracemantle/result.py                             49      1    98%   24
+src/tracemantle/rules/__init__.py                     56      5    91%   122, 159-162, 164
+src/tracemantle/rules/compat.py                       93      4    96%   70, 86, 199, 213
+src/tracemantle/rules/description.py                 178      8    96%   250-252, 267, 283, 334, 371, 404
+src/tracemantle/rules/disclosure.py                   57      0   100%
+src/tracemantle/rules/frontmatter.py                   6      0   100%
+src/tracemantle/rules/frontmatter_common.py           33      4    88%   19, 22, 25, 41
+src/tracemantle/rules/frontmatter_description.py      60      4    93%   59, 75, 93, 112
+src/tracemantle/rules/frontmatter_fields.py           46      6    87%   55-60
+src/tracemantle/rules/frontmatter_name.py             88      6    93%   52, 71, 74, 101, 149, 168
+src/tracemantle/rules/references.py                   16      0   100%
+src/tracemantle/rules/sizing.py                       21      0   100%
+src/tracemantle/rules/template.py                      8      0   100%
+src/tracemantle/storage.py                            67      4    94%   25, 43, 65, 88
+src/tracemantle/template_detection.py                 15      1    93%   40
+src/tracemantle/tokenizer.py                          28      6    79%   21, 29-32, 39
+--------------------------------------------------------------------------------
+TOTAL                                               3867    471    88%
+Required test coverage of 80% reached. Total coverage: 87.82%
+======================= 1267 passed, 4 skipped in 46.94s =======================
+tracemantle --version
+tracemantle 1.6.0
+tracemantle skills/tracemantle/SKILL.md
+✔ PASS  skills/tracemantle/SKILL.md
+    line 4  · info              frontmatter.field.ecosystem  Field 'version' is ecosystem-common but not in the agentskills.io spec. Add it to tracemantle.toml under [frontmatter] extension_fields if intentional.
+              version: ...
+    line 5  · info              frontmatter.field.ecosystem  Field 'author' is ecosystem-common but not in the agentskills.io spec. Add it to tracemantle.toml under [frontmatter] extension_fields if intentional.
+              author: ...
+            · info              description.quality-score  Description quality score: 100/100.
+            · info              compat.unverified  Behavior of field 'version' in codex, cursor is unverified (as of Codex: 2026-04-20; Cursor: 2026-04-20).
+            · info              compat.unverified  Behavior of field 'author' in codex, cursor is unverified (as of Codex: 2026-04-20; Cursor: 2026-04-20).
+
+Checked 1 file: 1 passed, 0 failed
+tracemantle skills/tracemantle/SKILL.md --analyze-graph
+Graph source: heuristic
+✔ PASS  skills/tracemantle/SKILL.md
+    line 4  · info              frontmatter.field.ecosystem  Field 'version' is ecosystem-common but not in the agentskills.io spec. Add it to tracemantle.toml under [frontmatter] extension_fields if intentional.
+              version: ...
+    line 5  · info              frontmatter.field.ecosystem  Field 'author' is ecosystem-common but not in the agentskills.io spec. Add it to tracemantle.toml under [frontmatter] extension_fields if intentional.
+              author: ...
+            · info              description.quality-score  Description quality score: 100/100.
+            · info              compat.unverified  Behavior of field 'version' in codex, cursor is unverified (as of Codex: 2026-04-20; Cursor: 2026-04-20).
+            · info              compat.unverified  Behavior of field 'author' in codex, cursor is unverified (as of Codex: 2026-04-20; Cursor: 2026-04-20).
+
+Checked 1 file: 1 passed, 0 failed
+OK: migration pre-commit rev matches v1.6.0
+python3 -m build --no-isolation --outdir candidate-dist
+* Getting build dependencies for sdist...
+* Building sdist...
+* Building wheel from sdist
+* Getting build dependencies for wheel...
+* Building wheel...
+Successfully built tracemantle-1.6.0.tar.gz and tracemantle-1.6.0-py3-none-any.whl
+python3 scripts/verify_artifacts.py candidate-dist
+{
+  "python": "3.12.13 (main, Mar  3 2026, 12:39:30) [Clang 21.0.0 (clang-2100.0.123.102)]",
+  "checks": [
+    {
+      "artifact": "tracemantle-1.6.0-py3-none-any.whl",
+      "sha256": "e039e128a02df01e70195eb988e663a042569730ab955429928f15394f195047",
+      "version": "1.6.0",
+      "clean_install": "passed",
+      "legacy_migration": "not requested"
+    },
+    {
+      "artifact": "tracemantle-1.6.0.tar.gz",
+      "sha256": "9884de5e24bf5126b4675c5918b1dca4c66620e88dc68881d90778f24eec2d43",
+      "version": "1.6.0",
+      "clean_install": "passed",
+      "legacy_migration": "not requested"
+    }
+  ]
+}

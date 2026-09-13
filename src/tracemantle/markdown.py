@@ -16,7 +16,7 @@ _DEFINITION = re.compile(r'^ {0,3}\[([^\]]+)\]:\s*(<[^>]+>|\S+)')
 _REFERENCE = re.compile(r'\[([^\]\n]+)\](?:\[([^\]\n]*)\])?')
 _HTML = re.compile(r'<(?:a|img)\s+[^>]*?(?:href|src)\s*=\s*[\"\x27]([^\"\x27]+)[\"\x27]', re.I)
 _CODE_BOUNDARY = re.compile(r'`+|\n[ \t]*\n')
-_RESOURCE_PATH = re.compile(r'[\w./${}<>-]+/[^\s`\[\]()\"\'=:]+')
+_RESOURCE_PATH = re.compile(r'[^\s`]+/[^\s`]+')
 _DIRECTIVE = re.compile(r'(?:source|file|include):\s*([^\s]+\.[a-zA-Z0-9]+)', re.I)
 
 
@@ -64,7 +64,10 @@ def _inline_code(lines: list[str]) -> tuple[list[str], dict[int, list[str]]]:
             continue
         opener, closer = runs[index], runs[end]
         target = text[opener.end():closer.start()].strip()
-        if _RESOURCE_PATH.fullmatch(target) or re.fullmatch(r'[\w.-]+\.[a-zA-Z0-9]+', target):
+        path_like = _RESOURCE_PATH.fullmatch(target) and not any(
+            pattern.fullmatch(target) for pattern in (_LINK, _REFERENCE, _DIRECTIVE)
+        )
+        if path_like or re.fullmatch(r'[\w.-]+\.[a-zA-Z0-9]+', target):
             line_number = bisect_right(starts, opener.start()) - 1
             paths.setdefault(line_number, []).append(target)
         for offset in range(opener.start(), closer.end()):
