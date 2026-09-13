@@ -20,7 +20,8 @@ _RESOURCE_PATH = re.compile(r'[^\s`]+/[^\s`]+')
 _DIRECTIVE = re.compile(r'(?:source|file|include):\s*([^\s]+\.[a-zA-Z0-9]+)', re.I)
 _LIST = re.compile(r'^ {0,3}([-+*]|[0-9]{1,9}[.)])( +|$)')
 _PREFIX = re.compile(r'^[ \t]*(?:(?:[-+*]|[0-9]{1,9}[.)])[ \t]+)?')
-_BLOCK_END = re.compile(r'^(?:#{1,6}\s|[-*_]{3,}\s*$)')
+_BLOCK_END = re.compile(r'^ {0,3}(?:#{1,6}(?:[ \t]|$)|(?:\*[ \t]*){3,}$|(?:_[ \t]*){3,}$|(?:-[ \t]*){3,}$)')
+_SETEXT = re.compile(r'^ {0,3}(?:=+|-+)[ \t]*$')
 
 
 @dataclass(frozen=True, slots=True)
@@ -136,8 +137,20 @@ def _blocks(body: str) -> tuple[list[str], list[str], list[int], bool]:
             content.append('')
             continue
         normalized = line[base:]
+        if paragraph and _SETEXT.fullmatch(normalized):
+            # The underline ends the entire preceding paragraph as a heading.
+            # Resolve this before list markers and inline spans, without
+            # splitting the heading's potentially multiline inline content.
+            blocks.append(len(content))
+            visible.append(original)
+            content.append('')
+            paragraph = False
+            continue
+        block_end = bool(_BLOCK_END.match(normalized))
         marker = _LIST.match(normalized)
-        if not paragraph or marker or _BLOCK_END.match(normalized):
+        if block_end:
+            marker = None  # A thematic break takes precedence over a list item.
+        if not paragraph or marker or block_end:
             blocks.append(len(content))
         if marker:
             padding = len(marker[2])

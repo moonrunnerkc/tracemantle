@@ -1,7 +1,7 @@
 ---
 name: tracemantle
 description: Validates and scores SKILL.md files against the agentskills.io specification; use when linting skills for cross-agent compatibility, description quality, or capability graph structure.
-version: "1.6.0"
+version: "1.6.1"
 author: "moonrunnerkc, Aftermath Technologies Ltd"
 ---
 

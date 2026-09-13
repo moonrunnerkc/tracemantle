@@ -1,0 +1,1300 @@
+FFF.F..FFFFFFFFFFFF.F................................                    [100%]
+=================================== FAILURES ===================================
+______________ test_setext_helper_change_blocks_trusted_reuse[=] _______________
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_setext_helper_change_bloc0')
+underline = '='
+
+    @pytest.mark.parametrize('underline', ['=', '==', '======', '-', '--', '---', '------', '   == \t', '  --\t '])
+    def test_setext_helper_change_blocks_trusted_reuse(tmp_path: Path, underline: str) -> None:
+>       _check_reuse(tmp_path, f'`Title\n{underline}\n[helper](helper.py) `', True, True)
+
+tests/test_setext_dependencies.py:14:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_setext_helper_change_bloc0')
+body = '`Title\n=\n[helper](helper.py) `', complete = True, dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+        assert unchanged.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').write_text('Unrelated change')
+        unrelated = _cli(*args)
+        assert unrelated.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').unlink()
+        (candidate / 'helper.py').write_text('print("changed helper")\n')
+        result = _cli(*args)
+        report = json.loads(result.stdout)
+        invalidated = dependency or not complete
+>       assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E       assert 0 == 4
+
+tests/test_dependency_numeric_regressions.py:123: AssertionError
+______________ test_setext_helper_change_blocks_trusted_reuse[==] ______________
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_setext_helper_change_bloc1')
+underline = '=='
+
+    @pytest.mark.parametrize('underline', ['=', '==', '======', '-', '--', '---', '------', '   == \t', '  --\t '])
+    def test_setext_helper_change_blocks_trusted_reuse(tmp_path: Path, underline: str) -> None:
+>       _check_reuse(tmp_path, f'`Title\n{underline}\n[helper](helper.py) `', True, True)
+
+tests/test_setext_dependencies.py:14:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_setext_helper_change_bloc1')
+body = '`Title\n==\n[helper](helper.py) `', complete = True, dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+        assert unchanged.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').write_text('Unrelated change')
+        unrelated = _cli(*args)
+        assert unrelated.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').unlink()
+        (candidate / 'helper.py').write_text('print("changed helper")\n')
+        result = _cli(*args)
+        report = json.loads(result.stdout)
+        invalidated = dependency or not complete
+>       assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E       assert 0 == 4
+
+tests/test_dependency_numeric_regressions.py:123: AssertionError
+____________ test_setext_helper_change_blocks_trusted_reuse[======] ____________
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_setext_helper_change_bloc2')
+underline = '======'
+
+    @pytest.mark.parametrize('underline', ['=', '==', '======', '-', '--', '---', '------', '   == \t', '  --\t '])
+    def test_setext_helper_change_blocks_trusted_reuse(tmp_path: Path, underline: str) -> None:
+>       _check_reuse(tmp_path, f'`Title\n{underline}\n[helper](helper.py) `', True, True)
+
+tests/test_setext_dependencies.py:14:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_setext_helper_change_bloc2')
+body = '`Title\n======\n[helper](helper.py) `', complete = True
+dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+        assert unchanged.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').write_text('Unrelated change')
+        unrelated = _cli(*args)
+        assert unrelated.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').unlink()
+        (candidate / 'helper.py').write_text('print("changed helper")\n')
+        result = _cli(*args)
+        report = json.loads(result.stdout)
+        invalidated = dependency or not complete
+>       assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E       assert 0 == 4
+
+tests/test_dependency_numeric_regressions.py:123: AssertionError
+______________ test_setext_helper_change_blocks_trusted_reuse[--] ______________
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_setext_helper_change_bloc4')
+underline = '--'
+
+    @pytest.mark.parametrize('underline', ['=', '==', '======', '-', '--', '---', '------', '   == \t', '  --\t '])
+    def test_setext_helper_change_blocks_trusted_reuse(tmp_path: Path, underline: str) -> None:
+>       _check_reuse(tmp_path, f'`Title\n{underline}\n[helper](helper.py) `', True, True)
+
+tests/test_setext_dependencies.py:14:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_setext_helper_change_bloc4')
+body = '`Title\n--\n[helper](helper.py) `', complete = True, dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+        assert unchanged.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').write_text('Unrelated change')
+        unrelated = _cli(*args)
+        assert unrelated.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').unlink()
+        (candidate / 'helper.py').write_text('print("changed helper")\n')
+        result = _cli(*args)
+        report = json.loads(result.stdout)
+        invalidated = dependency or not complete
+>       assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E       assert 0 == 4
+
+tests/test_dependency_numeric_regressions.py:123: AssertionError
+___________ test_setext_helper_change_blocks_trusted_reuse[   == \t] ___________
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_setext_helper_change_bloc7')
+underline = '   == \t'
+
+    @pytest.mark.parametrize('underline', ['=', '==', '======', '-', '--', '---', '------', '   == \t', '  --\t '])
+    def test_setext_helper_change_blocks_trusted_reuse(tmp_path: Path, underline: str) -> None:
+>       _check_reuse(tmp_path, f'`Title\n{underline}\n[helper](helper.py) `', True, True)
+
+tests/test_setext_dependencies.py:14:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_setext_helper_change_bloc7')
+body = '`Title\n   == \t\n[helper](helper.py) `', complete = True
+dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+        assert unchanged.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').write_text('Unrelated change')
+        unrelated = _cli(*args)
+        assert unrelated.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').unlink()
+        (candidate / 'helper.py').write_text('print("changed helper")\n')
+        result = _cli(*args)
+        report = json.loads(result.stdout)
+        invalidated = dependency or not complete
+>       assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E       assert 0 == 4
+
+tests/test_dependency_numeric_regressions.py:123: AssertionError
+___________ test_setext_helper_change_blocks_trusted_reuse[  --\t ] ____________
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_setext_helper_change_bloc8')
+underline = '  --\t '
+
+    @pytest.mark.parametrize('underline', ['=', '==', '======', '-', '--', '---', '------', '   == \t', '  --\t '])
+    def test_setext_helper_change_blocks_trusted_reuse(tmp_path: Path, underline: str) -> None:
+>       _check_reuse(tmp_path, f'`Title\n{underline}\n[helper](helper.py) `', True, True)
+
+tests/test_setext_dependencies.py:14:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_setext_helper_change_bloc8')
+body = '`Title\n  --\t \n[helper](helper.py) `', complete = True
+dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+        assert unchanged.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').write_text('Unrelated change')
+        unrelated = _cli(*args)
+        assert unrelated.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').unlink()
+        (candidate / 'helper.py').write_text('print("changed helper")\n')
+        result = _cli(*args)
+        report = json.loads(result.stdout)
+        invalidated = dependency or not complete
+>       assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E       assert 0 == 4
+
+tests/test_dependency_numeric_regressions.py:123: AssertionError
+_ test_adjacent_blocks_keep_governed_helper[- `Title\n  ==\n  [helper](helper.py) `] _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove0')
+body = '- `Title\n  ==\n  [helper](helper.py) `'
+
+    @pytest.mark.parametrize('body', [
+        '- `Title\n  ==\n  [helper](helper.py) `',
+        '1. `Title\n   --\n   [helper](helper.py) `',
+        '- Steps:\n    - `Title\n      ==\n      [helper](helper.py) `',
+        '-\t`Title\n\t==\n\t[helper](helper.py) `',
+        '   # `Title\n[helper](helper.py) `',
+        '`Before\n   # Heading\n[helper](helper.py) `',
+        '`Before\n_ _ _\n[helper](helper.py) `',
+        '`Before\n  * * * \t\n[helper](helper.py) `',
+        '`Before\n- - -\n[helper](helper.py) `',
+        '`Title\nsecond line\n==\n[helper](helper.py) `',
+        '`Before\n\nTitle\n==\n[helper](helper.py) `',
+        '`First\n==\nSecond\n--\n[helper](helper.py) `',
+    ])
+    def test_adjacent_blocks_keep_governed_helper(tmp_path: Path, body: str) -> None:
+>       _check_reuse(tmp_path, body, True, True)
+
+tests/test_setext_dependencies.py:32:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove0')
+body = '- `Title\n  ==\n  [helper](helper.py) `', complete = True
+dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+        assert unchanged.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').write_text('Unrelated change')
+        unrelated = _cli(*args)
+        assert unrelated.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').unlink()
+        (candidate / 'helper.py').write_text('print("changed helper")\n')
+        result = _cli(*args)
+        report = json.loads(result.stdout)
+        invalidated = dependency or not complete
+>       assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E       assert 0 == 4
+
+tests/test_dependency_numeric_regressions.py:123: AssertionError
+_ test_adjacent_blocks_keep_governed_helper[1. `Title\n   --\n   [helper](helper.py) `] _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove1')
+body = '1. `Title\n   --\n   [helper](helper.py) `'
+
+    @pytest.mark.parametrize('body', [
+        '- `Title\n  ==\n  [helper](helper.py) `',
+        '1. `Title\n   --\n   [helper](helper.py) `',
+        '- Steps:\n    - `Title\n      ==\n      [helper](helper.py) `',
+        '-\t`Title\n\t==\n\t[helper](helper.py) `',
+        '   # `Title\n[helper](helper.py) `',
+        '`Before\n   # Heading\n[helper](helper.py) `',
+        '`Before\n_ _ _\n[helper](helper.py) `',
+        '`Before\n  * * * \t\n[helper](helper.py) `',
+        '`Before\n- - -\n[helper](helper.py) `',
+        '`Title\nsecond line\n==\n[helper](helper.py) `',
+        '`Before\n\nTitle\n==\n[helper](helper.py) `',
+        '`First\n==\nSecond\n--\n[helper](helper.py) `',
+    ])
+    def test_adjacent_blocks_keep_governed_helper(tmp_path: Path, body: str) -> None:
+>       _check_reuse(tmp_path, body, True, True)
+
+tests/test_setext_dependencies.py:32:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove1')
+body = '1. `Title\n   --\n   [helper](helper.py) `', complete = True
+dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+        assert unchanged.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').write_text('Unrelated change')
+        unrelated = _cli(*args)
+        assert unrelated.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').unlink()
+        (candidate / 'helper.py').write_text('print("changed helper")\n')
+        result = _cli(*args)
+        report = json.loads(result.stdout)
+        invalidated = dependency or not complete
+>       assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E       assert 0 == 4
+
+tests/test_dependency_numeric_regressions.py:123: AssertionError
+_ test_adjacent_blocks_keep_governed_helper[- Steps:\n    - `Title\n      ==\n      [helper](helper.py) `] _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove2')
+body = '- Steps:\n    - `Title\n      ==\n      [helper](helper.py) `'
+
+    @pytest.mark.parametrize('body', [
+        '- `Title\n  ==\n  [helper](helper.py) `',
+        '1. `Title\n   --\n   [helper](helper.py) `',
+        '- Steps:\n    - `Title\n      ==\n      [helper](helper.py) `',
+        '-\t`Title\n\t==\n\t[helper](helper.py) `',
+        '   # `Title\n[helper](helper.py) `',
+        '`Before\n   # Heading\n[helper](helper.py) `',
+        '`Before\n_ _ _\n[helper](helper.py) `',
+        '`Before\n  * * * \t\n[helper](helper.py) `',
+        '`Before\n- - -\n[helper](helper.py) `',
+        '`Title\nsecond line\n==\n[helper](helper.py) `',
+        '`Before\n\nTitle\n==\n[helper](helper.py) `',
+        '`First\n==\nSecond\n--\n[helper](helper.py) `',
+    ])
+    def test_adjacent_blocks_keep_governed_helper(tmp_path: Path, body: str) -> None:
+>       _check_reuse(tmp_path, body, True, True)
+
+tests/test_setext_dependencies.py:32:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove2')
+body = '- Steps:\n    - `Title\n      ==\n      [helper](helper.py) `'
+complete = True, dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+        assert unchanged.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').write_text('Unrelated change')
+        unrelated = _cli(*args)
+        assert unrelated.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').unlink()
+        (candidate / 'helper.py').write_text('print("changed helper")\n')
+        result = _cli(*args)
+        report = json.loads(result.stdout)
+        invalidated = dependency or not complete
+>       assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E       assert 0 == 4
+
+tests/test_dependency_numeric_regressions.py:123: AssertionError
+_ test_adjacent_blocks_keep_governed_helper[-\t`Title\n\t==\n\t[helper](helper.py) `] _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove3')
+body = '-\t`Title\n\t==\n\t[helper](helper.py) `'
+
+    @pytest.mark.parametrize('body', [
+        '- `Title\n  ==\n  [helper](helper.py) `',
+        '1. `Title\n   --\n   [helper](helper.py) `',
+        '- Steps:\n    - `Title\n      ==\n      [helper](helper.py) `',
+        '-\t`Title\n\t==\n\t[helper](helper.py) `',
+        '   # `Title\n[helper](helper.py) `',
+        '`Before\n   # Heading\n[helper](helper.py) `',
+        '`Before\n_ _ _\n[helper](helper.py) `',
+        '`Before\n  * * * \t\n[helper](helper.py) `',
+        '`Before\n- - -\n[helper](helper.py) `',
+        '`Title\nsecond line\n==\n[helper](helper.py) `',
+        '`Before\n\nTitle\n==\n[helper](helper.py) `',
+        '`First\n==\nSecond\n--\n[helper](helper.py) `',
+    ])
+    def test_adjacent_blocks_keep_governed_helper(tmp_path: Path, body: str) -> None:
+>       _check_reuse(tmp_path, body, True, True)
+
+tests/test_setext_dependencies.py:32:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove3')
+body = '-\t`Title\n\t==\n\t[helper](helper.py) `', complete = True
+dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+        assert unchanged.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').write_text('Unrelated change')
+        unrelated = _cli(*args)
+        assert unrelated.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').unlink()
+        (candidate / 'helper.py').write_text('print("changed helper")\n')
+        result = _cli(*args)
+        report = json.loads(result.stdout)
+        invalidated = dependency or not complete
+>       assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E       assert 0 == 4
+
+tests/test_dependency_numeric_regressions.py:123: AssertionError
+_ test_adjacent_blocks_keep_governed_helper[   # `Title\n[helper](helper.py) `] _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove4')
+body = '   # `Title\n[helper](helper.py) `'
+
+    @pytest.mark.parametrize('body', [
+        '- `Title\n  ==\n  [helper](helper.py) `',
+        '1. `Title\n   --\n   [helper](helper.py) `',
+        '- Steps:\n    - `Title\n      ==\n      [helper](helper.py) `',
+        '-\t`Title\n\t==\n\t[helper](helper.py) `',
+        '   # `Title\n[helper](helper.py) `',
+        '`Before\n   # Heading\n[helper](helper.py) `',
+        '`Before\n_ _ _\n[helper](helper.py) `',
+        '`Before\n  * * * \t\n[helper](helper.py) `',
+        '`Before\n- - -\n[helper](helper.py) `',
+        '`Title\nsecond line\n==\n[helper](helper.py) `',
+        '`Before\n\nTitle\n==\n[helper](helper.py) `',
+        '`First\n==\nSecond\n--\n[helper](helper.py) `',
+    ])
+    def test_adjacent_blocks_keep_governed_helper(tmp_path: Path, body: str) -> None:
+>       _check_reuse(tmp_path, body, True, True)
+
+tests/test_setext_dependencies.py:32:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove4')
+body = '   # `Title\n[helper](helper.py) `', complete = True, dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+        assert unchanged.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').write_text('Unrelated change')
+        unrelated = _cli(*args)
+        assert unrelated.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').unlink()
+        (candidate / 'helper.py').write_text('print("changed helper")\n')
+        result = _cli(*args)
+        report = json.loads(result.stdout)
+        invalidated = dependency or not complete
+>       assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E       assert 0 == 4
+
+tests/test_dependency_numeric_regressions.py:123: AssertionError
+_ test_adjacent_blocks_keep_governed_helper[`Before\n   # Heading\n[helper](helper.py) `] _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove5')
+body = '`Before\n   # Heading\n[helper](helper.py) `'
+
+    @pytest.mark.parametrize('body', [
+        '- `Title\n  ==\n  [helper](helper.py) `',
+        '1. `Title\n   --\n   [helper](helper.py) `',
+        '- Steps:\n    - `Title\n      ==\n      [helper](helper.py) `',
+        '-\t`Title\n\t==\n\t[helper](helper.py) `',
+        '   # `Title\n[helper](helper.py) `',
+        '`Before\n   # Heading\n[helper](helper.py) `',
+        '`Before\n_ _ _\n[helper](helper.py) `',
+        '`Before\n  * * * \t\n[helper](helper.py) `',
+        '`Before\n- - -\n[helper](helper.py) `',
+        '`Title\nsecond line\n==\n[helper](helper.py) `',
+        '`Before\n\nTitle\n==\n[helper](helper.py) `',
+        '`First\n==\nSecond\n--\n[helper](helper.py) `',
+    ])
+    def test_adjacent_blocks_keep_governed_helper(tmp_path: Path, body: str) -> None:
+>       _check_reuse(tmp_path, body, True, True)
+
+tests/test_setext_dependencies.py:32:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove5')
+body = '`Before\n   # Heading\n[helper](helper.py) `', complete = True
+dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+        assert unchanged.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').write_text('Unrelated change')
+        unrelated = _cli(*args)
+        assert unrelated.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').unlink()
+        (candidate / 'helper.py').write_text('print("changed helper")\n')
+        result = _cli(*args)
+        report = json.loads(result.stdout)
+        invalidated = dependency or not complete
+>       assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E       assert 0 == 4
+
+tests/test_dependency_numeric_regressions.py:123: AssertionError
+_ test_adjacent_blocks_keep_governed_helper[`Before\n_ _ _\n[helper](helper.py) `] _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove6')
+body = '`Before\n_ _ _\n[helper](helper.py) `'
+
+    @pytest.mark.parametrize('body', [
+        '- `Title\n  ==\n  [helper](helper.py) `',
+        '1. `Title\n   --\n   [helper](helper.py) `',
+        '- Steps:\n    - `Title\n      ==\n      [helper](helper.py) `',
+        '-\t`Title\n\t==\n\t[helper](helper.py) `',
+        '   # `Title\n[helper](helper.py) `',
+        '`Before\n   # Heading\n[helper](helper.py) `',
+        '`Before\n_ _ _\n[helper](helper.py) `',
+        '`Before\n  * * * \t\n[helper](helper.py) `',
+        '`Before\n- - -\n[helper](helper.py) `',
+        '`Title\nsecond line\n==\n[helper](helper.py) `',
+        '`Before\n\nTitle\n==\n[helper](helper.py) `',
+        '`First\n==\nSecond\n--\n[helper](helper.py) `',
+    ])
+    def test_adjacent_blocks_keep_governed_helper(tmp_path: Path, body: str) -> None:
+>       _check_reuse(tmp_path, body, True, True)
+
+tests/test_setext_dependencies.py:32:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove6')
+body = '`Before\n_ _ _\n[helper](helper.py) `', complete = True
+dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+        assert unchanged.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').write_text('Unrelated change')
+        unrelated = _cli(*args)
+        assert unrelated.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').unlink()
+        (candidate / 'helper.py').write_text('print("changed helper")\n')
+        result = _cli(*args)
+        report = json.loads(result.stdout)
+        invalidated = dependency or not complete
+>       assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E       assert 0 == 4
+
+tests/test_dependency_numeric_regressions.py:123: AssertionError
+_ test_adjacent_blocks_keep_governed_helper[`Before\n  * * * \t\n[helper](helper.py) `] _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove7')
+body = '`Before\n  * * * \t\n[helper](helper.py) `'
+
+    @pytest.mark.parametrize('body', [
+        '- `Title\n  ==\n  [helper](helper.py) `',
+        '1. `Title\n   --\n   [helper](helper.py) `',
+        '- Steps:\n    - `Title\n      ==\n      [helper](helper.py) `',
+        '-\t`Title\n\t==\n\t[helper](helper.py) `',
+        '   # `Title\n[helper](helper.py) `',
+        '`Before\n   # Heading\n[helper](helper.py) `',
+        '`Before\n_ _ _\n[helper](helper.py) `',
+        '`Before\n  * * * \t\n[helper](helper.py) `',
+        '`Before\n- - -\n[helper](helper.py) `',
+        '`Title\nsecond line\n==\n[helper](helper.py) `',
+        '`Before\n\nTitle\n==\n[helper](helper.py) `',
+        '`First\n==\nSecond\n--\n[helper](helper.py) `',
+    ])
+    def test_adjacent_blocks_keep_governed_helper(tmp_path: Path, body: str) -> None:
+>       _check_reuse(tmp_path, body, True, True)
+
+tests/test_setext_dependencies.py:32:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove7')
+body = '`Before\n  * * * \t\n[helper](helper.py) `', complete = True
+dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+>       assert unchanged.returncode == (0 if complete else 4)
+E       assert 4 == 0
+E        +  where 4 = CompletedProcess(args=['/private/tmp/tracemantle-audit-312/bin/python', '-m', 'tracemantle', 'compare', '/private/var/...omplete; rerun the full relevant suite."\n    ],\n    "exit_code": 4,\n    "required_reruns": []\n  }\n}\n', stderr='').returncode
+
+tests/test_dependency_numeric_regressions.py:114: AssertionError
+_ test_adjacent_blocks_keep_governed_helper[`Before\n- - -\n[helper](helper.py) `] _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove8')
+body = '`Before\n- - -\n[helper](helper.py) `'
+
+    @pytest.mark.parametrize('body', [
+        '- `Title\n  ==\n  [helper](helper.py) `',
+        '1. `Title\n   --\n   [helper](helper.py) `',
+        '- Steps:\n    - `Title\n      ==\n      [helper](helper.py) `',
+        '-\t`Title\n\t==\n\t[helper](helper.py) `',
+        '   # `Title\n[helper](helper.py) `',
+        '`Before\n   # Heading\n[helper](helper.py) `',
+        '`Before\n_ _ _\n[helper](helper.py) `',
+        '`Before\n  * * * \t\n[helper](helper.py) `',
+        '`Before\n- - -\n[helper](helper.py) `',
+        '`Title\nsecond line\n==\n[helper](helper.py) `',
+        '`Before\n\nTitle\n==\n[helper](helper.py) `',
+        '`First\n==\nSecond\n--\n[helper](helper.py) `',
+    ])
+    def test_adjacent_blocks_keep_governed_helper(tmp_path: Path, body: str) -> None:
+>       _check_reuse(tmp_path, body, True, True)
+
+tests/test_setext_dependencies.py:32:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove8')
+body = '`Before\n- - -\n[helper](helper.py) `', complete = True
+dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+>       assert unchanged.returncode == (0 if complete else 4)
+E       assert 4 == 0
+E        +  where 4 = CompletedProcess(args=['/private/tmp/tracemantle-audit-312/bin/python', '-m', 'tracemantle', 'compare', '/private/var/...omplete; rerun the full relevant suite."\n    ],\n    "exit_code": 4,\n    "required_reruns": []\n  }\n}\n', stderr='').returncode
+
+tests/test_dependency_numeric_regressions.py:114: AssertionError
+_ test_adjacent_blocks_keep_governed_helper[`Title\nsecond line\n==\n[helper](helper.py) `] _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove9')
+body = '`Title\nsecond line\n==\n[helper](helper.py) `'
+
+    @pytest.mark.parametrize('body', [
+        '- `Title\n  ==\n  [helper](helper.py) `',
+        '1. `Title\n   --\n   [helper](helper.py) `',
+        '- Steps:\n    - `Title\n      ==\n      [helper](helper.py) `',
+        '-\t`Title\n\t==\n\t[helper](helper.py) `',
+        '   # `Title\n[helper](helper.py) `',
+        '`Before\n   # Heading\n[helper](helper.py) `',
+        '`Before\n_ _ _\n[helper](helper.py) `',
+        '`Before\n  * * * \t\n[helper](helper.py) `',
+        '`Before\n- - -\n[helper](helper.py) `',
+        '`Title\nsecond line\n==\n[helper](helper.py) `',
+        '`Before\n\nTitle\n==\n[helper](helper.py) `',
+        '`First\n==\nSecond\n--\n[helper](helper.py) `',
+    ])
+    def test_adjacent_blocks_keep_governed_helper(tmp_path: Path, body: str) -> None:
+>       _check_reuse(tmp_path, body, True, True)
+
+tests/test_setext_dependencies.py:32:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove9')
+body = '`Title\nsecond line\n==\n[helper](helper.py) `', complete = True
+dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+        assert unchanged.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').write_text('Unrelated change')
+        unrelated = _cli(*args)
+        assert unrelated.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').unlink()
+        (candidate / 'helper.py').write_text('print("changed helper")\n')
+        result = _cli(*args)
+        report = json.loads(result.stdout)
+        invalidated = dependency or not complete
+>       assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E       assert 0 == 4
+
+tests/test_dependency_numeric_regressions.py:123: AssertionError
+_ test_adjacent_blocks_keep_governed_helper[`First\n==\nSecond\n--\n[helper](helper.py) `] _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove11')
+body = '`First\n==\nSecond\n--\n[helper](helper.py) `'
+
+    @pytest.mark.parametrize('body', [
+        '- `Title\n  ==\n  [helper](helper.py) `',
+        '1. `Title\n   --\n   [helper](helper.py) `',
+        '- Steps:\n    - `Title\n      ==\n      [helper](helper.py) `',
+        '-\t`Title\n\t==\n\t[helper](helper.py) `',
+        '   # `Title\n[helper](helper.py) `',
+        '`Before\n   # Heading\n[helper](helper.py) `',
+        '`Before\n_ _ _\n[helper](helper.py) `',
+        '`Before\n  * * * \t\n[helper](helper.py) `',
+        '`Before\n- - -\n[helper](helper.py) `',
+        '`Title\nsecond line\n==\n[helper](helper.py) `',
+        '`Before\n\nTitle\n==\n[helper](helper.py) `',
+        '`First\n==\nSecond\n--\n[helper](helper.py) `',
+    ])
+    def test_adjacent_blocks_keep_governed_helper(tmp_path: Path, body: str) -> None:
+>       _check_reuse(tmp_path, body, True, True)
+
+tests/test_setext_dependencies.py:32:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-70/test_adjacent_blocks_keep_gove11')
+body = '`First\n==\nSecond\n--\n[helper](helper.py) `', complete = True
+dependency = True
+
+    @pytest.mark.parametrize('body,complete,dependency', [
+        ('[helper](helper.py)', True, True),
+        (r'\` [helper](helper.py) `', True, True),
+        ('- Steps:\n    - [helper](helper.py)', True, True),
+        ('- Steps:\n\n    [helper](helper.py)', True, True),
+        ('Paragraph\n    [helper](helper.py)', True, True),
+        ('> - Steps:\n>     [helper](helper.py)', False, True),
+        ('- Steps:\nlazy continuation\n\n    [helper](helper.py)', False, False),
+        ('- - Steps:\n\n    [helper](helper.py)', False, True),
+        ('-\n\n     [helper](helper.py)', True, True),
+        ('`[example](helper.py)`', True, False),
+        ('- Steps:\n\n      [example](helper.py)', True, False),
+    ])
+    def test_dependency_closure_controls_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
+        base = _bundle(tmp_path / 'base')
+        source = base / 'SKILL.md'
+        source.write_text(source.read_text().replace('Run [helper](helper.py).', body))
+        # Both policy and evidence bind ONLY SKILL.md. Binding helper.py would mask
+        # the dependency-discovery defect by independently governing its digest.
+        record = _record(base)
+        record = replace(record, inputs=tuple(item for item in record.inputs if item[0] == 'SKILL.md'),
+                         observed_at=datetime.now(timezone.utc).isoformat())
+        trusted = tmp_path / 'trusted'
+        _trusted_repository(trusted, record)
+        policy_file = trusted / 'pyproject.toml'
+        policy_file.write_text(policy_file.read_text().replace('inputs=["SKILL.md", "helper.py"]', 'inputs=["SKILL.md"]'))
+        subprocess.run(['git', '-C', str(trusted), 'add', '.'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(trusted), '-c', 'user.name=TraceMantle tests', '-c', 'user.email=tests@example.invalid',
+                        'commit', '-qm', 'Declare only the skill input'], check=True, capture_output=True)
+        revision = subprocess.check_output(['git', '-C', str(trusted), 'rev-parse', 'HEAD'], text=True).strip()
+        assert load_trusted_policy(trusted, revision).checks[0].inputs == ('SKILL.md',)
+        assert set(json.loads((trusted / 'approved.json').read_bytes())['inputs']) == {'SKILL.md'}
+        manifest = _cli('manifest', str(base), '--format', 'json')
+        identity = json.loads(manifest.stdout)['result']
+        candidate = tmp_path / 'candidate'
+        shutil.copytree(base, candidate)
+        args = ('compare', str(base), str(candidate), '--trusted-root', str(trusted), '--base-revision', revision,
+                '--evidence', str(trusted / 'approved.json'), '--format', 'json')
+        unchanged = _cli(*args)
+        assert unchanged.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').write_text('Unrelated change')
+        unrelated = _cli(*args)
+        assert unrelated.returncode == (0 if complete else 4)
+        (candidate / 'notes.txt').unlink()
+        (candidate / 'helper.py').write_text('print("changed helper")\n')
+        result = _cli(*args)
+        report = json.loads(result.stdout)
+        invalidated = dependency or not complete
+>       assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E       assert 0 == 4
+
+tests/test_dependency_numeric_regressions.py:123: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_setext_dependencies.py::test_setext_helper_change_blocks_trusted_reuse[=]
+FAILED tests/test_setext_dependencies.py::test_setext_helper_change_blocks_trusted_reuse[==]
+FAILED tests/test_setext_dependencies.py::test_setext_helper_change_blocks_trusted_reuse[======]
+FAILED tests/test_setext_dependencies.py::test_setext_helper_change_blocks_trusted_reuse[--]
+FAILED tests/test_setext_dependencies.py::test_setext_helper_change_blocks_trusted_reuse[   == \t]
+FAILED tests/test_setext_dependencies.py::test_setext_helper_change_blocks_trusted_reuse[  --\t ]
+FAILED tests/test_setext_dependencies.py::test_adjacent_blocks_keep_governed_helper[- `Title\n  ==\n  [helper](helper.py) `]
+FAILED tests/test_setext_dependencies.py::test_adjacent_blocks_keep_governed_helper[1. `Title\n   --\n   [helper](helper.py) `]
+FAILED tests/test_setext_dependencies.py::test_adjacent_blocks_keep_governed_helper[- Steps:\n    - `Title\n      ==\n      [helper](helper.py) `]
+FAILED tests/test_setext_dependencies.py::test_adjacent_blocks_keep_governed_helper[-\t`Title\n\t==\n\t[helper](helper.py) `]
+FAILED tests/test_setext_dependencies.py::test_adjacent_blocks_keep_governed_helper[   # `Title\n[helper](helper.py) `]
+FAILED tests/test_setext_dependencies.py::test_adjacent_blocks_keep_governed_helper[`Before\n   # Heading\n[helper](helper.py) `]
+FAILED tests/test_setext_dependencies.py::test_adjacent_blocks_keep_governed_helper[`Before\n_ _ _\n[helper](helper.py) `]
+FAILED tests/test_setext_dependencies.py::test_adjacent_blocks_keep_governed_helper[`Before\n  * * * \t\n[helper](helper.py) `]
+FAILED tests/test_setext_dependencies.py::test_adjacent_blocks_keep_governed_helper[`Before\n- - -\n[helper](helper.py) `]
+FAILED tests/test_setext_dependencies.py::test_adjacent_blocks_keep_governed_helper[`Title\nsecond line\n==\n[helper](helper.py) `]
+FAILED tests/test_setext_dependencies.py::test_adjacent_blocks_keep_governed_helper[`First\n==\nSecond\n--\n[helper](helper.py) `]
+17 failed, 36 passed in 29.01s

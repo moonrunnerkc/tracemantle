@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-09-13
+
 ### Fixed
 
+- Setext heading boundaries are resolved before inline code spans, so unmatched heading backticks cannot hide a following helper link and authorize evidence reuse after the helper changes. Multiline heading spans remain intact. Indented ATX headings and spaced thematic breaks also delimit spans correctly.
 - Escaped opening backticks no longer hide Markdown resource links. Odd/even backslash counts, literal backslashes inside code spans and exact delimiter lengths are handled separately; adjacent list items cannot close one another's code spans.
 - Nested list links and paragraph/list continuations participate in dependency closure, including tab indentation. Actual indented and fenced code examples stay excluded. Unsupported container contexts mark coverage incomplete, preventing uncertain dependency discovery from authorizing evidence reuse.
 - Shared bounded JSON decoding rejects numeric exponent overflow as well as explicit nonfinite constants before row selection or canonical hashing. Malformed Promptfoo imports return infrastructure-error (exit 2), preserve JSON error output and leave no partial evidence store.
@@ -20,9 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Synthetic trusted-workflow controls, explicit workflow policy/evidence paths and a manual nonpublishing failed-check acceptance workflow. Release triggers, publishing guards and released installation examples are unchanged.
+- Synthetic trusted-workflow controls, explicit workflow policy/evidence paths and a manual nonpublishing failed-check acceptance workflow. Release triggers and publishing guards retain the established quality and trusted-publishing controls.
 
-These changes are unreleased, intended for the next patch after 1.6.0. Package versions remain at the released baseline until release preparation; verification artifacts from this source are not the published 1.6.0 artifacts.
+This patch includes the corrections accumulated after 1.6.0. Existing configuration, evidence schemas and the Promptfoo 0.118.10 adapter remain compatible. Recompute manifests and comparisons with 1.6.1 and rerun invalidated required checks. Static evidence compatibility does not establish live agent success; no live evaluations were executed for this release.
 
 ## [1.6.0] - 2026-09-13
 

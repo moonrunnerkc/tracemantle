@@ -1,0 +1,72 @@
+{
+  "python": "3.12.13",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "implementation_sha256": "542ad7539c99724f3a29a054a0d710b1dec5352a7db788c33033ec8ba2286bde",
+  "repeats": 5,
+  "workloads": {
+    "setext-links-1000": {
+      "corpus_bytes": 44778,
+      "corpus_sha256": "efcd0bd509a53b5c9c9473e3696a2a1d22e0d10693e3db9288da555f4ef40b62",
+      "seconds": [
+        0.007943875039927661,
+        0.007976875058375299,
+        0.007484958041459322,
+        0.007585042039863765,
+        0.007514583063311875
+      ],
+      "median": 0.007585042039863765,
+      "spread": 0.000491917016915977,
+      "peak_python_bytes": 1551642,
+      "resource_count": 0,
+      "uncertain": false
+    },
+    "multiline-heading-spans-1000": {
+      "corpus_bytes": 72778,
+      "corpus_sha256": "f085b103d503147a5a20cf7cd965c01c5f651b041b988509abc6e851b60f45e3",
+      "seconds": [
+        0.012240499956533313,
+        0.01202441705390811,
+        0.011987040983512998,
+        0.012255916954018176,
+        0.01220266695600003
+      ],
+      "median": 0.01220266695600003,
+      "spread": 0.000268875970505178,
+      "peak_python_bytes": 2171267,
+      "resource_count": 1000,
+      "uncertain": false
+    },
+    "long-underlines": {
+      "corpus_bytes": 500029,
+      "corpus_sha256": "6a1021277f422e5fbb46d3b653f99dc3338d51f8651d6858b01f0f22aa901532",
+      "seconds": [
+        0.02348795800935477,
+        0.023289083037525415,
+        0.023235041997395456,
+        0.0230584159726277,
+        0.022730750031769276
+      ],
+      "median": 0.023235041997395456,
+      "spread": 0.0007572079775854945,
+      "peak_python_bytes": 6502210,
+      "resource_count": 0,
+      "uncertain": false
+    },
+    "near-thematic-breaks": {
+      "corpus_bytes": 200080,
+      "corpus_sha256": "516a5cdf1da26492f16562afa904d6d2b40e0d9dc210a9c8663f95cb97affd16",
+      "seconds": [
+        0.005071708001196384,
+        0.004225083044730127,
+        0.004623749991878867,
+        0.004765999969094992,
+        0.004320583073422313
+      ],
+      "median": 0.004623749991878867,
+      "spread": 0.0008466249564662576,
+      "peak_python_bytes": 602154,
+      "resource_count": 0,
+      "uncertain": true
+    }
+  }
+}

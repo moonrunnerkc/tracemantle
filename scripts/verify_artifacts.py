@@ -73,9 +73,29 @@ print(tracemantle.__version__)
         assert report['tool'] == 'TraceMantle' and report['gate']['passed']
         manifest = json.loads(run([str(executable), 'manifest', str(bundle), '--format', 'json'], work))
         assert manifest['result']['complete']
+        (bundle / 'helper.py').write_text('print("artifact control")\n')
+        source = bundle / 'SKILL.md'
+        header = source.read_text().split('# Validate source')[0]
+        for underline in ('======', '--'):
+            source.write_text(header + f'`Title\n{underline}\n[helper](helper.py) `\n')
+            identity = json.loads(run([str(executable), 'manifest', str(bundle), '--format', 'json'], work))['result']
+            assert identity['complete'] and ['SKILL.md', 'helper.py'] in identity['dependencies']
+        overflow = work / 'overflow.json'
+        overflow.write_text('{"overflow": 1e999}')
+        store = work / 'evidence'
+        rejected = subprocess.run(
+            [str(binary), '-I', '-m', 'tracemantle', 'import-evidence', str(overflow),
+             '--bundle', str(bundle), '--store', str(store), '--format', 'json'],
+            cwd=work, capture_output=True, text=True, timeout=30,
+        )
+        error = json.loads(rejected.stdout)
+        assert rejected.returncode == error['exit_code'] == 2
+        assert error['result']['state'] == 'infrastructure-error' and 'Non-finite' in rejected.stdout
+        assert 'Traceback' not in rejected.stderr and not store.exists()
         run([*pip, 'check'], work)
         return {'artifact': artifact.name, 'sha256': hashlib.sha256(artifact.read_bytes()).hexdigest(),
-                'version': version, 'clean_install': 'passed', 'legacy_migration': 'passed' if legacy else 'not requested'}
+                'version': version, 'clean_install': 'passed', 'setext_dependencies': 'passed', 'numeric_overflow': 'passed',
+                'legacy_migration': 'passed' if legacy else 'not requested'}
 
 
 def main() -> None:

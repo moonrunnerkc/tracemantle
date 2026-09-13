@@ -8,7 +8,7 @@ The supported replacement sequence, verified with locally built old and new arti
 python -m pip show skillcheck
 # Only after identifying this project's old distribution:
 python -m pip uninstall skillcheck
-python -m pip install tracemantle==1.6.0
+python -m pip install tracemantle==1.6.1
 tracemantle --version
 python -m tracemantle --version
 ```
@@ -19,7 +19,7 @@ The documented top-level imports (`validate`, `Diagnostic`, `Severity`, `Validat
 
 Configuration is merged per field at the selected project root: defaults, `skillcheck.toml` and `[tool.skillcheck]`, `[tool.tracemantle]`, `tracemantle.toml`, then explicit CLI arguments. Canonical standalone fields take precedence over canonical pyproject fields. Legacy use warns on stderr, preserving machine stdout. Rename the standalone file or move its fields under `[tool.tracemantle]`; frontmatter options go under `[tool.tracemantle.frontmatter]`. An explicit `--config` selects one file for the invocation. Projects with different discovered config roots require separate invocations.
 
-The fixes under `[Unreleased]` retain this installation and migration sequence; released examples continue to pin 1.6.0. Source verification builds still carry the baseline package version until release preparation and must be identified by their source revision and artifact digest. They are not replacements for published artifacts. The dependency-discovery and numeric-overflow fixes also remain unreleased. They do not change the migration sequence or the supported Promptfoo adapter version. Automatic discovery now reports malformed `tool` tables as input errors; `--format json` preserves a machine-readable error envelope.
+Version 1.6.1 retains this installation sequence, evidence schemas and supported Promptfoo adapter version. Upgrade existing TraceMantle environments with `python -m pip install --upgrade tracemantle==1.6.1`. Recompute manifests and comparisons after upgrading: helper links after Setext headings and escaped delimiters now invalidate dependent evidence correctly. Rerun required checks reported as unknown; do not treat a previous passing comparison as a new approval. Numeric overflow and malformed configuration now return the documented input-error envelopes.
 
 Test regeneration environment settings are now `TRACEMANTLE_REGEN_GOLDEN`. No runtime environment-based configuration was added. Third-party tokenizer cache settings retain their own names.
 
@@ -48,14 +48,14 @@ git remote set-url origin git@github.com:moonrunnerkc/tracemantle.git
 
 If you also rename the local checkout directory, recreate its virtual environment: installed console scripts can retain absolute paths to the old directory.
 
-The installed skill now lives at `skills/tracemantle/SKILL.md`. Version tags before 1.6.0 still identify SkillCheck source. Use `moonrunnerkc/tracemantle@v1.6.0` for TraceMantle, or pin a full CI-verified commit SHA. Renaming the repository does not publish the distribution or update downstream repositories automatically.
+The installed skill now lives at `skills/tracemantle/SKILL.md`. Version tags before 1.6.0 still identify SkillCheck source. Use `moonrunnerkc/tracemantle@v1.6.1` for TraceMantle, or pin a full CI-verified commit SHA. Renaming the repository does not publish the distribution or update downstream repositories automatically.
 
 For pre-commit, pin the TraceMantle release:
 
 ```yaml
 repos:
   - repo: https://github.com/moonrunnerkc/tracemantle
-    rev: v1.6.0
+    rev: v1.6.1
     hooks:
       - id: tracemantle
 ```

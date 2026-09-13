@@ -1,0 +1,56 @@
+{
+  "python": "3.12.13",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "implementation_sha256": "61e12ed7d3480459b3b71d729a8f75b66a8e5fddd6d94ec19f000dcfe6049c72",
+  "repeats": 5,
+  "workloads": {
+    "escaped-and-list-links": {
+      "corpus_bytes": 114669,
+      "corpus_sha256": "69dfa8cc473a9f9df0d79727332272d6f49011e289b46d00dccd42a9269a037a",
+      "seconds": [
+        0.02083220810163766,
+        0.02021333307493478,
+        0.01977129199076444,
+        0.019846374983899295,
+        0.01999704202171415
+      ],
+      "median": 0.01999704202171415,
+      "spread": 0.0010609161108732224,
+      "peak_python_bytes": 3002951,
+      "resource_count": 2000,
+      "uncertain": false
+    },
+    "long-backslash-runs": {
+      "corpus_bytes": 1002400,
+      "corpus_sha256": "bc75142b821d9039ce5b7d6af320bfe54935a6553fc44c4b3756b27971ba2868",
+      "seconds": [
+        0.050356874940916896,
+        0.049860207946039736,
+        0.04972474998794496,
+        0.0498107080347836,
+        0.049616791075095534
+      ],
+      "median": 0.0498107080347836,
+      "spread": 0.0007400838658213615,
+      "peak_python_bytes": 12098295,
+      "resource_count": 1,
+      "uncertain": false
+    },
+    "unmatched-delimiter-lengths": {
+      "corpus_bytes": 1014273,
+      "corpus_sha256": "967a5c4ab443c411c5c9416356f09ce180b1a903e6c32bc8b506c58c3775b9f8",
+      "seconds": [
+        0.03237533301580697,
+        0.03132208401802927,
+        0.03130091598723084,
+        0.031403457978740335,
+        0.031447833054699004
+      ],
+      "median": 0.031403457978740335,
+      "spread": 0.0010744170285761356,
+      "peak_python_bytes": 12867987,
+      "resource_count": 1,
+      "uncertain": false
+    }
+  }
+}

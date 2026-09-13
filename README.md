@@ -44,11 +44,11 @@ Requires Python 3.10 or later. Install in a virtual environment:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install tracemantle==1.6.0
+python -m pip install tracemantle==1.6.1
 tracemantle --version
 ```
 
-Installation examples use released 1.6.0. Subsequent fixes are listed under [Unreleased](CHANGELOG.md#unreleased); source verification is recorded in the [implementation ledger](docs/implementation-status.md).
+Version 1.6.1 corrects dependency discovery across Markdown headings and rejects numeric overflow in evidence imports. See the [changelog](CHANGELOG.md) and [implementation ledger](docs/implementation-status.md) for behavior and verification.
 
 On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1`. Replacing SkillCheck? Follow the [migration guide](docs/migration.md) before installing.
 
@@ -76,7 +76,7 @@ See the [CLI and configuration reference](docs/generated-reference.md), [compati
 Use the composite GitHub Action pinned to a release:
 
 ```yaml
-- uses: moonrunnerkc/tracemantle@v1.6.0
+- uses: moonrunnerkc/tracemantle@v1.6.1
   with:
     path: skills/
 ```
@@ -85,7 +85,7 @@ Use the composite GitHub Action pinned to a release:
 
 ## Contributing
 
-1350 tests cover validation, CLI integrations, bundle identity and evidence checks. CI runs Python 3.10 through 3.13 on Linux, macOS and Windows, plus optional-tokenizer and clean package-install checks.
+1407 tests cover validation, CLI integrations, bundle identity and evidence checks. CI runs Python 3.10 through 3.13 on Linux, macOS and Windows, plus optional-tokenizer and clean package-install checks.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and verification. Submit fixes through pull requests; use [issues](https://github.com/moonrunnerkc/tracemantle/issues) for bugs and proposals. Changes are recorded in the [changelog](CHANGELOG.md).
 
