@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import tempfile
 from pathlib import Path
@@ -52,6 +53,8 @@ def decode_json(raw: bytes | str, *, max_bytes: int = MAX_INGEST_BYTES) -> Any:
         nodes += 1
         if depth > 40 or nodes > 100000:
             raise EvidenceError('JSON depth or node limit exceeded.')
+        if isinstance(current, float) and not math.isfinite(current):
+            raise EvidenceError('Non-finite JSON number is unsupported. Use a finite number within the supported range.')
         if isinstance(current, (dict, list)):
             pending.extend((item, depth + 1) for item in (current.values() if isinstance(current, dict) else current))
     return value

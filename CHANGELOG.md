@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Escaped opening backticks no longer hide Markdown resource links. Odd/even backslash counts, literal backslashes inside code spans and exact delimiter lengths are handled separately; adjacent list items cannot close one another's code spans.
+- Nested list links and paragraph/list continuations participate in dependency closure, including tab indentation. Actual indented and fenced code examples stay excluded. Unsupported container contexts mark coverage incomplete, preventing uncertain dependency discovery from authorizing evidence reuse.
+- Shared bounded JSON decoding rejects numeric exponent overflow as well as explicit nonfinite constants before row selection or canonical hashing. Malformed Promptfoo imports return infrastructure-error (exit 2), preserve JSON error output and leave no partial evidence store.
 - Approved historical behavioral evidence now requires immutable model identity and meaningful environment/tokenizer values even when bundle hashes match. Incompatible required evidence remains unknown (exit 4); static reuse is unchanged.
 - Pinned Promptfoo imports reject malformed component arrays and assertion objects with bounded domain errors. Automatic config discovery rejects a non-table `tool`, with an error envelope in JSON mode. Invalid YAML date/time and oversized integer conversions now produce bounded parse diagnostics and preserve batch continuation. Manifest creation rejects non-string description values such as unquoted YAML dates without a traceback; null descriptions remain available for invalid-skill history.
 - History warnings and missing-ledger diagnostics escape terminal controls, including with `--no-color`. Manifest text/annotation errors and malformed trusted check kinds also fail cleanly.

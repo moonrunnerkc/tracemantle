@@ -34,6 +34,12 @@ The [post-release checklist and verification record](verification/audit-1.6.1/ac
 
 Fixes remain under `[Unreleased]`, intended for the next patch after 1.6.0. Package versions and released install/Action references remain at 1.6.0 until release preparation. The original DOCX, published artifacts, tags and publishing guards are preserved. Current local and exact-commit remote evidence is recorded in the linked audit directory; historical results below are not reused as new measurements.
 
+## Dependency and numeric boundary follow-up
+
+The follow-up at `5034d626e73952c44b48025727c6e2fde6568f24` reproduced incomplete Markdown dependency discovery and JSON exponent overflow on current `main`. The fixes close the reproduced D09/P01/P03 and D03/D07/P02 gaps: escaped delimiters and supported list continuations retain real dependencies; unsupported containers propagate incomplete coverage; the shared decoder rejects all nonfinite values before adapter row selection, hashing or writes. The check in the trusted CLI regression declares only `SKILL.md`. Ordinary links, unchanged bundles and unrelated changes retain successful reuse where coverage is complete.
+
+[Follow-up acceptance and actual verification](verification/audit-1.6.1/acceptance.md#dependency-and-numeric-boundary-corrections) supersede the earlier measurements only for this source snapshot. Historical results below remain historical. These fixes remain under `[Unreleased]`; package/version tags and the original DOCX are preserved. Static evidence compatibility still does not establish live skill or evaluator success.
+
 ## Executed verification
 
 - Baseline: **1,056 passed, 2 skipped**, 90.37% coverage. The two baseline skips were missing PATH access to pre-commit. Baseline Ruff and strict mypy passed; exact old wheel/source built before edits.

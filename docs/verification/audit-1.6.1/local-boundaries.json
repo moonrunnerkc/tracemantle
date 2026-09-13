@@ -1,0 +1,507 @@
+{
+  "source_base": "5034d626e73952c44b48025727c6e2fde6568f24",
+  "source_snapshot": "source-boundaries.json",
+  "regression_original": {
+    "failed": 39,
+    "passed": 36,
+    "command": "PYTHONPATH=/tmp/tracemantle-boundaries-baseline/src python -m pytest tests/test_dependency_numeric_regressions.py -q --no-cov --tb=short"
+  },
+  "regression_corrected": {
+    "passed": 75,
+    "combined_targeted_passed": 206
+  },
+  "tests": {
+    "python310": {
+      "passed": 1350,
+      "skipped": 0,
+      "coverage_percent": 87.93
+    },
+    "python312_tiktoken": {
+      "passed": 1346,
+      "skipped": 4,
+      "coverage_percent": 87.83
+    },
+    "python312_no_tiktoken_verify_release": {
+      "passed": 1346,
+      "skipped": 4,
+      "coverage_percent": 87.85
+    }
+  },
+  "coverage_gate_percent": 80,
+  "ruff": "passed",
+  "strict_mypy": "passed, 73 source files",
+  "generated_reference": "passed, unchanged",
+  "diff_check": "passed",
+  "calibration_and_conformance": "reexecuted; byte-identical to retained reports",
+  "artifact_verification_records": [
+    "artifacts-boundaries-python310.json",
+    "artifacts-boundaries-python312.json"
+  ],
+  "performance": "Both original and reversed-order repeat pairs retained; repeat representative medians within 10%; supplemental correctness costs documented in performance.md",
+  "changelog_v1_6_0_guard": "expected rejection of nonempty Unreleased notes for already published 1.6.0",
+  "release": "unreleased source; no publication or settings changes",
+  "live_agent_evaluations": "not executed",
+  "dependencies": {
+    "python310": [
+      {
+        "name": "ast_serialize",
+        "version": "0.8.0"
+      },
+      {
+        "name": "build",
+        "version": "1.5.0"
+      },
+      {
+        "name": "cfgv",
+        "version": "3.5.0"
+      },
+      {
+        "name": "coverage",
+        "version": "7.15.4"
+      },
+      {
+        "name": "distlib",
+        "version": "0.4.3"
+      },
+      {
+        "name": "exceptiongroup",
+        "version": "1.3.1"
+      },
+      {
+        "name": "filelock",
+        "version": "3.32.3"
+      },
+      {
+        "name": "hatchling",
+        "version": "1.32.0"
+      },
+      {
+        "name": "identify",
+        "version": "2.6.19"
+      },
+      {
+        "name": "iniconfig",
+        "version": "2.3.0"
+      },
+      {
+        "name": "librt",
+        "version": "0.15.0"
+      },
+      {
+        "name": "mypy",
+        "version": "2.3.1"
+      },
+      {
+        "name": "mypy_extensions",
+        "version": "1.1.0"
+      },
+      {
+        "name": "nodeenv",
+        "version": "1.10.0"
+      },
+      {
+        "name": "packaging",
+        "version": "26.3"
+      },
+      {
+        "name": "pathspec",
+        "version": "1.1.1"
+      },
+      {
+        "name": "pip",
+        "version": "23.0.1"
+      },
+      {
+        "name": "platformdirs",
+        "version": "4.11.3"
+      },
+      {
+        "name": "pluggy",
+        "version": "1.6.0"
+      },
+      {
+        "name": "pre_commit",
+        "version": "4.6.2"
+      },
+      {
+        "name": "Pygments",
+        "version": "2.21.0"
+      },
+      {
+        "name": "pyproject_hooks",
+        "version": "1.2.0"
+      },
+      {
+        "name": "pytest",
+        "version": "9.1.1"
+      },
+      {
+        "name": "pytest-cov",
+        "version": "7.1.0"
+      },
+      {
+        "name": "python-discovery",
+        "version": "1.5.2"
+      },
+      {
+        "name": "PyYAML",
+        "version": "6.0.3"
+      },
+      {
+        "name": "ruff",
+        "version": "0.16.4"
+      },
+      {
+        "name": "setuptools",
+        "version": "65.5.0"
+      },
+      {
+        "name": "tomli",
+        "version": "2.4.1"
+      },
+      {
+        "name": "tomlkit",
+        "version": "0.15.1"
+      },
+      {
+        "name": "tracemantle",
+        "version": "1.6.0",
+        "editable_project_location": "/Users/brad/projects/tracemantle"
+      },
+      {
+        "name": "trove-classifiers",
+        "version": "2026.6.1.19"
+      },
+      {
+        "name": "types-PyYAML",
+        "version": "6.0.12.20260815"
+      },
+      {
+        "name": "typing_extensions",
+        "version": "4.16.0"
+      },
+      {
+        "name": "virtualenv",
+        "version": "21.7.4"
+      }
+    ],
+    "python312_tiktoken": [
+      {
+        "name": "ast_serialize",
+        "version": "0.8.0"
+      },
+      {
+        "name": "build",
+        "version": "1.5.0"
+      },
+      {
+        "name": "certifi",
+        "version": "2026.7.22"
+      },
+      {
+        "name": "cfgv",
+        "version": "3.5.0"
+      },
+      {
+        "name": "charset-normalizer",
+        "version": "3.5.1"
+      },
+      {
+        "name": "click",
+        "version": "8.5.0"
+      },
+      {
+        "name": "coverage",
+        "version": "7.15.4"
+      },
+      {
+        "name": "distlib",
+        "version": "0.4.3"
+      },
+      {
+        "name": "filelock",
+        "version": "3.32.3"
+      },
+      {
+        "name": "hatchling",
+        "version": "1.32.0"
+      },
+      {
+        "name": "identify",
+        "version": "2.6.19"
+      },
+      {
+        "name": "idna",
+        "version": "3.19"
+      },
+      {
+        "name": "iniconfig",
+        "version": "2.3.0"
+      },
+      {
+        "name": "librt",
+        "version": "0.15.0"
+      },
+      {
+        "name": "mypy",
+        "version": "2.3.1"
+      },
+      {
+        "name": "mypy_extensions",
+        "version": "1.1.0"
+      },
+      {
+        "name": "nodeenv",
+        "version": "1.10.0"
+      },
+      {
+        "name": "packaging",
+        "version": "26.3"
+      },
+      {
+        "name": "pathspec",
+        "version": "1.1.1"
+      },
+      {
+        "name": "pip",
+        "version": "26.1"
+      },
+      {
+        "name": "platformdirs",
+        "version": "4.11.3"
+      },
+      {
+        "name": "pluggy",
+        "version": "1.6.0"
+      },
+      {
+        "name": "pre_commit",
+        "version": "4.6.2"
+      },
+      {
+        "name": "Pygments",
+        "version": "2.21.0"
+      },
+      {
+        "name": "pyproject_hooks",
+        "version": "1.2.0"
+      },
+      {
+        "name": "pytest",
+        "version": "9.1.1"
+      },
+      {
+        "name": "pytest-cov",
+        "version": "7.1.0"
+      },
+      {
+        "name": "python-dateutil",
+        "version": "2.9.0.post0"
+      },
+      {
+        "name": "python-discovery",
+        "version": "1.5.2"
+      },
+      {
+        "name": "PyYAML",
+        "version": "6.0.3"
+      },
+      {
+        "name": "regex",
+        "version": "2026.7.19"
+      },
+      {
+        "name": "requests",
+        "version": "2.34.2"
+      },
+      {
+        "name": "ruff",
+        "version": "0.16.4"
+      },
+      {
+        "name": "six",
+        "version": "1.17.0"
+      },
+      {
+        "name": "strictyaml",
+        "version": "1.7.3"
+      },
+      {
+        "name": "tiktoken",
+        "version": "0.14.0"
+      },
+      {
+        "name": "tomli",
+        "version": "2.4.1"
+      },
+      {
+        "name": "tomlkit",
+        "version": "0.15.1"
+      },
+      {
+        "name": "tracemantle",
+        "version": "1.6.0",
+        "editable_project_location": "/Users/brad/projects/tracemantle"
+      },
+      {
+        "name": "trove-classifiers",
+        "version": "2026.6.1.19"
+      },
+      {
+        "name": "types-PyYAML",
+        "version": "6.0.12.20260815"
+      },
+      {
+        "name": "typing_extensions",
+        "version": "4.16.0"
+      },
+      {
+        "name": "urllib3",
+        "version": "2.7.0"
+      },
+      {
+        "name": "virtualenv",
+        "version": "21.7.4"
+      }
+    ],
+    "python312_no_tiktoken": [
+      {
+        "name": "ast_serialize",
+        "version": "0.8.0"
+      },
+      {
+        "name": "build",
+        "version": "1.5.0"
+      },
+      {
+        "name": "cfgv",
+        "version": "3.5.0"
+      },
+      {
+        "name": "coverage",
+        "version": "7.15.4"
+      },
+      {
+        "name": "distlib",
+        "version": "0.4.3"
+      },
+      {
+        "name": "filelock",
+        "version": "3.32.3"
+      },
+      {
+        "name": "hatchling",
+        "version": "1.32.0"
+      },
+      {
+        "name": "identify",
+        "version": "2.6.19"
+      },
+      {
+        "name": "iniconfig",
+        "version": "2.3.0"
+      },
+      {
+        "name": "librt",
+        "version": "0.15.0"
+      },
+      {
+        "name": "mypy",
+        "version": "2.3.1"
+      },
+      {
+        "name": "mypy_extensions",
+        "version": "1.1.0"
+      },
+      {
+        "name": "nodeenv",
+        "version": "1.10.0"
+      },
+      {
+        "name": "packaging",
+        "version": "26.3"
+      },
+      {
+        "name": "pathspec",
+        "version": "1.1.1"
+      },
+      {
+        "name": "pip",
+        "version": "26.1"
+      },
+      {
+        "name": "platformdirs",
+        "version": "4.11.3"
+      },
+      {
+        "name": "pluggy",
+        "version": "1.6.0"
+      },
+      {
+        "name": "pre_commit",
+        "version": "4.6.2"
+      },
+      {
+        "name": "Pygments",
+        "version": "2.21.0"
+      },
+      {
+        "name": "pyproject_hooks",
+        "version": "1.2.0"
+      },
+      {
+        "name": "pytest",
+        "version": "9.1.1"
+      },
+      {
+        "name": "pytest-cov",
+        "version": "7.1.0"
+      },
+      {
+        "name": "python-discovery",
+        "version": "1.5.2"
+      },
+      {
+        "name": "PyYAML",
+        "version": "6.0.3"
+      },
+      {
+        "name": "ruff",
+        "version": "0.16.4"
+      },
+      {
+        "name": "tomli",
+        "version": "2.4.1"
+      },
+      {
+        "name": "tomlkit",
+        "version": "0.15.1"
+      },
+      {
+        "name": "tracemantle",
+        "version": "1.6.0",
+        "editable_project_location": "/Users/brad/projects/tracemantle"
+      },
+      {
+        "name": "trove-classifiers",
+        "version": "2026.6.1.19"
+      },
+      {
+        "name": "types-PyYAML",
+        "version": "6.0.12.20260815"
+      },
+      {
+        "name": "typing_extensions",
+        "version": "4.16.0"
+      },
+      {
+        "name": "virtualenv",
+        "version": "21.7.4"
+      }
+    ]
+  },
+  "retained_log_normalization": {
+    "original_regression_stdout_sha256": "8a7bb221f5a101cb5e7cf98b9f7400dbec70c06395ae5f9bb6e90803fa300244",
+    "change": "Trailing whitespace trimmed from the retained original regression log for git diff --check; result text unchanged."
+  }
+}

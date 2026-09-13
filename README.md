@@ -85,7 +85,7 @@ Use the composite GitHub Action pinned to a release:
 
 ## Contributing
 
-1275 tests cover validation, CLI integrations, bundle identity and evidence checks. CI runs Python 3.10 through 3.13 on Linux, macOS and Windows, plus optional-tokenizer and clean package-install checks.
+1350 tests cover validation, CLI integrations, bundle identity and evidence checks. CI runs Python 3.10 through 3.13 on Linux, macOS and Windows, plus optional-tokenizer and clean package-install checks.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and verification. Submit fixes through pull requests; use [issues](https://github.com/moonrunnerkc/tracemantle/issues) for bugs and proposals. Changes are recorded in the [changelog](CHANGELOG.md).
 

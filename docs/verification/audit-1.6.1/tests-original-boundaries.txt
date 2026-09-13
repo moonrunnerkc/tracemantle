@@ -1,0 +1,445 @@
+.F.F.FFF.....FFFFFFFFFFFF......FFFFFFFF..FF...FF...FF...FF...........FFF [ 96%]
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+____________________ test_backtick_opening_escape_parity[1] ____________________
+tests/test_dependency_numeric_regressions.py:25: in test_backtick_opening_escape_parity
+    assert [(r.target, r.line) for r in result.resources] == ([('helper.py', 7)] if slashes % 2 else [])
+E   AssertionError: assert [] == [('helper.py', 7)]
+E
+E     Right contains one more item: ('helper.py', 7)
+E     Use -v to get more diff
+____________________ test_backtick_opening_escape_parity[3] ____________________
+tests/test_dependency_numeric_regressions.py:25: in test_backtick_opening_escape_parity
+    assert [(r.target, r.line) for r in result.resources] == ([('helper.py', 7)] if slashes % 2 else [])
+E   AssertionError: assert [] == [('helper.py', 7)]
+E
+E     Right contains one more item: ('helper.py', 7)
+E     Use -v to get more diff
+____________________ test_backtick_opening_escape_parity[5] ____________________
+tests/test_dependency_numeric_regressions.py:25: in test_backtick_opening_escape_parity
+    assert [(r.target, r.line) for r in result.resources] == ([('helper.py', 7)] if slashes % 2 else [])
+E   AssertionError: assert [] == [('helper.py', 7)]
+E
+E     Right contains one more item: ('helper.py', 7)
+E     Use -v to get more diff
+_ test_backtick_runs_and_literal_backslashes[\\`` [example](missing.md) ` [helper](helper.py)-targets0] _
+tests/test_dependency_numeric_regressions.py:41: in test_backtick_runs_and_literal_backslashes
+    assert [r.target for r in tokenize(body).resources] == targets
+E   AssertionError: assert ['missing.md', 'helper.py'] == ['helper.py']
+E
+E     At index 0 diff: 'missing.md' != 'helper.py'
+E     Left contains one more item: 'helper.py'
+E     Use -v to get more diff
+_ test_backtick_runs_and_literal_backslashes[\\`` [helper](helper.py) ``-targets1] _
+tests/test_dependency_numeric_regressions.py:41: in test_backtick_runs_and_literal_backslashes
+    assert [r.target for r in tokenize(body).resources] == targets
+E   AssertionError: assert [] == ['helper.py']
+E
+E     Right contains one more item: 'helper.py'
+E     Use -v to get more diff
+_ test_backtick_runs_and_literal_backslashes[- `unclosed\n- [helper](helper.py) `-targets7] _
+tests/test_dependency_numeric_regressions.py:41: in test_backtick_runs_and_literal_backslashes
+    assert [r.target for r in tokenize(body).resources] == targets
+E   AssertionError: assert [] == ['helper.py']
+E
+E     Right contains one more item: 'helper.py'
+E     Use -v to get more diff
+_ test_backtick_runs_and_literal_backslashes[\\`\n[helper](helper.py)\n`-targets8] _
+tests/test_dependency_numeric_regressions.py:41: in test_backtick_runs_and_literal_backslashes
+    assert [r.target for r in tokenize(body).resources] == targets
+E   AssertionError: assert [] == ['helper.py']
+E
+E     Right contains one more item: 'helper.py'
+E     Use -v to get more diff
+_ test_list_and_paragraph_continuations_keep_dependencies[- Steps:\n    - [helper](helper.py)] _
+tests/test_dependency_numeric_regressions.py:58: in test_list_and_paragraph_continuations_keep_dependencies
+    assert [(r.target, r.line) for r in result.resources] == [('helper.py', 5 + body[:body.index('helper.py')].count('\n'))]
+E   AssertionError: assert [] == [('helper.py', 6)]
+E
+E     Right contains one more item: ('helper.py', 6)
+E     Use -v to get more diff
+_ test_list_and_paragraph_continuations_keep_dependencies[- Steps:\n\t- [helper](helper.py)] _
+tests/test_dependency_numeric_regressions.py:58: in test_list_and_paragraph_continuations_keep_dependencies
+    assert [(r.target, r.line) for r in result.resources] == [('helper.py', 5 + body[:body.index('helper.py')].count('\n'))]
+E   AssertionError: assert [] == [('helper.py', 6)]
+E
+E     Right contains one more item: ('helper.py', 6)
+E     Use -v to get more diff
+_ test_list_and_paragraph_continuations_keep_dependencies[1. Steps:\n    1. [helper](helper.py)] _
+tests/test_dependency_numeric_regressions.py:58: in test_list_and_paragraph_continuations_keep_dependencies
+    assert [(r.target, r.line) for r in result.resources] == [('helper.py', 5 + body[:body.index('helper.py')].count('\n'))]
+E   AssertionError: assert [] == [('helper.py', 6)]
+E
+E     Right contains one more item: ('helper.py', 6)
+E     Use -v to get more diff
+_ test_list_and_paragraph_continuations_keep_dependencies[- Steps:\n    [helper](helper.py)] _
+tests/test_dependency_numeric_regressions.py:58: in test_list_and_paragraph_continuations_keep_dependencies
+    assert [(r.target, r.line) for r in result.resources] == [('helper.py', 5 + body[:body.index('helper.py')].count('\n'))]
+E   AssertionError: assert [] == [('helper.py', 6)]
+E
+E     Right contains one more item: ('helper.py', 6)
+E     Use -v to get more diff
+_ test_list_and_paragraph_continuations_keep_dependencies[- Steps:\n\n    [helper](helper.py)] _
+tests/test_dependency_numeric_regressions.py:58: in test_list_and_paragraph_continuations_keep_dependencies
+    assert [(r.target, r.line) for r in result.resources] == [('helper.py', 5 + body[:body.index('helper.py')].count('\n'))]
+E   AssertionError: assert [] == [('helper.py', 7)]
+E
+E     Right contains one more item: ('helper.py', 7)
+E     Use -v to get more diff
+_ test_list_and_paragraph_continuations_keep_dependencies[-\tSteps:\n\n    [helper](helper.py)] _
+tests/test_dependency_numeric_regressions.py:58: in test_list_and_paragraph_continuations_keep_dependencies
+    assert [(r.target, r.line) for r in result.resources] == [('helper.py', 5 + body[:body.index('helper.py')].count('\n'))]
+E   AssertionError: assert [] == [('helper.py', 7)]
+E
+E     Right contains one more item: ('helper.py', 7)
+E     Use -v to get more diff
+_ test_list_and_paragraph_continuations_keep_dependencies[1.\tSteps:\n\n    [helper](helper.py)] _
+tests/test_dependency_numeric_regressions.py:58: in test_list_and_paragraph_continuations_keep_dependencies
+    assert [(r.target, r.line) for r in result.resources] == [('helper.py', 5 + body[:body.index('helper.py')].count('\n'))]
+E   AssertionError: assert [] == [('helper.py', 7)]
+E
+E     Right contains one more item: ('helper.py', 7)
+E     Use -v to get more diff
+_ test_list_and_paragraph_continuations_keep_dependencies[- Steps:\n    - Nested:\n        [helper](helper.py)] _
+tests/test_dependency_numeric_regressions.py:58: in test_list_and_paragraph_continuations_keep_dependencies
+    assert [(r.target, r.line) for r in result.resources] == [('helper.py', 5 + body[:body.index('helper.py')].count('\n'))]
+E   AssertionError: assert [] == [('helper.py', 7)]
+E
+E     Right contains one more item: ('helper.py', 7)
+E     Use -v to get more diff
+_ test_list_and_paragraph_continuations_keep_dependencies[Paragraph\n    [helper](helper.py)] _
+tests/test_dependency_numeric_regressions.py:58: in test_list_and_paragraph_continuations_keep_dependencies
+    assert [(r.target, r.line) for r in result.resources] == [('helper.py', 5 + body[:body.index('helper.py')].count('\n'))]
+E   AssertionError: assert [] == [('helper.py', 6)]
+E
+E     Right contains one more item: ('helper.py', 6)
+E     Use -v to get more diff
+_ test_list_and_paragraph_continuations_keep_dependencies[- Steps:\n    [ref]: helper.py\n\n    [ref]] _
+tests/test_dependency_numeric_regressions.py:58: in test_list_and_paragraph_continuations_keep_dependencies
+    assert [(r.target, r.line) for r in result.resources] == [('helper.py', 5 + body[:body.index('helper.py')].count('\n'))]
+E   AssertionError: assert [] == [('helper.py', 6)]
+E
+E     Right contains one more item: ('helper.py', 6)
+E     Use -v to get more diff
+_ test_dependency_closure_controls_real_trusted_comparison[\\` [helper](helper.py) `-True-True] _
+tests/test_dependency_numeric_regressions.py:123: in test_dependency_closure_controls_real_trusted_comparison
+    assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E   assert 0 == 4
+_ test_dependency_closure_controls_real_trusted_comparison[- Steps:\n    - [helper](helper.py)-True-True] _
+tests/test_dependency_numeric_regressions.py:123: in test_dependency_closure_controls_real_trusted_comparison
+    assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E   assert 0 == 4
+_ test_dependency_closure_controls_real_trusted_comparison[- Steps:\n\n    [helper](helper.py)-True-True] _
+tests/test_dependency_numeric_regressions.py:123: in test_dependency_closure_controls_real_trusted_comparison
+    assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E   assert 0 == 4
+_ test_dependency_closure_controls_real_trusted_comparison[Paragraph\n    [helper](helper.py)-True-True] _
+tests/test_dependency_numeric_regressions.py:123: in test_dependency_closure_controls_real_trusted_comparison
+    assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E   assert 0 == 4
+_ test_dependency_closure_controls_real_trusted_comparison[> - Steps:\n>     [helper](helper.py)-False-True] _
+tests/test_dependency_numeric_regressions.py:114: in test_dependency_closure_controls_real_trusted_comparison
+    assert unchanged.returncode == (0 if complete else 4)
+E   assert 0 == 4
+E    +  where 0 = CompletedProcess(args=['/private/tmp/tracemantle-audit-312/bin/python', '-m', 'tracemantle', 'compare', '/private/var/...n    ],\n    "state": "pass",\n    "issues": [],\n    "exit_code": 0,\n    "required_reruns": []\n  }\n}\n', stderr='').returncode
+_ test_dependency_closure_controls_real_trusted_comparison[- Steps:\nlazy continuation\n\n    [helper](helper.py)-False-False] _
+tests/test_dependency_numeric_regressions.py:114: in test_dependency_closure_controls_real_trusted_comparison
+    assert unchanged.returncode == (0 if complete else 4)
+E   assert 0 == 4
+E    +  where 0 = CompletedProcess(args=['/private/tmp/tracemantle-audit-312/bin/python', '-m', 'tracemantle', 'compare', '/private/var/...n    ],\n    "state": "pass",\n    "issues": [],\n    "exit_code": 0,\n    "required_reruns": []\n  }\n}\n', stderr='').returncode
+_ test_dependency_closure_controls_real_trusted_comparison[- - Steps:\n\n    [helper](helper.py)-False-True] _
+tests/test_dependency_numeric_regressions.py:114: in test_dependency_closure_controls_real_trusted_comparison
+    assert unchanged.returncode == (0 if complete else 4)
+E   assert 0 == 4
+E    +  where 0 = CompletedProcess(args=['/private/tmp/tracemantle-audit-312/bin/python', '-m', 'tracemantle', 'compare', '/private/var/...n    ],\n    "state": "pass",\n    "issues": [],\n    "exit_code": 0,\n    "required_reruns": []\n  }\n}\n', stderr='').returncode
+_ test_dependency_closure_controls_real_trusted_comparison[-\n\n     [helper](helper.py)-True-True] _
+tests/test_dependency_numeric_regressions.py:123: in test_dependency_closure_controls_real_trusted_comparison
+    assert result.returncode == report['exit_code'] == (4 if invalidated else 0)
+E   assert 0 == 4
+_________ test_shared_decoder_rejects_all_nonfinite_numbers[{}-1e999] __________
+tests/test_dependency_numeric_regressions.py:140: in test_shared_decoder_rejects_all_nonfinite_numbers
+    with pytest.raises(EvidenceError, match='Non-finite') as raised:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE EvidenceError
+_________ test_shared_decoder_rejects_all_nonfinite_numbers[{}--1e999] _________
+tests/test_dependency_numeric_regressions.py:140: in test_shared_decoder_rejects_all_nonfinite_numbers
+    with pytest.raises(EvidenceError, match='Non-finite') as raised:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE EvidenceError
+___ test_shared_decoder_rejects_all_nonfinite_numbers[{{"value":{}}}-1e999] ____
+tests/test_dependency_numeric_regressions.py:140: in test_shared_decoder_rejects_all_nonfinite_numbers
+    with pytest.raises(EvidenceError, match='Non-finite') as raised:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE EvidenceError
+___ test_shared_decoder_rejects_all_nonfinite_numbers[{{"value":{}}}--1e999] ___
+tests/test_dependency_numeric_regressions.py:140: in test_shared_decoder_rejects_all_nonfinite_numbers
+    with pytest.raises(EvidenceError, match='Non-finite') as raised:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE EvidenceError
+________ test_shared_decoder_rejects_all_nonfinite_numbers[[{}]-1e999] _________
+tests/test_dependency_numeric_regressions.py:140: in test_shared_decoder_rejects_all_nonfinite_numbers
+    with pytest.raises(EvidenceError, match='Non-finite') as raised:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE EvidenceError
+________ test_shared_decoder_rejects_all_nonfinite_numbers[[{}]--1e999] ________
+tests/test_dependency_numeric_regressions.py:140: in test_shared_decoder_rejects_all_nonfinite_numbers
+    with pytest.raises(EvidenceError, match='Non-finite') as raised:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE EvidenceError
+_ test_shared_decoder_rejects_all_nonfinite_numbers[{{"nested":[{{"value":{}}}]}}-1e999] _
+tests/test_dependency_numeric_regressions.py:140: in test_shared_decoder_rejects_all_nonfinite_numbers
+    with pytest.raises(EvidenceError, match='Non-finite') as raised:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE EvidenceError
+_ test_shared_decoder_rejects_all_nonfinite_numbers[{{"nested":[{{"value":{}}}]}}--1e999] _
+tests/test_dependency_numeric_regressions.py:140: in test_shared_decoder_rejects_all_nonfinite_numbers
+    with pytest.raises(EvidenceError, match='Non-finite') as raised:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE EvidenceError
+_____ test_authentic_promptfoo_overflow_is_atomic_cli_error[config-1e999] ______
+tests/test_dependency_numeric_regressions.py:172: in test_authentic_promptfoo_overflow_is_atomic_cli_error
+    assert result.returncode == 2, result.stdout + result.stderr
+E   AssertionError: Traceback (most recent call last):
+E       File "<frozen runpy>", line 198, in _run_module_as_main
+E       File "<frozen runpy>", line 88, in _run_code
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/__main__.py", line 6, in <module>
+E         main()
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/cli.py", line 368, in main
+E         product_main(sys.argv[1:])
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/product_commands.py", line 115, in main
+E         result, code, location = _run(args)
+E                                  ^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/product_commands.py", line 61, in _run
+E         imported = import_promptfoo(raw, bindings)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/promptfoo.py", line 82, in import_promptfoo
+E         'configuration_sha256': digest(data['config']), 'observed_at': result['timestamp'],
+E                                 ^^^^^^^^^^^^^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/storage.py", line 29, in digest
+E         return hashlib.sha256(canonical(value)).hexdigest()
+E                               ^^^^^^^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/storage.py", line 19, in canonical
+E         return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=True, allow_nan=False, default=_json_default).encode('utf-8')
+E                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 238, in dumps
+E         **kw).encode(obj)
+E               ^^^^^^^^^^^
+E       File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+E         chunks = self.iterencode(o, _one_shot=True)
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+E         return _iterencode(o, 0)
+E                ^^^^^^^^^^^^^^^^^
+E     ValueError: Out of range float values are not JSON compliant: inf
+E
+E   assert 1 == 2
+E    +  where 1 = CompletedProcess(args=['/private/tmp/tracemantle-audit-312/bin/python', '-m', 'tracemantle', 'import-evidence', '/priv... _iterencode(o, 0)\n           ^^^^^^^^^^^^^^^^^\nValueError: Out of range float values are not JSON compliant: inf\n').returncode
+_____ test_authentic_promptfoo_overflow_is_atomic_cli_error[config--1e999] _____
+tests/test_dependency_numeric_regressions.py:172: in test_authentic_promptfoo_overflow_is_atomic_cli_error
+    assert result.returncode == 2, result.stdout + result.stderr
+E   AssertionError: Traceback (most recent call last):
+E       File "<frozen runpy>", line 198, in _run_module_as_main
+E       File "<frozen runpy>", line 88, in _run_code
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/__main__.py", line 6, in <module>
+E         main()
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/cli.py", line 368, in main
+E         product_main(sys.argv[1:])
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/product_commands.py", line 115, in main
+E         result, code, location = _run(args)
+E                                  ^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/product_commands.py", line 61, in _run
+E         imported = import_promptfoo(raw, bindings)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/promptfoo.py", line 82, in import_promptfoo
+E         'configuration_sha256': digest(data['config']), 'observed_at': result['timestamp'],
+E                                 ^^^^^^^^^^^^^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/storage.py", line 29, in digest
+E         return hashlib.sha256(canonical(value)).hexdigest()
+E                               ^^^^^^^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/storage.py", line 19, in canonical
+E         return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=True, allow_nan=False, default=_json_default).encode('utf-8')
+E                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 238, in dumps
+E         **kw).encode(obj)
+E               ^^^^^^^^^^^
+E       File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+E         chunks = self.iterencode(o, _one_shot=True)
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+E         return _iterencode(o, 0)
+E                ^^^^^^^^^^^^^^^^^
+E     ValueError: Out of range float values are not JSON compliant: -inf
+E
+E   assert 1 == 2
+E    +  where 1 = CompletedProcess(args=['/private/tmp/tracemantle-audit-312/bin/python', '-m', 'tracemantle', 'import-evidence', '/priv..._iterencode(o, 0)\n           ^^^^^^^^^^^^^^^^^\nValueError: Out of range float values are not JSON compliant: -inf\n').returncode
+____ test_authentic_promptfoo_overflow_is_atomic_cli_error[bound-row-1e999] ____
+tests/test_dependency_numeric_regressions.py:172: in test_authentic_promptfoo_overflow_is_atomic_cli_error
+    assert result.returncode == 2, result.stdout + result.stderr
+E   AssertionError: Traceback (most recent call last):
+E       File "<frozen runpy>", line 198, in _run_module_as_main
+E       File "<frozen runpy>", line 88, in _run_code
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/__main__.py", line 6, in <module>
+E         main()
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/cli.py", line 368, in main
+E         product_main(sys.argv[1:])
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/product_commands.py", line 115, in main
+E         result, code, location = _run(args)
+E                                  ^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/product_commands.py", line 61, in _run
+E         imported = import_promptfoo(raw, bindings)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/promptfoo.py", line 81, in import_promptfoo
+E         'artifact_sha256': artifact, 'fixture_sha256': digest(row['testCase']),
+E                                                        ^^^^^^^^^^^^^^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/storage.py", line 29, in digest
+E         return hashlib.sha256(canonical(value)).hexdigest()
+E                               ^^^^^^^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/storage.py", line 19, in canonical
+E         return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=True, allow_nan=False, default=_json_default).encode('utf-8')
+E                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 238, in dumps
+E         **kw).encode(obj)
+E               ^^^^^^^^^^^
+E       File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+E         chunks = self.iterencode(o, _one_shot=True)
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+E         return _iterencode(o, 0)
+E                ^^^^^^^^^^^^^^^^^
+E     ValueError: Out of range float values are not JSON compliant: inf
+E
+E   assert 1 == 2
+E    +  where 1 = CompletedProcess(args=['/private/tmp/tracemantle-audit-312/bin/python', '-m', 'tracemantle', 'import-evidence', '/priv... _iterencode(o, 0)\n           ^^^^^^^^^^^^^^^^^\nValueError: Out of range float values are not JSON compliant: inf\n').returncode
+___ test_authentic_promptfoo_overflow_is_atomic_cli_error[bound-row--1e999] ____
+tests/test_dependency_numeric_regressions.py:172: in test_authentic_promptfoo_overflow_is_atomic_cli_error
+    assert result.returncode == 2, result.stdout + result.stderr
+E   AssertionError: Traceback (most recent call last):
+E       File "<frozen runpy>", line 198, in _run_module_as_main
+E       File "<frozen runpy>", line 88, in _run_code
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/__main__.py", line 6, in <module>
+E         main()
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/cli.py", line 368, in main
+E         product_main(sys.argv[1:])
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/product_commands.py", line 115, in main
+E         result, code, location = _run(args)
+E                                  ^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/product_commands.py", line 61, in _run
+E         imported = import_promptfoo(raw, bindings)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/promptfoo.py", line 81, in import_promptfoo
+E         'artifact_sha256': artifact, 'fixture_sha256': digest(row['testCase']),
+E                                                        ^^^^^^^^^^^^^^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/storage.py", line 29, in digest
+E         return hashlib.sha256(canonical(value)).hexdigest()
+E                               ^^^^^^^^^^^^^^^^
+E       File "/tmp/tracemantle-boundaries-baseline/src/tracemantle/storage.py", line 19, in canonical
+E         return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=True, allow_nan=False, default=_json_default).encode('utf-8')
+E                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 238, in dumps
+E         **kw).encode(obj)
+E               ^^^^^^^^^^^
+E       File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+E         chunks = self.iterencode(o, _one_shot=True)
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+E         return _iterencode(o, 0)
+E                ^^^^^^^^^^^^^^^^^
+E     ValueError: Out of range float values are not JSON compliant: -inf
+E
+E   assert 1 == 2
+E    +  where 1 = CompletedProcess(args=['/private/tmp/tracemantle-audit-312/bin/python', '-m', 'tracemantle', 'import-evidence', '/priv..._iterencode(o, 0)\n           ^^^^^^^^^^^^^^^^^\nValueError: Out of range float values are not JSON compliant: -inf\n').returncode
+___ test_authentic_promptfoo_overflow_is_atomic_cli_error[unbound-row-1e999] ___
+tests/test_dependency_numeric_regressions.py:172: in test_authentic_promptfoo_overflow_is_atomic_cli_error
+    assert result.returncode == 2, result.stdout + result.stderr
+E   AssertionError: {
+E       "tool": "TraceMantle",
+E       "version": "1.6.0",
+E       "schema_version": 1,
+E       "command": "import-evidence",
+E       "exit_code": 4,
+E       "result": {
+E         "artifact_sha256": "15246eed9dc69b23236858d7eb8f1f19e4f8cb97b23db8e4ec249db48f02ccd1",
+E         "source_copy": "/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-69/test_authentic_promptfoo_overf4/store/sources/15246eed9dc69b23236858d7eb8f1f19e4f8cb97b23db8e4ec249db48f02ccd1.json",
+E         "records": [
+E           "/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-69/test_authentic_promptfoo_overf4/store/records/bfdd40c262ae0f2a75be502f8bce36f03ad6b1b4ea61b99e66dcda9eab8dcb32.json",
+E           "/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-69/test_authentic_promptfoo_overf4/store/records/bba6fea0a98413686dec63b217b5aa1081c0743c105388924aeeb02b3f02efe9.json",
+E           "/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-69/test_authentic_promptfoo_overf4/store/records/42bd8becc9d7f99a07c4b0715910bea633594e8fb936f0238f3a20de5d4d2ac4.json"
+E         ],
+E         "issues": [
+E           "Unknown identity for result e68ae70e-fefe-47fd-a289-0d2592378c6e; no evidence record created."
+E         ],
+E         "state": "unknown",
+E         "reason": "Imported claims require trusted-base approval before behavioral gating."
+E       }
+E     }
+E
+E   assert 4 == 2
+E    +  where 4 = CompletedProcess(args=['/private/tmp/tracemantle-audit-312/bin/python', '-m', 'tracemantle', 'import-evidence', '/priv...known",\n    "reason": "Imported claims require trusted-base approval before behavioral gating."\n  }\n}\n', stderr='').returncode
+__ test_authentic_promptfoo_overflow_is_atomic_cli_error[unbound-row--1e999] ___
+tests/test_dependency_numeric_regressions.py:172: in test_authentic_promptfoo_overflow_is_atomic_cli_error
+    assert result.returncode == 2, result.stdout + result.stderr
+E   AssertionError: {
+E       "tool": "TraceMantle",
+E       "version": "1.6.0",
+E       "schema_version": 1,
+E       "command": "import-evidence",
+E       "exit_code": 4,
+E       "result": {
+E         "artifact_sha256": "1d4132d86a2cba631b0efce64245a06af0bba8ebbb0969d7bfe20b6e2be4f720",
+E         "source_copy": "/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-69/test_authentic_promptfoo_overf5/store/sources/1d4132d86a2cba631b0efce64245a06af0bba8ebbb0969d7bfe20b6e2be4f720.json",
+E         "records": [
+E           "/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-69/test_authentic_promptfoo_overf5/store/records/2b5d6d3e90e4c3905f95c87e0430e7a7ea337f2eb97fa53dfc630b2d231a95b6.json",
+E           "/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-69/test_authentic_promptfoo_overf5/store/records/249c89f0f368d499592d280bf2674cbb09a76a6bfc6e0617ac516c641a55d4e9.json",
+E           "/private/var/folders/1q/2_tt_q515bs98g0f5v17_sdc0000gn/T/pytest-of-brad/pytest-69/test_authentic_promptfoo_overf5/store/records/88ca723b5e6685ba662cb133a3e6b0cf60bd1927cfcc4b44d7d2add4ee4667d2.json"
+E         ],
+E         "issues": [
+E           "Unknown identity for result e68ae70e-fefe-47fd-a289-0d2592378c6e; no evidence record created."
+E         ],
+E         "state": "unknown",
+E         "reason": "Imported claims require trusted-base approval before behavioral gating."
+E       }
+E     }
+E
+E   assert 4 == 2
+E    +  where 4 = CompletedProcess(args=['/private/tmp/tracemantle-audit-312/bin/python', '-m', 'tracemantle', 'import-evidence', '/priv...known",\n    "reason": "Imported claims require trusted-base approval before behavioral gating."\n  }\n}\n', stderr='').returncode
+=========================== short test summary info ============================
+FAILED tests/test_dependency_numeric_regressions.py::test_backtick_opening_escape_parity[1]
+FAILED tests/test_dependency_numeric_regressions.py::test_backtick_opening_escape_parity[3]
+FAILED tests/test_dependency_numeric_regressions.py::test_backtick_opening_escape_parity[5]
+FAILED tests/test_dependency_numeric_regressions.py::test_backtick_runs_and_literal_backslashes[\\`` [example](missing.md) ` [helper](helper.py)-targets0]
+FAILED tests/test_dependency_numeric_regressions.py::test_backtick_runs_and_literal_backslashes[\\`` [helper](helper.py) ``-targets1]
+FAILED tests/test_dependency_numeric_regressions.py::test_backtick_runs_and_literal_backslashes[- `unclosed\n- [helper](helper.py) `-targets7]
+FAILED tests/test_dependency_numeric_regressions.py::test_backtick_runs_and_literal_backslashes[\\`\n[helper](helper.py)\n`-targets8]
+FAILED tests/test_dependency_numeric_regressions.py::test_list_and_paragraph_continuations_keep_dependencies[- Steps:\n    - [helper](helper.py)]
+FAILED tests/test_dependency_numeric_regressions.py::test_list_and_paragraph_continuations_keep_dependencies[- Steps:\n\t- [helper](helper.py)]
+FAILED tests/test_dependency_numeric_regressions.py::test_list_and_paragraph_continuations_keep_dependencies[1. Steps:\n    1. [helper](helper.py)]
+FAILED tests/test_dependency_numeric_regressions.py::test_list_and_paragraph_continuations_keep_dependencies[- Steps:\n    [helper](helper.py)]
+FAILED tests/test_dependency_numeric_regressions.py::test_list_and_paragraph_continuations_keep_dependencies[- Steps:\n\n    [helper](helper.py)]
+FAILED tests/test_dependency_numeric_regressions.py::test_list_and_paragraph_continuations_keep_dependencies[-\tSteps:\n\n    [helper](helper.py)]
+FAILED tests/test_dependency_numeric_regressions.py::test_list_and_paragraph_continuations_keep_dependencies[1.\tSteps:\n\n    [helper](helper.py)]
+FAILED tests/test_dependency_numeric_regressions.py::test_list_and_paragraph_continuations_keep_dependencies[- Steps:\n    - Nested:\n        [helper](helper.py)]
+FAILED tests/test_dependency_numeric_regressions.py::test_list_and_paragraph_continuations_keep_dependencies[Paragraph\n    [helper](helper.py)]
+FAILED tests/test_dependency_numeric_regressions.py::test_list_and_paragraph_continuations_keep_dependencies[- Steps:\n    [ref]: helper.py\n\n    [ref]]
+FAILED tests/test_dependency_numeric_regressions.py::test_dependency_closure_controls_real_trusted_comparison[\\` [helper](helper.py) `-True-True]
+FAILED tests/test_dependency_numeric_regressions.py::test_dependency_closure_controls_real_trusted_comparison[- Steps:\n    - [helper](helper.py)-True-True]
+FAILED tests/test_dependency_numeric_regressions.py::test_dependency_closure_controls_real_trusted_comparison[- Steps:\n\n    [helper](helper.py)-True-True]
+FAILED tests/test_dependency_numeric_regressions.py::test_dependency_closure_controls_real_trusted_comparison[Paragraph\n    [helper](helper.py)-True-True]
+FAILED tests/test_dependency_numeric_regressions.py::test_dependency_closure_controls_real_trusted_comparison[> - Steps:\n>     [helper](helper.py)-False-True]
+FAILED tests/test_dependency_numeric_regressions.py::test_dependency_closure_controls_real_trusted_comparison[- Steps:\nlazy continuation\n\n    [helper](helper.py)-False-False]
+FAILED tests/test_dependency_numeric_regressions.py::test_dependency_closure_controls_real_trusted_comparison[- - Steps:\n\n    [helper](helper.py)-False-True]
+FAILED tests/test_dependency_numeric_regressions.py::test_dependency_closure_controls_real_trusted_comparison[-\n\n     [helper](helper.py)-True-True]
+FAILED tests/test_dependency_numeric_regressions.py::test_shared_decoder_rejects_all_nonfinite_numbers[{}-1e999]
+FAILED tests/test_dependency_numeric_regressions.py::test_shared_decoder_rejects_all_nonfinite_numbers[{}--1e999]
+FAILED tests/test_dependency_numeric_regressions.py::test_shared_decoder_rejects_all_nonfinite_numbers[{{"value":{}}}-1e999]
+FAILED tests/test_dependency_numeric_regressions.py::test_shared_decoder_rejects_all_nonfinite_numbers[{{"value":{}}}--1e999]
+FAILED tests/test_dependency_numeric_regressions.py::test_shared_decoder_rejects_all_nonfinite_numbers[[{}]-1e999]
+FAILED tests/test_dependency_numeric_regressions.py::test_shared_decoder_rejects_all_nonfinite_numbers[[{}]--1e999]
+FAILED tests/test_dependency_numeric_regressions.py::test_shared_decoder_rejects_all_nonfinite_numbers[{{"nested":[{{"value":{}}}]}}-1e999]
+FAILED tests/test_dependency_numeric_regressions.py::test_shared_decoder_rejects_all_nonfinite_numbers[{{"nested":[{{"value":{}}}]}}--1e999]
+FAILED tests/test_dependency_numeric_regressions.py::test_authentic_promptfoo_overflow_is_atomic_cli_error[config-1e999]
+FAILED tests/test_dependency_numeric_regressions.py::test_authentic_promptfoo_overflow_is_atomic_cli_error[config--1e999]
+FAILED tests/test_dependency_numeric_regressions.py::test_authentic_promptfoo_overflow_is_atomic_cli_error[bound-row-1e999]
+FAILED tests/test_dependency_numeric_regressions.py::test_authentic_promptfoo_overflow_is_atomic_cli_error[bound-row--1e999]
+FAILED tests/test_dependency_numeric_regressions.py::test_authentic_promptfoo_overflow_is_atomic_cli_error[unbound-row-1e999]
+FAILED tests/test_dependency_numeric_regressions.py::test_authentic_promptfoo_overflow_is_atomic_cli_error[unbound-row--1e999]
+39 failed, 36 passed in 12.15s
