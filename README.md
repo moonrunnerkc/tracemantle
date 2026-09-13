@@ -10,6 +10,8 @@
     <a href="https://github.com/moonrunnerkc/tracemantle/issues/new">Report a bug or request a feature</a>
   </p>
   <a href="https://github.com/moonrunnerkc/tracemantle/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/moonrunnerkc/tracemantle/ci.yml?branch=main&amp;style=flat-square" alt="CI status"></a>
+  <a href="https://pypi.org/project/tracemantle/"><img src="https://img.shields.io/pypi/v/tracemantle?style=flat-square" alt="PyPI version"></a>
+  <a href="https://pypi.org/project/tracemantle/"><img src="https://img.shields.io/pypi/pyversions/tracemantle?style=flat-square" alt="Python versions"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/moonrunnerkc/tracemantle?style=flat-square" alt="MIT license"></a>
 </div>
 

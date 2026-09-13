@@ -1,0 +1,78 @@
+{
+  "version": "1.6.0",
+  "date_utc": "2026-09-13",
+  "source_commit": "3f0363cbc348be7f2d77bc3c0a5e2da19d9e7844",
+  "tag": "v1.6.0",
+  "pypi": "https://pypi.org/project/tracemantle/1.6.0/",
+  "github_release": "https://github.com/moonrunnerkc/tracemantle/releases/tag/v1.6.0",
+  "github_latest_verified": true,
+  "remote_runs": [
+    {
+      "id": 34727283535,
+      "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34727283535",
+      "workflow": "CI",
+      "conclusion": "success",
+      "jobs_passed": 15
+    },
+    {
+      "id": 34727482766,
+      "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34727482766",
+      "workflow": "Release",
+      "conclusion": "success",
+      "jobs_passed": 17
+    },
+    {
+      "id": 34727751906,
+      "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34727751906",
+      "workflow": "Release notes",
+      "conclusion": "success",
+      "jobs_passed": 1
+    }
+  ],
+  "publisher": {
+    "kind": "GitHub",
+    "repository": "moonrunnerkc/tracemantle",
+    "workflow": "release.yml",
+    "environment": "pypi",
+    "verified_by": "Successful OIDC upload and both public PyPI provenance records; account UI not accessible."
+  },
+  "artifacts": [
+    {
+      "artifact": "tracemantle-1.6.0-py3-none-any.whl",
+      "sha256": "0ec4bf4f5e3fc3169f80643505028b29cb40ea72d668f54bfbfcd1120480b1fc",
+      "version": "1.6.0",
+      "clean_install": "passed",
+      "legacy_migration": "not requested",
+      "matches_pypi_and_github_release": true,
+      "github_attestation_verification": "passed against source_commit",
+      "pypi_provenance": "https://pypi.org/integrity/tracemantle/1.6.0/tracemantle-1.6.0-py3-none-any.whl/provenance"
+    },
+    {
+      "artifact": "tracemantle-1.6.0.tar.gz",
+      "sha256": "c9a100cfc2b6cecece7b439d12b8bd47fe42d57048393c51b247d13dfc8b4049",
+      "version": "1.6.0",
+      "clean_install": "passed",
+      "legacy_migration": "not requested",
+      "matches_pypi_and_github_release": true,
+      "github_attestation_verification": "passed against source_commit",
+      "pypi_provenance": "https://pypi.org/integrity/tracemantle/1.6.0/tracemantle-1.6.0.tar.gz/provenance"
+    }
+  ],
+  "public_index_install": {
+    "python": "3.12",
+    "version": "1.6.0",
+    "pip_check": "passed",
+    "cli_and_module_version": "passed",
+    "fixture_validation": "passed",
+    "imports_from": "isolated virtual environment site-packages"
+  },
+  "publishing_after_release": {
+    "TRACEMANTLE_PUBLISH_ENABLED": "false",
+    "release_workflow_state": "disabled_manually",
+    "environment_allowed_refs": {
+      "name": "v*.*.*",
+      "type": "tag"
+    }
+  },
+  "remaining_release_prerequisites": []
+}
