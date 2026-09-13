@@ -1,6 +1,6 @@
 # Owner checklist for the repository rename
 
-The owner renamed the repository to [moonrunnerkc/tracemantle](https://github.com/moonrunnerkc/tracemantle). Post-rename inspection on 2026-09-12 confirmed the destination and reviewed the settings below. TraceMantle 1.6.0 remains unpublished.
+The owner renamed the repository to [moonrunnerkc/tracemantle](https://github.com/moonrunnerkc/tracemantle). Post-rename inspection on 2026-09-12 confirmed the destination and reviewed the settings below. The rename work is complete. The separately authorized 1.6.0 publication is tracked below.
 
 - [x] Verify the new repository URL (HTTP 200) and the old `moonrunnerkc/skillcheck` URL (HTTP 301 to the new repository).
 - [x] Update `origin` to `https://github.com/moonrunnerkc/tracemantle.git`, preserving its existing HTTPS transport. Fetch and remote-main inspection succeeded.
@@ -18,10 +18,14 @@ The owner renamed the repository to [moonrunnerkc/tracemantle](https://github.co
 - [x] Apply the owner's requested author name `moonrunnerkc` to local Git identity and active project attribution; rewrite only the three task commits with the requested author/committer name using an explicit lease, preserving their content, dates and messages. Earlier history, tags and other contributors remain unchanged.
 - [ ] Inspect/configure the **tracemantle** PyPI trusted publisher. Public project JSON returned HTTP 404; that does not establish name availability, ownership or pending-publisher status. No connected browser or PyPI account connector is available, so account configuration could not be inspected or changed.
 
-## Exact owner prerequisites
+## Publisher setup
 
 In the owning PyPI account, inspect [pending publishers](https://pypi.org/manage/account/publishing/). If the project already belongs to that account, inspect [project publishing](https://pypi.org/manage/project/tracemantle/settings/publishing/) instead. Create or correct the publisher for distribution **tracemantle**, GitHub owner **moonrunnerkc**, repository **tracemantle**, workflow filename **release.yml**, environment **pypi**. Replace any pre-rename repository value for this new distribution. Do not redirect the legacy SkillCheck publisher or upload these artifacts there. Confirm ownership or resolve any name restriction with PyPI before release; a pending publisher does not itself create a published project.
 
-Keep both publishing safeguards disabled. A separate explicit instruction is required before enabling the Release workflow/variable, creating an immutable release tag, publishing packages or creating a public release. First verify the publisher and chosen environment protections, and require full CI success for the immutable release commit. Then, after a release exists, update downstream consumers to its new repository/tag and restore PyPI version/Python badges. No downstream repository changes are claimed here.
+Keep both publishing safeguards disabled outside an explicitly authorized release. The owner authorized publication of TraceMantle 1.6.0 on 2026-09-13 UTC. First verify the publisher and chosen environment protections, and require full CI success for the immutable release commit. Then, after a release exists, update downstream consumers to its new repository/tag and restore PyPI version/Python badges. No downstream repository changes are claimed here.
 
 Intentional old-name inventory: historical changelog and remediation records; labeled historical case studies; original plan filename; v1 history keys and filenames; accepted legacy config names; deprecated import wrappers; stable v1 schema IDs/compatibility copies; recorded baseline outputs and pre-rename audit snapshots. Review every newly introduced old-name occurrence against this list.
+
+## Authorized 1.6.0 release
+
+The owner explicitly requested publication. Release preparation updates install/tag examples and the changelog, keeps the original plan and compatibility contracts intact, and requires full CI on the release commit. The GitHub `pypi` environment is restricted to tags matching `v*.*.*`; existing reviewer settings are preserved. Direct PyPI account inspection is unavailable, so the workflow's OIDC exchange must verify the exact publisher before any upload. Publication and artifact verification results will be recorded after the workflow completes. Publishing safeguards return to disabled afterward.

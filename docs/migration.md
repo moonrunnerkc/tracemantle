@@ -8,7 +8,7 @@ The supported replacement sequence, verified with locally built old and new arti
 python -m pip show skillcheck
 # Only after identifying this project's old distribution:
 python -m pip uninstall skillcheck
-python -m pip install /path/to/tracemantle-1.6.0-py3-none-any.whl
+python -m pip install tracemantle==1.6.0
 tracemantle --version
 python -m tracemantle --version
 ```
@@ -46,9 +46,9 @@ git remote set-url origin git@github.com:moonrunnerkc/tracemantle.git
 
 If you also rename the local checkout directory, recreate its virtual environment: installed console scripts can retain absolute paths to the old directory.
 
-The installed skill now lives at `skills/tracemantle/SKILL.md`. Existing release tags still identify old source. Pin an unpublished Action or pre-commit consumer to a full CI-verified TraceMantle commit SHA; use `moonrunnerkc/tracemantle@v1.6.0` only after that separately authorized release exists. Renaming the repository does not publish the distribution or update downstream repositories automatically.
+The installed skill now lives at `skills/tracemantle/SKILL.md`. Version tags before 1.6.0 still identify SkillCheck source. Use `moonrunnerkc/tracemantle@v1.6.0` for TraceMantle, or pin a full CI-verified commit SHA. Renaming the repository does not publish the distribution or update downstream repositories automatically.
 
-For pre-commit, pin `repo: https://github.com/moonrunnerkc/tracemantle` to a full CI-verified TraceMantle commit SHA until the new release exists. After `v1.6.0` is released, use:
+For pre-commit, pin the TraceMantle release:
 
 ```yaml
 repos:

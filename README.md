@@ -37,14 +37,12 @@ TraceMantle analyzes files; it does not execute skills or evaluators. Static che
 
 ## Getting started
 
-Requires Python 3.10 or later and Git. Version 1.6.0 is available from source; it is not yet published on PyPI.
+Requires Python 3.10 or later. Install in a virtual environment:
 
 ```bash
-git clone https://github.com/moonrunnerkc/tracemantle.git
-cd tracemantle
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install .
+python -m pip install tracemantle==1.6.0
 tracemantle --version
 ```
 
@@ -52,13 +50,13 @@ On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1`. Replacing Ski
 
 ## Usage
 
-Validate the included skill, scan a directory, or inspect a bundle:
+Validate a skill, scan a directory, or inspect a bundle:
 
 ```bash
-tracemantle skills/tracemantle/SKILL.md
-tracemantle skills/ --strict --format json
-tracemantle skills/tracemantle/SKILL.md --analyze-graph
-tracemantle manifest skills/tracemantle --format json
+tracemantle path/to/SKILL.md
+tracemantle path/to/skills/ --strict --format json
+tracemantle path/to/SKILL.md --analyze-graph
+tracemantle manifest path/to/skill --format json
 ```
 
 Validation exits `0` when it passes and nonzero on errors; `--strict` also fails on warnings. Text, JSON and GitHub annotation output are supported.
@@ -71,15 +69,15 @@ See the [CLI and configuration reference](docs/generated-reference.md), [compati
 
 ## Integrations
 
-Use the composite GitHub Action with an immutable TraceMantle source commit:
+Use the composite GitHub Action pinned to a release:
 
 ```yaml
-- uses: moonrunnerkc/tracemantle@2b910e679961b274b8ace742096d78216439998e
+- uses: moonrunnerkc/tracemantle@v1.6.0
   with:
     path: skills/
 ```
 
-[Action inputs](action.yml) control validation and reporting. Existing `v1` and `v1.5.0` tags contain the older SkillCheck implementation. A [pre-commit hook](.pre-commit-hooks.yaml), [Python API](src/tracemantle/__init__.py) and [installed skill](skills/tracemantle/SKILL.md) are also included.
+[Action inputs](action.yml) control validation and reporting. Versions before 1.6.0 contain the older SkillCheck implementation. A [pre-commit hook](.pre-commit-hooks.yaml), [Python API](src/tracemantle/__init__.py) and [installed skill](skills/tracemantle/SKILL.md) are also included.
 
 ## Contributing
 

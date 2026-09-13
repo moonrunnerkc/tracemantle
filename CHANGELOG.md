@@ -7,13 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.6.0] - 2026-09-12 (local candidate, unpublished)
+## [1.6.0] - 2026-09-13
 
 ### Changed
 
 - TraceMantle is the canonical distribution, package and CLI (1.6.0). The old distribution must be uninstalled before installing the renamed package; no `skillcheck` executable is installed. Historical v1 schema identifiers remain unchanged.
 - Standard field classification, bounded parsing, report policy and evidence comparison follow the implementation plan. See `docs/implementation-status.md` for executed verification.
-- Repository links and integration examples now use `moonrunnerkc/tracemantle`. Release publishing remains disabled. Cross-platform checkout rules preserve fixture bytes, including the literal CRLF parser control.
+- Repository links and integration examples now use `moonrunnerkc/tracemantle`. PyPI publishing uses the trusted GitHub identity and requires the complete CI gate. Cross-platform checkout rules preserve fixture bytes, including the literal CRLF parser control.
 
 The following development notes predate the rename. Old module paths describe that intermediate state; current contracts and verification are recorded in the implementation ledger.
 
