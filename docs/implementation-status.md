@@ -4,6 +4,8 @@ Operative plan: [original DOCX](SkillCheck_Technical_Debt_and_Product_Plan.docx)
 
 The complete plan, including both tables, was read before implementation. Instruction discovery covered ancestors, hidden directories, scoped instructions and case variants; `.github/CLAUDE.md` was the only repository instruction file. Contributor guidance, build workflows and historical remediation were also read. The supplied DOCX and unrelated local files were preserved. Those implementation-stage results predate the owner's repository rename; post-rename work is recorded below. No publication occurred during that initial implementation stage; the later authorized release is recorded below.
 
+Current release: **TraceMantle 1.6.1**, published and independently verified. [Patch publication and acceptance](verification/release-1.6.1/acceptance.md#published-release-and-independent-verification) records the corrected D09/P01/P03 behavior, exact source commit, public artifacts and installed checks.
+
 ## Requirement ledger
 
 | ID | Result | Implementation and executed acceptance |
@@ -32,7 +34,7 @@ The complete plan, including both tables, was read before implementation. Instru
 
 The [post-release checklist and verification record](verification/audit-1.6.1/acceptance.md) reconciles every requirement against current source, distinguishes baseline implementation from remaining verification, and records corrections to D02–D07, D09, D11 and P01–P04. D12 gains an isolated nonpublishing failed-prerequisite check. The existing `tomli` dev fix was confirmed and retained. The original requirement table above describes the initial implementation, with the P04 remote status updated after execution; its broad verified labels do not establish the newly reproduced error paths or live evaluation.
 
-The accumulated post-1.6.0 fixes are included in the authorized 1.6.1 patch preparation. [Current correction and release verification](verification/release-1.6.1/acceptance.md) supersedes the earlier audit for D09/P01/P03 Setext block boundaries. Earlier audit records below retain their original source snapshots and publication status.
+The accumulated post-1.6.0 fixes are included in the authorized, published 1.6.1 patch. [Current correction and release verification](verification/release-1.6.1/acceptance.md) supersedes the earlier audit for D09/P01/P03 Setext block boundaries. Earlier audit records below retain their original source snapshots and publication status.
 
 ## Dependency and numeric boundary follow-up
 
@@ -108,3 +110,5 @@ Post-release documentation is committed separately on `main`, authored by `moonr
 ## Setext boundary correction and 1.6.1 release
 
 D09/P01/P03: block structure now separates Setext headings, indented ATX headings and spaced thematic breaks before inline code matching. The real trusted-Git regression keeps both check and evidence inputs at only `SKILL.md`, proving that discovered helper dependencies govern reuse. Valid multiline heading spans and actual code examples retain their exclusion behavior. Unsupported containers continue to block approval. The [1.6.1 record](verification/release-1.6.1/acceptance.md) distinguishes original-source failures, local checks, exact-commit CI, publication and installed-distribution acceptance. Live agent evaluation remains unexecuted.
+
+The 1.6.1 release at `4a502e7f381b6eadf57726285adfd82569461308` passed all 15 pre-tag CI jobs and all 17 Release jobs. Public PyPI and GitHub bytes match the tested artifacts and verified attestations. A fresh PyPI installation passed 153 installed acceptance cases; old-distribution migrations passed on 3.10 and 3.12. Both publishing controls are disabled again. The final documentation commit is distinct from the immutable release tag and receives its own CI. See [publication identities and hashes](verification/release-1.6.1/publication.json).

@@ -12,7 +12,7 @@ The initial 53 new cases, run before any implementation change, produced **17 fa
 
 ## Verification status
 
-Full suites, performance, clean artifacts and exact-commit remote checks are recorded below as they complete. Earlier records under `audit-1.6.1/` are historical source snapshots, not evidence for this release. No quality threshold, assertion, runtime dependency or instruction file was weakened. No live skill/evaluator execution or paid evaluation was initiated. Static compatibility and upstream export parsing do not establish live agent behavior.
+Full suites, performance, clean artifacts and exact-commit remote checks are recorded below. Earlier records under `audit-1.6.1/` are historical source snapshots, not evidence for this release. No quality threshold, assertion, runtime dependency or instruction file was weakened. No live skill/evaluator execution or paid evaluation was initiated. Static compatibility and upstream export parsing do not establish live agent behavior.
 
 ## Local quality gates
 
@@ -36,3 +36,19 @@ The four Python 3.12 skips exercise the Python 3.10 TOML fallback and run on 3.1
 The final 57-case heading suite was replayed against the detached audited source with explicit source selection. It produced **19 failures and 38 passes**, including the heading-to-indented-code control. It remains a negative control; [full original-source replay](tests-final-against-original.txt) records its failures. No failing run is presented as release approval.
 
 Retained pytest logs normalize trailing whitespace only; command outcomes and assertions are unchanged. Clean indexed-tree wheel/source verification uses `scripts/verify_artifacts.py --legacy-wheel` on both Python 3.10 and 3.12. The artifact JSON files are excluded from source archives by the existing packaging rule to avoid recursive digests.
+
+## Published release and independent verification
+
+TraceMantle **1.6.1** is public on [PyPI](https://pypi.org/project/tracemantle/1.6.1/) and [GitHub](https://github.com/moonrunnerkc/tracemantle/releases/tag/v1.6.1/), marked Latest. Immutable tag `v1.6.1` points to **`4a502e7f381b6eadf57726285adfd82569461308`**. The established post-publish job updated the floating Action alias `v1`; earlier immutable release tags were preserved. [Publication record](publication.json) records hashes, provenance, exact workflow identities and the fresh pip download URL.
+
+- [Pre-tag CI](https://github.com/moonrunnerkc/tracemantle/actions/runs/34783524228): all 15 jobs passed on the release commit.
+- [Release](https://github.com/moonrunnerkc/tracemantle/actions/runs/34783913741): all 17 jobs passed, including the repeated full quality gate, exact-artifact installation, provenance attestation, production trusted publishing and dependent Action alias update.
+- [Release notes](https://github.com/moonrunnerkc/tracemantle/actions/runs/34784426265): passed; the already-promoted changelog needed no PR.
+- [Nonpublishing negative control](https://github.com/moonrunnerkc/tracemantle/actions/runs/34783532262): deliberate quality failure, publishing sentinel skipped, verification passed. Its overall failure is expected, not a release regression.
+- Public PyPI downloads, GitHub attachments, both CI artifact sets and local clean artifacts match byte-for-byte. Both `gh attestation verify` commands passed with `--repo moonrunnerkc/tracemantle --source-digest 4a502e7f381b6eadf57726285adfd82569461308 --signer-workflow moonrunnerkc/tracemantle/.github/workflows/release.yml`. PyPI provenance identifies the existing GitHub publisher and `pypi` environment.
+- A fresh Python 3.12 environment installed exactly `tracemantle==1.6.1` with `--no-cache-dir --index-url https://pypi.org/simple`. CLI/module versions and `pip check` passed. Imports came from the environment's `site-packages`; `PYTHONPATH` was unset, with no editable install or source tree available in the test directory. [Installed acceptance](tests-pypi-installed.txt): **153 passed**, including all 57 new heading/boundary cases, the original 75 dependency/numeric cases, 20 evidence scenarios and candidate policy/checker tampering.
+- Released wheel/source migration passed with the existing old-distribution uninstall/install verifier on [Python 3.10](artifacts-published-python310.json) and [Python 3.12](artifacts-published-python312.json). The 3.10 run used downloads from PyPI; the 3.12 run used the exact published workflow artifacts, independently matched to public bytes.
+
+The first pip attempt preceded simple-index propagation. Installation succeeded after the public index listed 1.6.1. A combined GitHub asset upload failed, and inspection confirmed its temporary draft was removed; individual uploads of the same verified bytes then succeeded. No version was reused for different bytes, no public artifact was overwritten and no credential was exposed.
+
+Both publishing controls are restored: `TRACEMANTLE_PUBLISH_ENABLED=false` and Release `disabled_manually`. The `pypi` environment still permits only `v*.*.*` tag refs; no protection was weakened. Post-release documentation receives a separate normal push and full CI. Its final main SHA and completed run are reported at handoff without moving the release tag. No release blocker remains. Live agent execution and behavioral-success claims remain outside the executed evidence.

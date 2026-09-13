@@ -2,7 +2,7 @@
 
 TraceMantle is a different distribution. Installing it is not an automatic upgrade of `skillcheck`. Before uninstalling anything, verify that the installed `skillcheck` distribution is this project's old analyzer, not an unrelated package or executable with the same name. Prefer a clean virtual environment.
 
-The supported replacement sequence, verified with locally built old and new artifacts, is:
+The supported replacement sequence, verified with this project's locally built old distribution and the published 1.6.1 artifacts, is:
 
 ```bash
 python -m pip show skillcheck

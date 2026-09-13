@@ -1,0 +1,110 @@
+{
+  "version": "1.6.1",
+  "source_commit": "4a502e7f381b6eadf57726285adfd82569461308",
+  "tag": "v1.6.1",
+  "tag_object": "23f60123933798b41ac5643ed2cbabc36adad146",
+  "pypi": "https://pypi.org/project/tracemantle/1.6.1/",
+  "github_release": "https://github.com/moonrunnerkc/tracemantle/releases/tag/v1.6.1",
+  "github_latest_verified": true,
+  "remote_runs": [
+    {
+      "id": 34783524228,
+      "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34783524228",
+      "workflow": "CI",
+      "source_commit": "4a502e7f381b6eadf57726285adfd82569461308",
+      "conclusion": "success",
+      "jobs_passed": 15
+    },
+    {
+      "id": 34783913741,
+      "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34783913741",
+      "workflow": "Release",
+      "source_commit": "4a502e7f381b6eadf57726285adfd82569461308",
+      "conclusion": "success",
+      "jobs_passed": 17
+    },
+    {
+      "id": 34784426265,
+      "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34784426265",
+      "workflow": "Release notes",
+      "source_commit": "4a502e7f381b6eadf57726285adfd82569461308",
+      "conclusion": "success",
+      "jobs_passed": 1
+    }
+  ],
+  "negative_control": {
+    "id": 34783532262,
+    "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34783532262",
+    "source_commit": "4a502e7f381b6eadf57726285adfd82569461308",
+    "conclusion": "expected failure",
+    "jobs": {
+      "quality": "failure",
+      "verify": "success",
+      "publishing-sentinel": "skipped"
+    }
+  },
+  "artifacts": [
+    {
+      "artifact": "tracemantle-1.6.1-py3-none-any.whl",
+      "sha256": "93d3bec4201319bd6769482de6cf592372f08915ce164bffb4f7d3cefc7348f6",
+      "version": "1.6.1",
+      "clean_install": "passed",
+      "setext_dependencies": "passed",
+      "numeric_overflow": "passed",
+      "matches_local_pre_tag_ci_tag_ci_pypi_github": true,
+      "github_attestation_verification": "passed against source commit and release.yml signer workflow",
+      "pypi_provenance": "https://pypi.org/integrity/tracemantle/1.6.1/tracemantle-1.6.1-py3-none-any.whl/provenance",
+      "quality_gate_legacy_migration": "not requested",
+      "published_artifact_migration": "passed on Python 3.10 and 3.12 in separate verification"
+    },
+    {
+      "artifact": "tracemantle-1.6.1.tar.gz",
+      "sha256": "bc755e358264b578bfbc387e1d6f2a30c5af81e1663501680f511493a6953b0c",
+      "version": "1.6.1",
+      "clean_install": "passed",
+      "setext_dependencies": "passed",
+      "numeric_overflow": "passed",
+      "matches_local_pre_tag_ci_tag_ci_pypi_github": true,
+      "github_attestation_verification": "passed against source commit and release.yml signer workflow",
+      "pypi_provenance": "https://pypi.org/integrity/tracemantle/1.6.1/tracemantle-1.6.1.tar.gz/provenance",
+      "quality_gate_legacy_migration": "not requested",
+      "published_artifact_migration": "passed on Python 3.10 and 3.12 in separate verification"
+    }
+  ],
+  "public_index_install": {
+    "python": "3.12.13",
+    "version": "1.6.1",
+    "no_cache": true,
+    "index": "https://pypi.org/simple",
+    "download": {
+      "url": "https://files.pythonhosted.org/packages/9f/88/3ba58cf9224b7161d5bd85acdcbf2cc86f65c8bf8bb59f838d6c19dd3b70/tracemantle-1.6.1-py3-none-any.whl",
+      "archive_info": {
+        "hashes": {
+          "sha256": "93d3bec4201319bd6769482de6cf592372f08915ce164bffb4f7d3cefc7348f6"
+        },
+        "hash": "sha256=93d3bec4201319bd6769482de6cf592372f08915ce164bffb4f7d3cefc7348f6"
+      }
+    },
+    "package_path": "/private/tmp/tracemantle-release161-pypi/lib/python3.12/site-packages/tracemantle/__init__.py",
+    "PYTHONPATH": "unset",
+    "editable": false,
+    "pip_check": "passed",
+    "cli_and_module_version": "passed",
+    "acceptance": "153 passed in 29.48 seconds; heading, numeric, required evidence and trusted candidate-tampering cases",
+    "first_attempt": "The simple index initially listed only 1.6.0. Retried after confirming 1.6.1 appeared; no artifacts were rebuilt or uploaded again."
+  },
+  "github_upload_recovery": "Initial combined upload failed on a duplicate checksum asset and gh removed the draft. Both release ID and tag lookup returned 404. Created a new draft, uploaded each identical verified asset individually, verified all digests, then published. No published artifact was overwritten.",
+  "publisher": {
+    "kind": "GitHub",
+    "repository": "moonrunnerkc/tracemantle",
+    "workflow": "release.yml",
+    "environment": "pypi"
+  },
+  "publishing_after_release": {
+    "TRACEMANTLE_PUBLISH_ENABLED": "false",
+    "release_workflow_state": "disabled_manually",
+    "allowed_refs": "tags v*.*.*"
+  },
+  "live_evaluations": "unexecuted",
+  "remaining_release_prerequisites": []
+}
