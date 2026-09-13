@@ -1,1 +1,1 @@
-"""Synthetic dependency fixture, never executed by comparison."""
+"""Changed synthetic helper dependency; required evidence must be rerun."""

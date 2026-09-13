@@ -1,0 +1,63 @@
+{
+  "scope": "Nonpublishing acceptance; negative workflow conclusions are expected and not CI regressions.",
+  "runs": [
+    {
+      "conclusion": "success",
+      "databaseId": 34732213429,
+      "headSha": "b9bc5ff3b121fe6ca0d5ed72595c16d6ee68e13e",
+      "jobs": [
+        {
+          "name": "compare",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732213429/job/103656965053"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732213429",
+      "workflowName": "Trusted bundle comparison",
+      "expected": "pass control"
+    },
+    {
+      "conclusion": "failure",
+      "databaseId": 34732248364,
+      "headSha": "b9bc5ff3b121fe6ca0d5ed72595c16d6ee68e13e",
+      "jobs": [
+        {
+          "name": "compare",
+          "conclusion": "failure",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732248364/job/103657060945"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732248364",
+      "workflowName": "Trusted bundle comparison",
+      "expected": "missing evidence: unknown, exit 4"
+    },
+    {
+      "conclusion": "failure",
+      "databaseId": 34732214620,
+      "headSha": "b9bc5ff3b121fe6ca0d5ed72595c16d6ee68e13e",
+      "jobs": [
+        {
+          "name": "quality",
+          "conclusion": "failure",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732214620/job/103656968683"
+        },
+        {
+          "name": "verify",
+          "conclusion": "success",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732214620/job/103656980869"
+        },
+        {
+          "name": "publishing-sentinel",
+          "conclusion": "skipped",
+          "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732214620/job/103656981394"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/moonrunnerkc/tracemantle/actions/runs/34732214620",
+      "workflowName": "Verify nonpublishing release guard",
+      "expected": "quality failure, publishing sentinel skipped, verification success"
+    }
+  ]
+}

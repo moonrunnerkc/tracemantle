@@ -66,3 +66,13 @@ The fresh baseline and corrected-source benchmark use `scripts/benchmark.py --re
 Before integration, `main` had no branch protection or rulesets, and the configured Git author was `moonrunnerkc`. Existing final-baseline CI run 34727841804 passed but does not establish checks on these fixes. Publishing remained `disabled_manually` with `TRACEMANTLE_PUBLISH_ENABLED=false`. Only ordinary main CI and explicitly selected nonpublishing comparison/guard runs are authorized here.
 
 No authorized live agent/skill runtime and evaluation budget were supplied. Actual observed invocation, routing quality and behavioral task-success measurements therefore remain unexecuted under P02–P04/D11. All new evidence controls are labeled synthetic; the retained Promptfoo export demonstrates upstream format compatibility and model judgments only. Vendor runtime applicability and semantic advisory calibration remain explicitly unverified as documented. This audit does not declare those empirical criteria complete.
+
+## Executed remote workflow controls
+
+Implementation commit `b9bc5ff3b121fe6ca0d5ed72595c16d6ee68e13e` reached `main` by normal push after all available local gates passed. The original static fixture at that revision is the immutable trusted control for subsequent candidate tampering. [Remote run identities](remote.json) retain exact workflow SHAs and individual job conclusions.
+
+- [Trusted static control](https://github.com/moonrunnerkc/tracemantle/actions/runs/34732213429): passed, installing only the selected trusted checkout.
+- [Missing-evidence control](https://github.com/moonrunnerkc/tracemantle/actions/runs/34732248364): deliberately blocked with unknown, exit 4; GitHub marked the comparison job failed as expected.
+- [Nonpublishing release guard](https://github.com/moonrunnerkc/tracemantle/actions/runs/34732214620): deliberate quality failure, publishing sentinel skipped, verification job passed. The overall workflow conclusion is failure by design. It contains no publishing capability. The real Release workflow and enable variable stayed disabled.
+
+The next candidate fixture changes the governed helper, marks its own policy check optional and substitutes a checker that raises if executed. Local CLI comparison against the immutable control reports only `helper.py` changed, retains the required static check and requires a rerun (unknown, exit 4); the candidate checker does not execute. The fixture README documents the two revisions and replay command. The full final main CI and this candidate's remote comparison require their own completed runs before handoff; earlier green runs are not substitutes.
