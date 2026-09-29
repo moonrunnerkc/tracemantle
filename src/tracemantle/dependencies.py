@@ -35,7 +35,11 @@ def analyze_dependencies(path: Path, markdown: Markdown) -> Dependencies:
                 continue
             line = origin_line or ref.line
             try:
-                target = (source.parent / ref.target).resolve()
+                # Expand a leading ~ to the user's home directory before
+                # resolving. Without this, a reference like `~/notes/tips.md`
+                # is joined onto the skill directory as a literal "~"
+                # segment and misreported as a broken link.
+                target = (source.parent / Path(ref.target).expanduser()).resolve()
                 if not target.is_relative_to(root):
                     diagnostics.append(Diagnostic('references.escape', Severity.ERROR, f"Reference '{ref.target}' resolves outside the skill directory.", line=line))
                     complete = False
