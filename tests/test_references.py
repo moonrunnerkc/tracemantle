@@ -344,3 +344,81 @@ def test_symlink_within_skill_dir_passes(tmp_path):
     skill = parse(f)
     diagnostics = check_broken_references(skill)
     assert diagnostics == []
+
+
+# ---------------------------------------------------------------------------
+# allow_external_paths (sanctioned locations outside the skill tree)
+# ---------------------------------------------------------------------------
+
+def _parse_with_allowlist(path, allow):
+    from tracemantle.parser import DocumentSettings
+    return parse(path, settings=DocumentSettings(allow_external_paths=tuple(allow)))
+
+
+def test_allowlisted_external_ref_passes(tmp_path):
+    """A reference under a sanctioned external path is not an escape."""
+    shared = tmp_path / "shared"
+    shared.mkdir()
+    (shared / "helper.py").write_text("# helper\n")
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    f = skill_dir / "SKILL.md"
+    f.write_text(
+        "---\nname: my-skill\ndescription: Ref test.\n---\n"
+        f"Import `{shared / 'helper.py'}` for auth.\n"
+    )
+    skill = _parse_with_allowlist(f, [str(shared)])
+    assert check_broken_references(skill) == []
+
+
+def test_allowlisted_external_ref_missing_still_reported(tmp_path):
+    """Sanctioning a location does not bless dangling pointers into it."""
+    shared = tmp_path / "shared"
+    shared.mkdir()
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    f = skill_dir / "SKILL.md"
+    f.write_text(
+        "---\nname: my-skill\ndescription: Ref test.\n---\n"
+        f"Import `{shared / 'gone.py'}` for auth.\n"
+    )
+    skill = _parse_with_allowlist(f, [str(shared)])
+    diagnostics = check_broken_references(skill)
+    assert len(diagnostics) == 1
+    assert diagnostics[0].rule == "references.broken-link"
+
+
+def test_non_allowlisted_external_ref_still_escape(tmp_path):
+    """Without an allowlist entry, an absolute outside path is still an escape."""
+    shared = tmp_path / "shared"
+    shared.mkdir()
+    (shared / "helper.py").write_text("# helper\n")
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    f = skill_dir / "SKILL.md"
+    f.write_text(
+        "---\nname: my-skill\ndescription: Ref test.\n---\n"
+        f"Import `{shared / 'helper.py'}` for auth.\n"
+    )
+    skill = parse(f)
+    diagnostics = check_broken_references(skill)
+    assert len(diagnostics) == 1
+    assert diagnostics[0].rule == "references.escape"
+
+
+def test_allowlist_prefix_boundary(tmp_path):
+    """Allowing /shared must not cover /shared-evil (prefix, not substring)."""
+    (tmp_path / "shared-evil").mkdir()
+    (tmp_path / "shared-evil" / "helper.py").write_text("# helper\n")
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    f = skill_dir / "SKILL.md"
+    evil = tmp_path / "shared-evil" / "helper.py"
+    f.write_text(
+        "---\nname: my-skill\ndescription: Ref test.\n---\n"
+        f"Import `{evil}` for auth.\n"
+    )
+    skill = _parse_with_allowlist(f, [str(tmp_path / "shared")])
+    diagnostics = check_broken_references(skill)
+    assert len(diagnostics) == 1
+    assert diagnostics[0].rule == "references.escape"

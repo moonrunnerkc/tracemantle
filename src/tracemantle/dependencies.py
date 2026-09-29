@@ -18,7 +18,7 @@ class Dependencies:
     complete: bool
 
 
-def analyze_dependencies(path: Path, markdown: Markdown) -> Dependencies:
+def analyze_dependencies(path: Path, markdown: Markdown, allow_external_paths: tuple[str, ...] = ()) -> Dependencies:
     root = path.parent.resolve()
     paths: set[str] = set()
     edges: set[tuple[str, str]] = set()
@@ -26,6 +26,15 @@ def analyze_dependencies(path: Path, markdown: Markdown) -> Dependencies:
     complete = not markdown.uncertain
     scanned = 0
     expanded: set[Path] = set()
+    # Sanctioned locations outside the skill tree (e.g. platform-shared
+    # helpers). References landing here skip the escape error but are still
+    # checked for existence; they never join the in-tree resource closure.
+    allowed_roots: list[Path] = []
+    for entry in allow_external_paths:
+        try:
+            allowed_roots.append(Path(entry).expanduser().resolve())
+        except (OSError, RuntimeError):
+            continue
     pending: list[tuple[Path, Markdown, tuple[Path, ...], int]] = [(path.resolve(), markdown, (path.resolve(),), 0)]
     while pending:
         source, document, ancestors, origin_line = pending.pop()
@@ -41,6 +50,11 @@ def analyze_dependencies(path: Path, markdown: Markdown) -> Dependencies:
                 # segment and misreported as a broken link.
                 target = (source.parent / Path(ref.target).expanduser()).resolve()
                 if not target.is_relative_to(root):
+                    if any(target == allowed or target.is_relative_to(allowed) for allowed in allowed_roots):
+                        if not target.exists():
+                            diagnostics.append(Diagnostic('references.broken-link', Severity.ERROR, f"Referenced file does not exist: '{ref.target}'.", line=line, context=f'resolved to: {target.as_posix()}'))
+                            complete = False
+                        continue
                     diagnostics.append(Diagnostic('references.escape', Severity.ERROR, f"Reference '{ref.target}' resolves outside the skill directory.", line=line))
                     complete = False
                     continue

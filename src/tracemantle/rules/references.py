@@ -12,7 +12,7 @@ def _extract_references(body: str) -> list[str]:
 
 
 def check_dependencies(skill: ParsedSkill) -> list[Diagnostic]:
-    return list(analyze_dependencies(skill.path, skill.markdown).diagnostics)
+    return list(analyze_dependencies(skill.path, skill.markdown, skill.settings.allow_external_paths).diagnostics)
 
 
 def check_broken_references(skill: ParsedSkill) -> list[Diagnostic]:

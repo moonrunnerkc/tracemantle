@@ -41,6 +41,7 @@ class TraceMantleConfig:
     graph_agent: str | None = None
     extension_fields: frozenset[str] = frozenset()
     reserved_words: tuple[str, ...] | None = None
+    allow_external_paths: tuple[str, ...] = ()
 
 
 class ConfigError(Exception):
@@ -77,6 +78,8 @@ _KEY_MAP = {
     "critique_agent": "critique_agent",
     "graph-agent": "graph_agent",
     "graph_agent": "graph_agent",
+    "allow-external-paths": "allow_external_paths",
+    "allow_external_paths": "allow_external_paths",
 }
 
 _INT_FIELDS = {"max_lines", "max_tokens", "min_desc_score"}
@@ -206,7 +209,11 @@ def load_config(path: Path | None) -> TraceMantleConfig:
             values[field] = value
         elif field == "ignore":
             if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-                raise ConfigError("Config key 'ignore' must be an array of strings.")
+                raise ConfigError(f"Config key '{raw_key}' must be an array of strings.")
+            values[field] = tuple(value)
+        elif field == "allow_external_paths":
+            if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+                raise ConfigError(f"Config key '{raw_key}' must be an array of strings.")
             values[field] = tuple(value)
 
     return TraceMantleConfig(**values, supplied=frozenset(values))

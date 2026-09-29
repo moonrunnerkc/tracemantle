@@ -328,11 +328,11 @@ def _apply_config(args: argparse.Namespace, parser: argparse.ArgumentParser) -> 
         print("Deprecated SkillCheck configuration: migrate to [tool.tracemantle] or tracemantle.toml.", file=sys.stderr)
     args.config_paths = paths
     explicit: frozenset[str] = getattr(args, "explicit_fields", frozenset())
-    for name in loaded.supplied - {"extension_fields", "reserved_words"}:
+    for name in loaded.supplied - {"extension_fields", "reserved_words", "allow_external_paths"}:
         dest = "ignore_prefixes" if name == "ignore" else name
         if dest not in explicit:
             setattr(args, dest, getattr(loaded, name))
-    args.document_settings = DocumentSettings(loaded.extension_fields, loaded.reserved_words or ('anthropic', 'claude'), args.tokenizer)
+    args.document_settings = DocumentSettings(loaded.extension_fields, loaded.reserved_words or ('anthropic', 'claude'), args.tokenizer, loaded.allow_external_paths)
 
 
 # ---------------------------------------------------------------------------

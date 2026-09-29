@@ -86,3 +86,21 @@ def test_cli_reports_loaded_config_path(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     assert f"Loaded config from {cfg}" in result.stderr
+
+
+def test_allow_external_paths_parses(tmp_path: Path) -> None:
+    cfg = _write(tmp_path / "tracemantle.toml", 'allow-external-paths = ["/opt/shared/", "~/helpers"]\n')
+    loaded = load_config(cfg)
+    assert loaded.allow_external_paths == ("/opt/shared/", "~/helpers")
+    assert "allow_external_paths" in loaded.supplied
+
+
+def test_allow_external_paths_defaults_empty(tmp_path: Path) -> None:
+    cfg = _write(tmp_path / "tracemantle.toml", 'max-lines = 10\n')
+    assert load_config(cfg).allow_external_paths == ()
+
+
+def test_allow_external_paths_rejects_non_strings(tmp_path: Path) -> None:
+    cfg = _write(tmp_path / "tracemantle.toml", 'allow-external-paths = ["/opt/shared/", 5]\n')
+    with pytest.raises(ConfigError, match="must be an array of strings"):
+        load_config(cfg)

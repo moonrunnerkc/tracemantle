@@ -31,6 +31,7 @@ class DocumentSettings:
     extension_fields: frozenset[str] = frozenset()
     reserved_words: tuple[str, ...] = ('anthropic', 'claude')
     tokenizer: str = 'heuristic'
+    allow_external_paths: tuple[str, ...] = ()
 
 
 def _freeze(value: Any) -> Any:

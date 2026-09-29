@@ -108,7 +108,7 @@ def create_manifest(root: Path, *, document: ParsedSkill | None = None) -> Bundl
         raise EvidenceError(f'Bundle {root} has no regular SKILL.md.')
     try:
         skill = document or parse(root / 'SKILL.md')
-        dependencies = analyze_dependencies(skill.path, skill.markdown)
+        dependencies = analyze_dependencies(skill.path, skill.markdown, skill.settings.allow_external_paths)
         issues.extend(d.message for d in dependencies.diagnostics if d.severity.value == 'error')
         if not dependencies.complete:
             issues.append('Resource dependency coverage is incomplete; rerun the full relevant suite.')
