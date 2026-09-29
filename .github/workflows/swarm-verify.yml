@@ -14,7 +14,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: moonrunnerkc/swarm-verify@9b7d32a2c01b2c9b0fda6ee8a1584d97008ebc59 # v1.0.7
+      - uses: moonrunnerkc/swarm-verify@5abe0fd26e2438564030cbe76de945fedfc308df # v1.1.0
         with:
           install: true
           image: ghcr.io/astral-sh/uv:python3.12-bookworm
