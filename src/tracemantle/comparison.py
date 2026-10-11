@@ -104,8 +104,13 @@ def _compatible(record: Evidence, check: RequiredCheck, candidate: BundleManifes
 
 def compare(baseline: BundleManifest, candidate: BundleManifest, records: tuple[Evidence, ...],
             policy: TrustedPolicy, *, now: datetime | None = None,
-            signed_evidence: frozenset[str] = frozenset()) -> Comparison:
+            signed_evidence: frozenset[str] = frozenset(), require_observed_execution: bool = False) -> Comparison:
     """Gate ``candidate`` against ``policy`` using ``records``.
+
+    With ``require_observed_execution``, a required check passes only when an
+    accepted record for it has observation method ``observed-execution``; one
+    established by static analysis alone becomes unknown.
+
 
     ``signed_evidence`` holds the digests of records whose signature the caller
     already verified against ``policy.required_signers``. It is consulted only
@@ -135,6 +140,10 @@ def compare(baseline: BundleManifest, candidate: BundleManifest, records: tuple[
             if state == 'skipped' and check.required:
                 state = 'unknown'
                 reasons = ('Required check was skipped; rerun it.',)
+            if require_observed_execution and check.required and state == 'pass' and not any(
+                    r.observation_method == 'observed-execution' for r in valid):
+                state = 'unknown'
+                reasons = ('Observed execution is required for this comparison; accepted evidence for this check is static analysis only.',)
             checks.append(CheckComparison(check.id, state, check.required, reasons, state != 'pass', selected.sha256))
         else:
             reasons = tuple(sorted(set(rejected))) if rejected else ('Missing required evidence.' if check.required else 'No optional evidence supplied.',)
