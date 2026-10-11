@@ -65,7 +65,7 @@ tracemantle manifest path/to/skill --format json
 
 Validation exits `0` when it passes and nonzero on errors; `--strict` also fails on warnings. Text, JSON and GitHub annotation output are supported.
 
-For release evidence, use `import-evidence` and `compare` with a trusted base revision and approved evidence. The [evidence workflow](docs/evidence-workflow.md) covers setup, supported imports and runnable examples.
+For release evidence, use `import-evidence` and `compare` with a trusted base revision and approved evidence. The [evidence workflow](docs/evidence-workflow.md) covers setup, supported imports and runnable examples. It also describes the opt-in controls on `main` that are not in 1.6.1: custom import adapters (`--adapter`), signer keys in the trusted policy (`required_signers`) and `compare --require-observed-execution`.
 
 Configure defaults in `tracemantle.toml` or `[tool.tracemantle]` in `pyproject.toml`. Explicit CLI flags take precedence. Token counting uses an offline estimate by default; optional `tiktoken` counting must be selected explicitly.
 

@@ -112,3 +112,16 @@ Post-release documentation is committed separately on `main`, authored by `moonr
 D09/P01/P03: block structure now separates Setext headings, indented ATX headings and spaced thematic breaks before inline code matching. The real trusted-Git regression keeps both check and evidence inputs at only `SKILL.md`, proving that discovered helper dependencies govern reuse. Valid multiline heading spans and actual code examples retain their exclusion behavior. Unsupported containers continue to block approval. The [1.6.1 record](verification/release-1.6.1/acceptance.md) distinguishes original-source failures, local checks, exact-commit CI, publication and installed-distribution acceptance. Live agent evaluation remains unexecuted.
 
 The 1.6.1 release at `4a502e7f381b6eadf57726285adfd82569461308` passed all 15 pre-tag CI jobs and all 17 Release jobs. Public PyPI and GitHub bytes match the tested artifacts and verified attestations. A fresh PyPI installation passed 153 installed acceptance cases; old-distribution migrations passed on 3.10 and 3.12. Both publishing controls are disabled again. The final documentation commit is distinct from the immutable release tag and receives its own CI. See [publication identities and hashes](verification/release-1.6.1/publication.json).
+
+## Unreleased: adapters, signers, profile freshness and observed execution
+
+Four opt-in additions sit under `[Unreleased]` on top of 1.6.1; no version, tag or publication changed.
+
+- **Adapter contract and `import-evidence --adapter`.** The Promptfoo importer moved to `tracemantle.adapters.promptfoo`. An external adapter is user-supplied Python that runs with the caller's privileges only when the flag is given; it is refused inside the evaluated bundle and its records are stamped with the adapter file digest and the export digest.
+- **`required_signers`.** Optional OpenSSH or minisign public keys in the trusted policy. Sidecar signatures over canonical record bytes are verified with the system tools, in addition to digest approval.
+- **Verified-profile registry and `--check-profile-freshness`.** Shipped entries carry over the unverified 2026-04-20 provenance. No profile was re-verified against a vendor runtime in this work.
+- **`compare --require-observed-execution`** plus a documented record schema, reference runner and adapter under `docs/`. None is imported by the package.
+
+Local verification on CPython 3.12.3 (Linux, OpenSSH 9.6, minisign 0.11 on PATH): `ruff check src tests scripts`, strict `mypy` (77 source files) and `scripts/generate_reference.py --check` passed; `python -m pytest tests/ --cov-fail-under=80` gave **1,448 passed, 4 skipped, 89.22% coverage** (the four skips are the existing 3.10-only TOML fallback tests). Fourteen default-path CLI invocations (manifest, Promptfoo import, compare in three formats and four outcomes, validation) produced byte-identical output and exit codes against the 1.6.1 sources at `cf3712c` with the same fixtures.
+
+Not established: Python 3.10, 3.11 and 3.13, macOS and Windows (including `ssh-keygen -Y` on Windows runners) until remote CI runs; the minisign test skips wherever minisign is not installed, which includes the current CI images; the runner example was exercised with a one-line Python command standing in for an agent, so live agent or model behavior remains unexecuted.
