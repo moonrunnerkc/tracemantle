@@ -2,12 +2,15 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
 from typing import Any
 
 from tracemantle import __version__
+from tracemantle.adapters import adapt_external
+from tracemantle.adapters.promptfoo import ImportedExport, import_promptfoo
 from tracemantle.bundle import create_manifest
 from tracemantle.comparison import compare
 from tracemantle.core.history import LedgerError
@@ -17,7 +20,6 @@ from tracemantle.formatters import _escape_data, _escape_property
 from tracemantle.history_store import migrate_legacy
 from tracemantle.io_limits import MAX_INGEST_BYTES, MAX_SCAN_BYTES, read_bounded_bytes
 from tracemantle.policy import load_trusted_policy
-from tracemantle.promptfoo import import_promptfoo
 from tracemantle.storage import EvidenceError, decode_json, outside_bundle, put_bytes, put_record, read_json
 
 COMMANDS = frozenset({'manifest', 'import-evidence', 'compare', 'migrate-history'})
@@ -33,6 +35,8 @@ def _parser() -> argparse.ArgumentParser:
     importer.add_argument('--bundle', type=Path, required=True)
     importer.add_argument('--bindings', type=Path, help='Explicit identity bindings for exported row IDs')
     importer.add_argument('--store', type=Path, required=True, help='Evidence store outside the bundle')
+    importer.add_argument('--adapter', type=Path, help='Python file defining adapt(export_bytes, bindings), used instead of the '
+                          'built-in Promptfoo adapter. Its code runs with your privileges; never take it from a candidate bundle')
     comparison = commands.add_parser('compare', help='Compare bundles using policy/checkers from a trusted Git base')
     comparison.add_argument('baseline', type=Path)
     comparison.add_argument('candidate', type=Path)
@@ -56,9 +60,17 @@ def _run(args: argparse.Namespace) -> tuple[dict[str, Any], int, Path | None]:
     if args.command == 'import-evidence':
         outside_bundle(args.store, args.bundle)
         manifest = create_manifest(args.bundle)
-        raw = read_bounded_bytes(args.source, max_bytes=MAX_INGEST_BYTES, what='Promptfoo export', error_cls=EvidenceError)
+        if args.adapter and args.adapter.resolve().is_relative_to(args.bundle.resolve()):
+            raise EvidenceError(f'Adapter {args.adapter} is inside the evaluated bundle, and bundle content is never executed. '
+                                f'Keep adapters with trusted tooling outside {args.bundle}.')
+        raw = read_bounded_bytes(args.source, max_bytes=MAX_INGEST_BYTES, what='Evidence export' if args.adapter else 'Promptfoo export', error_cls=EvidenceError)
         bindings = read_json(args.bindings) if args.bindings else {'schema_version': 1, 'rows': {}}
-        imported = import_promptfoo(raw, bindings)
+        if args.adapter:
+            if not isinstance(bindings, dict):
+                raise EvidenceError('Import bindings must be a JSON object.')
+            imported = ImportedExport(hashlib.sha256(raw).hexdigest(), adapt_external(args.adapter, raw, bindings), ())
+        else:
+            imported = import_promptfoo(raw, bindings)
         files = {f.path: f.sha256 for f in manifest.files}
         for record in imported.records:
             if record.bundle_sha256 != manifest.sha256 or any(files.get(p) != sha for p, sha in record.inputs):

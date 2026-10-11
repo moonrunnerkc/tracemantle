@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Adapter contract `adapt(export_bytes, bindings) -> list[CheckEvidence]` in the new `tracemantle.adapters` package. The Promptfoo 0.118.10 adapter moved to `tracemantle.adapters.promptfoo`; `tracemantle.promptfoo` remains as an import alias.
+- `import-evidence --adapter PATH` loads a user-supplied Python adapter in place of the built-in one. The file executes with the caller's privileges, is refused when it sits inside the evaluated bundle, and its records are stamped with `adapter = external/sha256:<file digest>` and the export's own `artifact_sha256`. Without the flag no external code is loaded.
+
 ## [1.6.1] - 2026-09-13
 
 ### Fixed
