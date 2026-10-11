@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 from tracemantle import __version__
@@ -20,6 +21,7 @@ from tracemantle.config_loader import ConfigError, load_project_config
 from tracemantle.display import terminal
 from tracemantle.modes import find_mode_conflict
 from tracemantle.parser import DocumentSettings
+from tracemantle.profile_freshness import DEFAULT_MAX_AGE_DAYS, SHIPPED_REGISTRY, freshness_warnings, load_verified_profiles
 
 # ---------------------------------------------------------------------------
 # Argument parser
@@ -299,7 +301,48 @@ def _build_parser() -> argparse.ArgumentParser:
             "for the skill and exit 0."
         ),
     )
+    parser.add_argument(
+        "--check-profile-freshness",
+        action="store_true",
+        default=False,
+        help=(
+            "Warn on stderr when a verified-profile entry is older than --profile-max-age-days or its docs page "
+            "reports a later Last-Modified. Sends one HTTP HEAD per checked profile. Never changes the exit code."
+        ),
+    )
+    parser.add_argument(
+        "--profile-max-age-days",
+        type=int,
+        default=None,
+        metavar="N",
+        help=f"Age limit for --check-profile-freshness (default: {DEFAULT_MAX_AGE_DAYS}).",
+    )
+    parser.add_argument(
+        "--profile-registry",
+        type=Path,
+        default=None,
+        metavar="PATH",
+        help="Verified-profile TOML for --check-profile-freshness (default: the registry shipped with the package).",
+    )
     return parser
+
+
+def _warn_on_stale_profiles(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
+    if not args.check_profile_freshness:
+        if args.profile_max_age_days is not None or args.profile_registry is not None:
+            parser.error("--profile-max-age-days and --profile-registry require --check-profile-freshness")
+        return
+    max_age_days = DEFAULT_MAX_AGE_DAYS if args.profile_max_age_days is None else args.profile_max_age_days
+    if max_age_days < 1:
+        parser.error("--profile-max-age-days must be at least 1")
+    try:
+        profiles = load_verified_profiles(args.profile_registry or SHIPPED_REGISTRY)
+    except ConfigError as exc:
+        parser.error(terminal(str(exc)))
+    if args.target_agent != "all":
+        profiles = tuple(profile for profile in profiles if profile.agent == args.target_agent)
+    for warning in freshness_warnings(profiles, max_age_days=max_age_days, today=datetime.now(timezone.utc).date()):
+        print(terminal(f"warning: {warning}"), file=sys.stderr)
 
 
 # ---------------------------------------------------------------------------
@@ -391,6 +434,7 @@ def main() -> None:
         args.analyze_graph = True
 
     _die_on_mode_conflict(args)
+    _warn_on_stale_profiles(args, parser)
 
     agent_id = args.critique_agent or "claude"
     graph_agent_id = args.graph_agent or "claude"

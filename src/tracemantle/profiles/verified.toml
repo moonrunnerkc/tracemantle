@@ -1,0 +1,48 @@
+# Verified-profile registry, read by `tracemantle --check-profile-freshness`.
+# One table per agent. Update an entry by following the checklist in
+# docs/profiles.md; no code change is needed.
+#
+#   version       exact runtime version string or documentation revision checked
+#   checked       commit, tag or URL that was inspected
+#   verified_on   date of that inspection (TOML date, UTC)
+#   docs_url      published documentation page used for the Last-Modified check
+#   confirmed     compatibility rule IDs the inspection confirmed
+#   contradicted  compatibility rule IDs the inspection contradicted
+#
+# The entries below carry over the historical-v1 provenance from
+# compatibility-v1.json: an unversioned documentation page recorded on
+# 2026-04-20, with no runtime build pinned and no rule confirmed or
+# contradicted. They are deliberately reported as stale until re-verified.
+schema_version = 1
+
+[agents.claude]
+version = "unversioned documentation page; no runtime build pinned"
+checked = "https://code.claude.com/docs/en/skills"
+verified_on = 2026-04-20
+docs_url = "https://code.claude.com/docs/en/skills"
+confirmed = []
+contradicted = []
+
+[agents.vscode]
+version = "unversioned documentation page; no runtime build pinned"
+checked = "https://code.visualstudio.com/docs/copilot/customization/agent-skills"
+verified_on = 2026-04-20
+docs_url = "https://code.visualstudio.com/docs/copilot/customization/agent-skills"
+confirmed = []
+contradicted = []
+
+[agents.codex]
+version = "unversioned documentation page; no runtime build pinned"
+checked = "https://developers.openai.com/codex/skills"
+verified_on = 2026-04-20
+docs_url = "https://developers.openai.com/codex/skills"
+confirmed = []
+contradicted = []
+
+[agents.cursor]
+version = "unversioned documentation page; no runtime build pinned"
+checked = "https://cursor.com/docs/context/skills"
+verified_on = 2026-04-20
+docs_url = "https://cursor.com/docs/context/skills"
+confirmed = []
+contradicted = []
