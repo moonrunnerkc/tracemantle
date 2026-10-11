@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Adapter contract `adapt(export_bytes, bindings) -> list[CheckEvidence]` in the new `tracemantle.adapters` package. The Promptfoo 0.118.10 adapter moved to `tracemantle.adapters.promptfoo`; `tracemantle.promptfoo` remains as an import alias.
 - `import-evidence --adapter PATH` loads a user-supplied Python adapter in place of the built-in one. The file executes with the caller's privileges, is refused when it sits inside the evaluated bundle, and its records are stamped with `adapter = external/sha256:<file digest>` and the export's own `artifact_sha256`. Without the flag no external code is loaded.
+- Optional `required_signers` in `[tool.tracemantle.release]`: a list of OpenSSH or minisign public keys. When present, `compare` accepts a record only if a sidecar signature (`RECORD.json.sig` or `RECORD.json.minisig`) over its canonical bytes verifies against one of them, using the system `ssh-keygen -Y verify` or `minisign -V`. The `trusted_evidence` digest allowlist is still required. Policies without the key, the evidence schema and record digests are unchanged.
 
 ## [1.6.1] - 2026-09-13
 
