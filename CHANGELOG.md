@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional `required_signers` in `[tool.tracemantle.release]`: a list of OpenSSH or minisign public keys. When present, `compare` accepts a record only if a sidecar signature (`RECORD.json.sig` or `RECORD.json.minisig`) over its canonical bytes verifies against one of them, using the system `ssh-keygen -Y verify` or `minisign -V`. The `trusted_evidence` digest allowlist is still required. Policies without the key, the evidence schema and record digests are unchanged.
 - Verified-profile registry `src/tracemantle/profiles/verified.toml` recording, per agent, the version or docs revision checked, what was inspected, the date and the rules confirmed or contradicted. Shipped entries carry over the unverified 2026-04-20 provenance; advisory profiles are unchanged.
 - `--check-profile-freshness` warns on stderr when a registry entry is older than `--profile-max-age-days` (default 90) or its docs URL returns a later `Last-Modified` to a single HTTP HEAD. `--profile-registry PATH` selects another registry. Warnings never change stdout or the exit code, and no request is made without the flag.
+- `compare --require-observed-execution` (default off) treats a required check as unknown (exit 4) unless an accepted record for it has observation method `observed-execution`. Failures are not softened and optional checks are unaffected.
+- Documentation-only external runner support: the `docs/schemas/observed-execution-v1.json` record schema, a reference runner and a matching adapter under `docs/examples/`, and a GitHub Actions step in `docs/evidence-workflow.md`. None of it is imported by the package; TraceMantle still executes no skill, agent or evaluator.
+
+Defaults are unchanged: without `--adapter`, `required_signers`, `--check-profile-freshness` or `--require-observed-execution`, imports, comparisons, exit codes and output are the same as 1.6.1. No runtime dependency was added.
 
 ## [1.6.1] - 2026-09-13
 

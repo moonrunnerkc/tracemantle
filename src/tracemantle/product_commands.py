@@ -45,6 +45,8 @@ def _parser() -> argparse.ArgumentParser:
     comparison.add_argument('--trusted-root', type=Path, required=True)
     comparison.add_argument('--base-revision', required=True, help='Full trusted base commit SHA')
     comparison.add_argument('--policy-relative', default='pyproject.toml')
+    comparison.add_argument('--require-observed-execution', action='store_true',
+                            help='Treat a required check as unknown unless an accepted record observed an execution')
     migration = commands.add_parser('migrate-history', help='Copy legacy history explicitly, preserving its original')
     migration.add_argument('source', type=Path)
     migration.add_argument('--store', type=Path, required=True)
@@ -98,7 +100,8 @@ def _run(args: argparse.Namespace) -> tuple[dict[str, Any], int, Path | None]:
         if policy.required_signers and has_required_signature(canonical(record.to_dict()), path, policy.required_signers):
             signed.add(record.sha256)
     records = tuple(evidence)
-    report = compare(baseline, candidate, records, policy, signed_evidence=frozenset(signed))
+    report = compare(baseline, candidate, records, policy, signed_evidence=frozenset(signed),
+                     require_observed_execution=args.require_observed_execution)
     return report.to_dict(), report.exit_code, args.candidate / 'SKILL.md'
 
 

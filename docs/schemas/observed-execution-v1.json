@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/moonrunnerkc/tracemantle/blob/main/docs/schemas/observed-execution-v1.json",
+  "title": "TraceMantle external observed-execution record version one",
+  "description": "Written by a runner outside TraceMantle after it executed a pinned skill against a pinned agent. TraceMantle does not produce this record. An adapter converts it to canonical check evidence, which still needs trusted-base approval.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "check_id",
+    "outcome",
+    "observation_method",
+    "observed_at",
+    "bundle_sha256",
+    "inputs_sha256",
+    "checker_sha256",
+    "configuration_sha256",
+    "fixture_sha256",
+    "profile_sha256",
+    "artifact_sha256",
+    "context",
+    "reason"
+  ],
+  "properties": {
+    "schema_version": {"const": 1, "type": "integer"},
+    "kind": {"const": "observed-execution"},
+    "check_id": {"type": "string", "minLength": 1, "maxLength": 4096},
+    "outcome": {"enum": ["pass", "fail", "infrastructure-error", "skipped", "unknown"]},
+    "observation_method": {"const": "observed-execution"},
+    "observed_at": {"type": "string", "description": "ISO 8601 time with a timezone offset."},
+    "bundle_sha256": {"$ref": "#/$defs/sha256"},
+    "inputs_sha256": {
+      "description": "Bundle-relative path to the SHA-256 of each file the run could read.",
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 10000,
+      "additionalProperties": {"$ref": "#/$defs/sha256"}
+    },
+    "checker_sha256": {"$ref": "#/$defs/sha256"},
+    "configuration_sha256": {"$ref": "#/$defs/sha256"},
+    "fixture_sha256": {"$ref": "#/$defs/sha256"},
+    "profile_sha256": {"$ref": "#/$defs/sha256"},
+    "artifact_sha256": {
+      "description": "SHA-256 of the captured transcript (command, exit code, stdout, stderr).",
+      "$ref": "#/$defs/sha256"
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runner", "model", "model_revision", "model_immutable", "permissions", "environment", "tokenizer"],
+      "properties": {
+        "runner": {"type": "string", "minLength": 1, "maxLength": 4096},
+        "model": {"type": "string", "minLength": 1, "maxLength": 4096},
+        "model_revision": {"type": "string", "minLength": 1, "maxLength": 4096},
+        "model_immutable": {"type": "boolean"},
+        "permissions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"enum": ["read-bundle", "write-output", "network", "execute-helper"]}
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "os": {"type": "string"},
+            "python": {"type": "string"},
+            "node": {"type": "string"},
+            "network": {"type": "string"},
+            "sandbox": {"type": "string"},
+            "architecture": {"type": "string"}
+          }
+        },
+        "tokenizer": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}}
+      }
+    },
+    "reason": {"type": "string", "minLength": 1, "maxLength": 4096}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -6,7 +6,7 @@ TraceMantle separates content identity, analysis results and trust. A SHA-256 di
 
 - `tracemantle manifest BUNDLE --format json` computes a canonical manifest from actual files. `--output PATH` is optional and must be outside the bundle.
 - `tracemantle import-evidence EXPORT --bundle BUNDLE --bindings BINDINGS --store STORE --format json` parses the pinned export and writes its original bytes under `STORE/sources/` and normalized records under `STORE/records/`. `--adapter PATH` selects a user-supplied adapter file in place of the built-in Promptfoo one (see the adapter contract below). Omitting bindings preserves the source and reports unknown identities. Import returns exit 4 because import itself does not establish trusted behavioral evidence.
-- `tracemantle compare BASELINE CANDIDATE --trusted-root REPOSITORY --base-revision FULL_COMMIT_SHA --evidence RECORD` reads both bundle directories, the trusted policy and supplied evidence. Repeat `--evidence` for additional records. No files change unless `--output PATH` is explicitly selected.
+- `tracemantle compare BASELINE CANDIDATE --trusted-root REPOSITORY --base-revision FULL_COMMIT_SHA --evidence RECORD` reads both bundle directories, the trusted policy and supplied evidence. Repeat `--evidence` for additional records. `--require-observed-execution` additionally refuses to pass a required check on static analysis alone (see observed execution below). No files change unless `--output PATH` is explicitly selected.
 - `tracemantle migrate-history LEDGER --store STORE` copies version-one history explicitly. Repeating the command is safe; originals are preserved and migrated records remain unknown for release comparison.
 
 Stores must be outside evaluated bundles. Content-addressed files are published with a complete temporary write, fsync and exclusive hard-link creation. A matching object is reused only if its bytes are identical. Every new history record also has a unique run ID. No shared read/modify/write index is required, so concurrent writers preserve records.
@@ -15,7 +15,7 @@ Stores must be outside evaluated bundles. Content-addressed files are published 
 
 The narrow adapter accepts **Promptfoo 0.118.10**, JSON results schema **3**. Other versions are rejected, not guessed. Its attributable source fixture is [sample-export.json at upstream commit c0b47e4](https://github.com/promptfoo/promptfoo/blob/c0b47e4a10b38a7a54c782b32fc779802dfaf72e/test/__fixtures__/sample-export.json), retained byte-for-byte with its MIT license under `tests/fixtures/upstream/promptfoo-0.118.10/`. The containing source checkout is tag 0.120.0; the actual export's `metadata.promptfooVersion` is 0.118.10. These are deliberately distinguished.
 
-The fixture has four riddle-evaluation results containing LLM rubric judgments. It proves parser compatibility with an authentic upstream format, not skill invocation or agent execution in this session. The importer marks such records `model-judgment`; generic exports without sufficient observation data remain `unknown`. It never infers `observed-execution` from a selected agent, provider label or user binding. A separate trusted runner can supply canonical observed-execution records, but they must cross the same full-content trust boundary.
+The fixture has four riddle-evaluation results containing LLM rubric judgments. It proves parser compatibility with an authentic upstream format, not skill invocation or agent execution in this session. The importer marks such records `model-judgment`; generic exports without sufficient observation data remain `unknown`. It never infers `observed-execution` from a selected agent, provider label or user binding. A separate trusted runner can supply observed-execution records (see the external runner section below), but they must cross the same full-content trust boundary.
 
 The export's providers, JavaScript/Python assertions, file references, extensions and environment settings are data. TraceMantle hashes or preserves them; it never imports or executes them. Source exports may contain evaluator data; keep their access controls appropriate. Normalized environment fields are limited to OS, Python, Node, network, sandbox and architecture, with no credential fields.
 
@@ -100,6 +100,51 @@ Comparison explains changed files, affected check IDs, rejected evidence and req
 Static reuse requires matching declared input digests and compatible checker/configuration identities. Behavioral reuse additionally requires observed execution, compatible context, freshness and an immutable model revision. Hosted aliases are not immutable versions. Every supplied record is historical evidence reuse; neither equal bundle hashes nor a trusted digest establishes fresh execution. There is no separate fresh-execution eligibility path. Runner, adapter, model and model revision, and every supplied environment/tokenizer value, must be nonblank and must not be `unknown` (ignoring surrounding whitespace and case). Environment and tokenizer mappings must be nonempty. These checks apply even if trusted context declares only permissions. The equal-bundle and nested-context corrections are included in 1.6.1. Required skipped checks become unknown. Conflicting approved records cannot be hidden by selecting a passing row: fail, infrastructure-error, unknown and skipped take precedence over pass. A policy with no required checks cannot establish release success.
 
 Comparison exit codes: pass `0`, fail `1`, infrastructure-error `2`, unknown `4`, skipped `5`. Only pass permits release. Unknown means the evidence does not establish the gate, not that the skill definitively failed.
+
+## Observed execution from an external runner
+
+TraceMantle does not run skills, agents or evaluators. Observed-execution evidence comes from a runner you operate outside the package. Three pieces are provided as documentation, none of them imported by TraceMantle:
+
+- [`observed-execution-v1.json`](schemas/observed-execution-v1.json): the versioned record a runner writes. Required fields are `schema_version`, `kind`, `check_id`, `outcome`, `observation_method` (must be `observed-execution`), `observed_at`, `bundle_sha256`, `inputs_sha256` (path to digest), `checker_sha256`, `configuration_sha256`, `fixture_sha256`, `profile_sha256`, `artifact_sha256` (digest of the captured transcript), `context` (runner, model, model revision and immutability, permissions, environment, tokenizer) and `reason`.
+- [`observed_execution_runner.py`](examples/observed_execution_runner.py): a reference runner. It takes the bundle manifest from `tracemantle manifest`, pipes the fixture to your agent command, captures stdout, stderr and the exit code into a transcript, runs your checker script on that transcript (exit 0 pass, 1 fail, anything else infrastructure-error) and writes the record. If the bundle changes during the run or the command cannot start, the outcome is infrastructure-error.
+- [`observed_execution_adapter.py`](examples/observed_execution_adapter.py): an adapter for `import-evidence --adapter` that converts the record into canonical check evidence. The canonical `artifact_sha256` is the digest of the runner record, which itself commits to the transcript digest.
+
+The runner executes the command you pass with your privileges. Model revision, tokenizer, sandbox and network state are the operator's declarations; the runner cannot observe them. Copy both example files into trusted tooling and adapt them. A trusted check can pin the exact runner and adapter files through `context.runner` and `context.adapter`, since both identities contain the file's SHA-256.
+
+`compare --require-observed-execution` (off by default) treats a required check as unknown (exit 4) unless an accepted record for it has observation method `observed-execution`. Accepted means approved in `trusted_evidence` and compatible with the check, as for any other record. Behavioral and routing checks already require observed execution, so the flag changes the result only for required `static` checks: evidence that passes without the flag becomes unknown with it. A fail or infrastructure-error stays as it is, optional checks are unaffected, and without the flag static-only workflows behave exactly as before.
+
+A fresh run does not pass the gate by itself. Its record has a new digest, and the gate accepts only digests committed to the trusted base. The loop is: run, import, review the record (and sign it if the policy lists `required_signers`), commit its digest to `trusted_evidence` on the trusted branch, then compare against that base.
+
+```yaml
+- name: Observe the skill, then gate on approved observed execution
+  shell: bash
+  env:
+    BASE_REVISION: ${{ inputs.base_revision }}
+    BUNDLE: skills/my-skill
+  run: |
+    set -euo pipefail
+    # 1. External runner: executes the pinned agent command outside TraceMantle.
+    python trusted/tools/observed_execution_runner.py \
+      --bundle "candidate/$BUNDLE" --check-id invoke --output-dir "$RUNNER_TEMP/observed" \
+      --checker trusted/checks/invoke.py --configuration trusted/checks/agent-config.json \
+      --fixture trusted/checks/invoke-prompt.txt --profile trusted/checks/profile.json \
+      --model my-local-model --model-revision "sha256:<weights digest>" --model-immutable \
+      --tokenizer my-tokenizer-v1 --sandbox container \
+      -- my-agent-cli --skill "candidate/$BUNDLE"
+    # 2. Import through the trusted adapter. Exit 4 is expected: imported claims are not yet approved.
+    tracemantle import-evidence "$RUNNER_TEMP/observed/invoke.observed.json" \
+      --adapter trusted/tools/observed_execution_adapter.py \
+      --bundle "candidate/$BUNDLE" --store "$RUNNER_TEMP/store" || [ "$?" -eq 4 ]
+    # 3. Gate on records whose digests the trusted base already approves.
+    args=()
+    while IFS= read -r -d '' record; do args+=(--evidence "$record"); done \
+      < <(find candidate/evidence/records -maxdepth 1 -type f -name '*.json' -print0)
+    tracemantle compare "trusted/$BUNDLE" "candidate/$BUNDLE" \
+      --trusted-root trusted --base-revision "$BASE_REVISION" \
+      --require-observed-execution --format github "${args[@]}"
+```
+
+Upload `$RUNNER_TEMP/store/records/` as a workflow artifact so the policy owner can review the new record and approve its digest. Check out `trusted` and `candidate` as in the [comparison workflow](../.github/workflows/compare.yml), and take the runner, adapter, checker and fixture from the trusted checkout. The tests for this path use a one-line Python command in place of an agent; no live agent or model was run against these examples.
 
 ## Executed examples and remaining empirical boundary
 
