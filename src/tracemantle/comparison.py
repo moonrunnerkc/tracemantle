@@ -46,10 +46,12 @@ class Comparison:
 
 
 def _compatible(record: Evidence, check: RequiredCheck, candidate: BundleManifest, baseline: BundleManifest,
-                changed: set[str], policy: TrustedPolicy, now: datetime) -> list[str]:
+                changed: set[str], policy: TrustedPolicy, now: datetime, signed_evidence: frozenset[str]) -> list[str]:
     reasons = []
     if record.sha256 not in policy.trusted_evidence:
         reasons.append('Evidence digest is not approved by the trusted base; self-reported provenance is insufficient.')
+    if policy.required_signers and record.sha256 not in signed_evidence:
+        reasons.append('Trusted policy requires a signature and no valid one from a required signer accompanies this record.')
     for field in ('configuration_sha256', 'profile_sha256', 'checker_sha256', 'fixture_sha256'):
         if getattr(record, field) != getattr(check, field):
             reasons.append(f'{field} differs from the trusted check identity.')
@@ -101,7 +103,14 @@ def _compatible(record: Evidence, check: RequiredCheck, candidate: BundleManifes
 
 
 def compare(baseline: BundleManifest, candidate: BundleManifest, records: tuple[Evidence, ...],
-            policy: TrustedPolicy, *, now: datetime | None = None) -> Comparison:
+            policy: TrustedPolicy, *, now: datetime | None = None,
+            signed_evidence: frozenset[str] = frozenset()) -> Comparison:
+    """Gate ``candidate`` against ``policy`` using ``records``.
+
+    ``signed_evidence`` holds the digests of records whose signature the caller
+    already verified against ``policy.required_signers``. It is consulted only
+    when the policy declares signers, and never substitutes for digest approval.
+    """
     now = now or datetime.now(timezone.utc)
     before = {f.path: (f.sha256, f.executable) for f in baseline.files}
     after = {f.path: (f.sha256, f.executable) for f in candidate.files}
@@ -112,7 +121,7 @@ def compare(baseline: BundleManifest, candidate: BundleManifest, records: tuple[
         valid = []
         rejected: list[str] = []
         for record in matching:
-            rejection = _compatible(record, check, candidate, baseline, changed, policy, now)
+            rejection = _compatible(record, check, candidate, baseline, changed, policy, now, signed_evidence)
             if rejection:
                 rejected.extend(rejection)
             else:

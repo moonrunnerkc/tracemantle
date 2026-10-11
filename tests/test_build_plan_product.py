@@ -205,7 +205,7 @@ def test_concurrent_immutable_writers_preserve_records(tmp_path: Path) -> None:
     assert len(list(tmp_path.glob('*.json'))) == 8
 
 
-def _trusted_repository(root: Path, record: Evidence) -> str:
+def _trusted_repository(root: Path, record: Evidence, release_extra: str = '') -> str:
     root.mkdir()
     checker = b'print("trusted checker identity, never executed during comparison")\n'
     (root / 'checker.py').write_bytes(checker)
@@ -215,6 +215,7 @@ def _trusted_repository(root: Path, record: Evidence) -> str:
     config = f'''[tool.tracemantle.release]
 schema_version=1
 trusted_evidence=["{record.sha256}"]
+{release_extra}
 [[tool.tracemantle.release.checks]]
 id="validate"
 kind="behavioral"

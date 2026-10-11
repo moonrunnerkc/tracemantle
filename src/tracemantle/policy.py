@@ -15,6 +15,7 @@ try:
 except ModuleNotFoundError:
     import tomli as tomllib
 from tracemantle.evidence import sha256_field, text_field
+from tracemantle.signatures import signer_key
 from tracemantle.storage import EvidenceError
 
 
@@ -40,6 +41,7 @@ class TrustedPolicy:
     checks: tuple[RequiredCheck, ...]
     trusted_evidence: frozenset[str]
     sha256: str
+    required_signers: tuple[str, ...] = ()
 
 
 def git_blob(root: Path, revision: str, path: str) -> bytes:
@@ -71,8 +73,9 @@ def load_trusted_policy(root: Path, revision: str, path: str = 'pyproject.toml')
         data = tomllib.loads(raw.decode('utf-8'))['tool']['tracemantle']['release']
     except (KeyError, TypeError, UnicodeError, tomllib.TOMLDecodeError) as exc:
         raise EvidenceError('Trusted base must declare [tool.tracemantle.release] in its TOML configuration.') from exc
-    if not isinstance(data, dict) or set(data) != {'schema_version', 'checks', 'trusted_evidence'} or type(data['schema_version']) is not int or data['schema_version'] != 1:
-        raise EvidenceError('Release policy requires schema_version=1, checks and trusted_evidence.')
+    required = {'schema_version', 'checks', 'trusted_evidence'}
+    if not isinstance(data, dict) or not required <= set(data) <= required | {'required_signers'} or type(data['schema_version']) is not int or data['schema_version'] != 1:
+        raise EvidenceError('Release policy requires schema_version=1, checks and trusted_evidence; required_signers is the only optional key.')
     if not isinstance(data['checks'], list) or not data['checks'] or len(data['checks']) > 1000:
         raise EvidenceError('Trusted release policy requires 1 to 1000 checks.')
     checks = []
@@ -115,5 +118,9 @@ def load_trusted_policy(root: Path, revision: str, path: str = 'pyproject.toml')
     trusted = data['trusted_evidence']
     if not isinstance(trusted, list) or len(trusted) > 10000:
         raise EvidenceError('trusted_evidence must be an array of at most 10000 digests.')
+    signers = data.get('required_signers', [])
+    if not isinstance(signers, list) or len(signers) > 100 or ('required_signers' in data and not signers):
+        raise EvidenceError('required_signers must list 1 to 100 public keys; remove the key to disable signature checks.')
     return TrustedPolicy(revision, tuple(sorted(checks, key=lambda c: c.id)),
-                         frozenset(sha256_field(v, 'trusted_evidence') for v in trusted), hashlib.sha256(raw).hexdigest())
+                         frozenset(sha256_field(v, 'trusted_evidence') for v in trusted), hashlib.sha256(raw).hexdigest(),
+                         tuple(sorted({signer_key(v) for v in signers})))

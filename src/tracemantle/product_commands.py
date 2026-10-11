@@ -20,7 +20,8 @@ from tracemantle.formatters import _escape_data, _escape_property
 from tracemantle.history_store import migrate_legacy
 from tracemantle.io_limits import MAX_INGEST_BYTES, MAX_SCAN_BYTES, read_bounded_bytes
 from tracemantle.policy import load_trusted_policy
-from tracemantle.storage import EvidenceError, decode_json, outside_bundle, put_bytes, put_record, read_json
+from tracemantle.signatures import has_required_signature
+from tracemantle.storage import EvidenceError, canonical, decode_json, outside_bundle, put_bytes, put_record, read_json
 
 COMMANDS = frozenset({'manifest', 'import-evidence', 'compare', 'migrate-history'})
 
@@ -87,13 +88,17 @@ def _run(args: argparse.Namespace) -> tuple[dict[str, Any], int, Path | None]:
     if len(args.evidence) > 10000:
         raise EvidenceError('At most 10000 evidence records may be compared.')
     evidence = []
+    signed: set[str] = set()
     total = 0
     for path in args.evidence:
         raw = read_bounded_bytes(path, max_bytes=min(MAX_INGEST_BYTES, MAX_SCAN_BYTES - total), what='Evidence', error_cls=EvidenceError)
         total += len(raw)
-        evidence.append(evidence_from_dict(decode_json(raw)))
+        record = evidence_from_dict(decode_json(raw))
+        evidence.append(record)
+        if policy.required_signers and has_required_signature(canonical(record.to_dict()), path, policy.required_signers):
+            signed.add(record.sha256)
     records = tuple(evidence)
-    report = compare(baseline, candidate, records, policy)
+    report = compare(baseline, candidate, records, policy, signed_evidence=frozenset(signed))
     return report.to_dict(), report.exit_code, args.candidate / 'SKILL.md'
 
 

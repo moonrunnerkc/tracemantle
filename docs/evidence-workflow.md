@@ -58,11 +58,38 @@ No booleans are coerced from strings or numbers. Input digests are full lowercas
 
 ## Trusted policy
 
-Use `[tool.tracemantle.release]` in a TOML file committed to the trusted repository, normally `pyproject.toml`. Comparison reads that exact Git object. `--policy-relative` can select another tracked TOML config in the same base revision. The policy contains exactly `schema_version = 1`, `trusted_evidence` (approved full canonical record digests), and an array of checks.
+Use `[tool.tracemantle.release]` in a TOML file committed to the trusted repository, normally `pyproject.toml`. Comparison reads that exact Git object. `--policy-relative` can select another tracked TOML config in the same base revision. The policy contains `schema_version = 1`, `trusted_evidence` (approved full canonical record digests) and an array of checks. `required_signers` is the only optional key; any other key is rejected.
 
 Each check declares exactly `id`, `kind` (`static`, `behavioral`, `routing`), `inputs`, `coverage_complete`, `checker_path`, `checker_sha256`, `configuration_sha256`, `fixture_sha256`, `profile_sha256`, `max_age_seconds`, `required`, `context`, and `routing_neighbors`. The checker path must exist in the trusted base and its actual bytes must match the declared SHA-256. Checkers are identified, not executed by comparison. Inputs and routing-neighbor paths are normalized relative paths. Context may bind runner, adapter, model/revision, permissions, tokenizer digest, OS, Python, Node, network, sandbox and architecture.
 
-The trust boundary is an explicit content allowlist committed by the trusted policy owner. `trusted_evidence` approves the **entire canonical evidence record**, including bundle, inputs, outcome and execution conditions; it is not an allowlist of runner names or artifact names. A candidate cannot take an authentic export and attach it to another bundle, alter the outcome or promote a model judgment without changing the digest. TraceMantle verifies that digest against the immutable trusted base. This initial trust policy requires the owner or trusted automation to review/verify a record and commit its digest to the trusted policy before it is accepted; it does not validate arbitrary external signatures or GitHub attestations by reading claimed signer strings.
+The trust boundary is an explicit content allowlist committed by the trusted policy owner. `trusted_evidence` approves the **entire canonical evidence record**, including bundle, inputs, outcome and execution conditions; it is not an allowlist of runner names or artifact names. A candidate cannot take an authentic export and attach it to another bundle, alter the outcome or promote a model judgment without changing the digest. TraceMantle verifies that digest against the immutable trusted base. The owner or trusted automation must review a record and commit its digest to the trusted policy before it is accepted. Signer strings and attestations claimed inside a record are never read as proof; the only signature check is the opt-in one below, against keys committed to the trusted base.
+
+### Optional signatures: `required_signers`
+
+Signatures are an additional, opt-in control. The digest allowlist stays primary: a signed record whose digest is not in `trusted_evidence` is still rejected.
+
+```toml
+[tool.tracemantle.release]
+schema_version = 1
+trusted_evidence = ["<record sha256>"]
+required_signers = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA... release-owner",
+  "RWQ...56-character minisign public key...",
+]
+```
+
+When `required_signers` is present (1 to 100 keys), a record is accepted only if a valid signature from one of those keys is attached. When it is absent, sidecar files are not read and comparison behaves exactly as before. An empty list is a policy error, not a way to disable the check.
+
+The signature is a sidecar next to the file passed to `--evidence`, so the version-one evidence schema has no new field and record digests do not change:
+
+| Tool | Sidecar | Sign | Verified with |
+|---|---|---|---|
+| OpenSSH 8.1 or later | `RECORD.json.sig` | `ssh-keygen -Y sign -f KEY -n tracemantle-evidence RECORD.json` | `ssh-keygen -Y verify` |
+| minisign | `RECORD.json.minisig` | `minisign -S -s KEY -m RECORD.json` | `minisign -V` |
+
+The signed message is the record's canonical JSON bytes. Files written by `import-evidence` under `STORE/records/` are already canonical, so sign those files directly. A reformatted copy has the same record digest but different bytes; sign the canonical file and keep its sidecar next to whichever copy is compared. SSH signatures must use the namespace `tracemantle-evidence`; a signature made for `git` or `file` is rejected.
+
+A missing sidecar, a signature by an unlisted key, a wrong namespace or a signature over other bytes leaves the check unknown (exit 4) with a reason naming the signature requirement. If a sidecar is present and the needed tool is not installed, comparison stops with infrastructure-error (exit 2). TraceMantle adds no cryptography dependency; it runs the system `ssh-keygen` or `minisign`. A signature shows that a key holder signed those bytes. It does not show that the recorded execution happened.
 
 Candidate policy files and checker changes never replace the selected trusted policy. The [comparison workflow](../.github/workflows/compare.yml) checks out trusted and candidate revisions separately, installs only trusted code and grants read-only repository permissions. Its `policy_relative` and `evidence_directory` inputs default to `pyproject.toml` and `evidence/records`; the policy is still read from the selected immutable base, and records remain candidate-supplied data. Configure repository protections so the base SHA and workflow are selected by trusted maintainers. Running a candidate-supplied executable as the checker before this boundary would defeat it.
 
