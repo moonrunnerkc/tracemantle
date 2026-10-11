@@ -28,7 +28,8 @@ CHECKER = 'import json, sys\ntranscript = json.load(open(sys.argv[1]))\nok = "sk
 def _run_reference_runner(tmp_path: Path, bundle: Path, agent_output: str) -> dict[str, object]:
     checks = tmp_path / 'checks'
     checks.mkdir(exist_ok=True)
-    (checks / 'checker.py').write_text(CHECKER)
+    # Bytes, not text: Git's Windows newline conversion would change the committed checker's digest.
+    (checks / 'checker.py').write_bytes(CHECKER.encode())
     for name in ('config.json', 'prompt.txt', 'profile.json'):
         (checks / name).write_text(f'synthetic {name}\n')
     out = tmp_path / 'out'
