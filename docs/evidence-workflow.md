@@ -5,7 +5,7 @@ TraceMantle separates content identity, analysis results and trust. A SHA-256 di
 ## Commands and storage
 
 - `tracemantle manifest BUNDLE --format json` computes a canonical manifest from actual files. `--output PATH` is optional and must be outside the bundle.
-- `tracemantle import-evidence EXPORT --bundle BUNDLE --bindings BINDINGS --store STORE --format json` parses the pinned export and writes its original bytes under `STORE/sources/` and normalized records under `STORE/records/`. Omitting bindings preserves the source and reports unknown identities. Import returns exit 4 because import itself does not establish trusted behavioral evidence.
+- `tracemantle import-evidence EXPORT --bundle BUNDLE --bindings BINDINGS --store STORE --format json` parses the pinned export and writes its original bytes under `STORE/sources/` and normalized records under `STORE/records/`. `--adapter PATH` selects a user-supplied adapter file in place of the built-in Promptfoo one (see the adapter contract below). Omitting bindings preserves the source and reports unknown identities. Import returns exit 4 because import itself does not establish trusted behavioral evidence.
 - `tracemantle compare BASELINE CANDIDATE --trusted-root REPOSITORY --base-revision FULL_COMMIT_SHA --evidence RECORD` reads both bundle directories, the trusted policy and supplied evidence. Repeat `--evidence` for additional records. No files change unless `--output PATH` is explicitly selected.
 - `tracemantle migrate-history LEDGER --store STORE` copies version-one history explicitly. Repeating the command is safe; originals are preserved and migrated records remain unknown for release comparison.
 
@@ -20,6 +20,24 @@ The fixture has four riddle-evaluation results containing LLM rubric judgments. 
 The export's providers, JavaScript/Python assertions, file references, extensions and environment settings are data. TraceMantle hashes or preserves them; it never imports or executes them. Source exports may contain evaluator data; keep their access controls appropriate. Normalized environment fields are limited to OS, Python, Node, network, sandbox and architecture, with no credential fields.
 
 Bindings are a version-one JSON object with `schema_version: 1` and `rows`, mapping exact export result IDs to complete check-evidence objects. See the shipped [evidence schema](../src/tracemantle/schemas/evidence-v1.json) and `evidence_from_dict` for structural and cross-field checks. The adapter replaces artifact/configuration/fixture digests, observation time, result state, reason, adapter/runner/model and observation method with values derived from the export. A binding cannot override them. It verifies the bound bundle and resource digests against the actual supplied directory. Unsupported or unavailable identity produces an explicit error or unknown result. Present `gradingResult.componentResults` values must be arrays of objects; present component assertions must be objects and assertion types must be strings. Validation runs even for unbound rows. Null/scalar component arrays and invalid assertions produce an infrastructure-error envelope (exit 2), with no partially imported store.
+
+## Adapter contract and external adapters
+
+An adapter turns one export into canonical records. The built-in Promptfoo adapter and any external one implement the same function, documented in [`tracemantle.adapters`](../src/tracemantle/adapters/__init__.py):
+
+```python
+def adapt(export_bytes: bytes, bindings: dict) -> list[CheckEvidence]
+```
+
+`export_bytes` is the original export, bounded to 5 MiB. `bindings` is the decoded `--bindings` JSON object, or `{"schema_version": 1, "rows": {}}` when none is supplied; an external adapter defines its own meaning for the contents. The function returns records built with `tracemantle.adapters.evidence_from_dict` or raises `EvidenceError`. There is no partial result.
+
+`import-evidence --adapter PATH` loads a Python file implementing that function instead of the built-in adapter. Without the flag nothing external is loaded and Promptfoo imports behave exactly as before. With it:
+
+- The file is read once (1 MiB limit) and those bytes are what runs. This is ordinary Python executing with your privileges and no sandbox. Treat an adapter as trusted tooling: take it from the trusted checkout in CI, never from a candidate revision. A path inside the evaluated bundle is refused before any code runs.
+- Each returned record is revalidated. `adapter` is replaced with `external/sha256:<digest of the adapter file>` and `artifact_sha256` with the digest of the export, so an adapter cannot claim the built-in identity or a different source. A trusted check can pin one exact adapter file with `context = { adapter = "external/sha256:..." }`.
+- Records must still match the supplied bundle and its file digests, the original export is still preserved under `STORE/sources/`, and the import still exits 4. A failing adapter, a missing `adapt` function or a non-record return value is an infrastructure-error (exit 2) with no store written.
+
+An external adapter can set any `observation_method`, including `observed-execution`. That is a claim by whoever ran the adapter, not something TraceMantle observed; it carries weight only after the policy owner reviews the record and commits its digest to `trusted_evidence`.
 
 ## Canonical evidence fields
 
