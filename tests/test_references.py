@@ -1,6 +1,8 @@
 """Tests for Feature 3: File reference validation."""
 
+import os
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -161,14 +163,23 @@ def test_no_refs_passes(tmp_path):
     assert check_broken_references(skill) == []
 
 
-def test_tilde_ref_expands_to_home(tmp_path, monkeypatch):
+@pytest.fixture
+def fake_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    home = tmp_path / "home"
+    drive, path = os.path.splitdrive(str(home))
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("USERPROFILE", str(home))
+    monkeypatch.setenv("HOMEDRIVE", drive)
+    monkeypatch.setenv("HOMEPATH", path)
+    return home
+
+
+def test_tilde_ref_expands_to_home(fake_home):
     """A leading ~ resolves against the home directory, so a skill stored
     under ~ can reference its own files with ~/... paths."""
-    fake_home = tmp_path / "home"
     skill_dir = fake_home / "my-skill"
     (skill_dir / "bin").mkdir(parents=True)
     (skill_dir / "bin" / "tool.py").write_text("# tool\n")
-    monkeypatch.setenv("HOME", str(fake_home))
     f = skill_dir / "SKILL.md"
     f.write_text(
         "---\nname: my-skill\ndescription: Ref test.\n---\n"
@@ -178,12 +189,10 @@ def test_tilde_ref_expands_to_home(tmp_path, monkeypatch):
     assert check_broken_references(skill) == []
 
 
-def test_tilde_ref_missing_still_reported(tmp_path, monkeypatch):
+def test_tilde_ref_missing_still_reported(fake_home):
     """Tilde expansion must not mask a genuinely missing file."""
-    fake_home = tmp_path / "home"
     skill_dir = fake_home / "my-skill"
     skill_dir.mkdir(parents=True)
-    monkeypatch.setenv("HOME", str(fake_home))
     f = skill_dir / "SKILL.md"
     f.write_text(
         "---\nname: my-skill\ndescription: Ref test.\n---\n"
@@ -195,15 +204,13 @@ def test_tilde_ref_missing_still_reported(tmp_path, monkeypatch):
     assert diagnostics[0].rule == "references.broken-link"
 
 
-def test_tilde_ref_outside_skill_tree_still_escape(tmp_path, monkeypatch):
+def test_tilde_ref_outside_skill_tree_still_escape(fake_home):
     """Expansion does not weaken containment: a ~/ path that lands outside
     the skill tree is still reported as an escape."""
-    fake_home = tmp_path / "home"
     (fake_home / "shared").mkdir(parents=True)
     (fake_home / "shared" / "notes.md").write_text("# notes\n")
     skill_dir = fake_home / "my-skill"
     skill_dir.mkdir()
-    monkeypatch.setenv("HOME", str(fake_home))
     f = skill_dir / "SKILL.md"
     f.write_text(
         "---\nname: my-skill\ndescription: Ref test.\n---\n"
