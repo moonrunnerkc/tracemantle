@@ -1,0 +1,261 @@
+{
+  "schema_version": 1,
+  "purpose": "exploratory public-source compatibility; not a deployment or scored evaluation",
+  "repository": "https://github.com/trailofbits/skills.git",
+  "revision": "1f68e03536f7980d4c0e6869596f708043a19443",
+  "skill": "plugins/static-analysis/skills/sarif-parsing",
+  "tracemantle_revision": "721845b35ef450ebaaf4c7bfb20990db92d0ed3c",
+  "observed_at": "2026-10-15T14:48:55.305024+00:00",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "elapsed_seconds": 4.07619190000014,
+  "scored_cases": 0,
+  "model_calls": 0,
+  "model_tokens": 0,
+  "model_cost_usd": 0,
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "init",
+        "--quiet",
+        "/tmp/tracemantle-public-probe/skills"
+      ],
+      "cwd": "/tmp/tracemantle-public-probe",
+      "exit_code": 0,
+      "elapsed_seconds": 0.0037256949999573408,
+      "timed_out": false,
+      "stdout": "init.stdout.txt",
+      "stderr": "init.stderr.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "git",
+        "fetch",
+        "--quiet",
+        "--depth=1",
+        "https://github.com/trailofbits/skills.git",
+        "1f68e03536f7980d4c0e6869596f708043a19443"
+      ],
+      "cwd": "/tmp/tracemantle-public-probe/skills",
+      "exit_code": 0,
+      "elapsed_seconds": 1.3669313460000012,
+      "timed_out": false,
+      "stdout": "fetch.stdout.txt",
+      "stderr": "fetch.stderr.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "git",
+        "checkout",
+        "--quiet",
+        "--detach",
+        "1f68e03536f7980d4c0e6869596f708043a19443"
+      ],
+      "cwd": "/tmp/tracemantle-public-probe/skills",
+      "exit_code": 0,
+      "elapsed_seconds": 0.11499265199972797,
+      "timed_out": false,
+      "stdout": "checkout.stdout.txt",
+      "stderr": "checkout.stderr.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        "-m",
+        "pip",
+        "list",
+        "--format=json"
+      ],
+      "cwd": "/tmp/tracemantle-public-probe/skills",
+      "exit_code": 0,
+      "elapsed_seconds": 0.2648033899999973,
+      "timed_out": false,
+      "stdout": "environment.stdout.txt",
+      "stderr": "environment.stderr.txt",
+      "stdout_sha256": "482c0c86b1655274496eb875447db8efa33e6b01e970969bc8ff6c8fb2d2b370",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        "-m",
+        "tracemantle",
+        "--version"
+      ],
+      "cwd": "/tmp/tracemantle-public-probe/skills",
+      "exit_code": 0,
+      "elapsed_seconds": 0.11440384700017603,
+      "timed_out": false,
+      "stdout": "tool-version.stdout.txt",
+      "stderr": "tool-version.stderr.txt",
+      "stdout_sha256": "a7279ba670271bcbd208941945c1dabce84cee1531dc36ab5212df69892d29de",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "jq",
+        "--version"
+      ],
+      "cwd": "/tmp/tracemantle-public-probe/skills",
+      "exit_code": 0,
+      "elapsed_seconds": 0.005371151999952417,
+      "timed_out": false,
+      "stdout": "jq-version.stdout.txt",
+      "stderr": "jq-version.stderr.txt",
+      "stdout_sha256": "2292a8fb4fb7f1acaba560309e1da16b5724247cc1fd7542f6698941ff8e4579",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        ".github/scripts/validate_plugin_metadata.py",
+        "--self-test"
+      ],
+      "cwd": "/tmp/tracemantle-public-probe/skills",
+      "exit_code": 0,
+      "elapsed_seconds": 0.31444098399970244,
+      "timed_out": false,
+      "stdout": "upstream-metadata-self-test.stdout.txt",
+      "stderr": "upstream-metadata-self-test.stderr.txt",
+      "stdout_sha256": "a103f57f399678c294905cd838439cbb8c7e9c330fe5bd57c77a331a1dcd23d2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        ".github/scripts/validate_plugin_metadata.py"
+      ],
+      "cwd": "/tmp/tracemantle-public-probe/skills",
+      "exit_code": 0,
+      "elapsed_seconds": 1.2162086869998348,
+      "timed_out": false,
+      "stdout": "upstream-metadata.stdout.txt",
+      "stderr": "upstream-metadata.stderr.txt",
+      "stdout_sha256": "0b9ef34ecf9cf4163a516d5c304e6e2bb2eb75d70c2773d482d4303d5b8198a3",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        ".github/scripts/validate_skill_interfaces.py"
+      ],
+      "cwd": "/tmp/tracemantle-public-probe/skills",
+      "exit_code": 0,
+      "elapsed_seconds": 0.11415661599994564,
+      "timed_out": false,
+      "stdout": "upstream-interfaces.stdout.txt",
+      "stderr": "upstream-interfaces.stderr.txt",
+      "stdout_sha256": "767549689308265a27a635f71ab1e80299578de5788c9919308cfa301dfc6c6f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "-ra",
+        "-p",
+        "no:cacheprovider",
+        "--import-mode=importlib",
+        ".",
+        "--junitxml=/tmp/tracemantle-public-probe/logs/sarif-tests.xml"
+      ],
+      "cwd": "/tmp/tracemantle-public-probe/skills/plugins/static-analysis/skills/sarif-parsing/resources",
+      "exit_code": 0,
+      "elapsed_seconds": 0.26455357900022136,
+      "timed_out": false,
+      "stdout": "sarif-tests.stdout.txt",
+      "stderr": "sarif-tests.stderr.txt",
+      "stdout_sha256": "9dd34e2b7c4c08100f3ec70aa54093f46ee98666cb6cd7968bd3376f82912d41",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        "-m",
+        "tracemantle",
+        "plugins/static-analysis/skills/sarif-parsing/SKILL.md",
+        "--format",
+        "json"
+      ],
+      "cwd": "/tmp/tracemantle-public-probe/skills",
+      "exit_code": 1,
+      "elapsed_seconds": 0.114342840000063,
+      "timed_out": false,
+      "stdout": "tracemantle-validation.stdout.txt",
+      "stderr": "tracemantle-validation.stderr.txt",
+      "stdout_sha256": "e8a61c1469aed414be02e8a5c589d703c91e2a05b1b152694fea8ef09ce3f951",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        "-m",
+        "tracemantle",
+        "manifest",
+        "plugins/static-analysis/skills/sarif-parsing",
+        "--format",
+        "json"
+      ],
+      "cwd": "/tmp/tracemantle-public-probe/skills",
+      "exit_code": 4,
+      "elapsed_seconds": 0.11452941499965164,
+      "timed_out": false,
+      "stdout": "tracemantle-manifest.stdout.txt",
+      "stderr": "tracemantle-manifest.stderr.txt",
+      "stdout_sha256": "d7cbec3d302504b3a30f9bfdd25dffc47e89901b901714076571d3b7913c599b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain"
+      ],
+      "cwd": "/tmp/tracemantle-public-probe/skills",
+      "exit_code": 0,
+      "elapsed_seconds": 0.06434012299996539,
+      "timed_out": false,
+      "stdout": "source-status.stdout.txt",
+      "stderr": "source-status.stderr.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "artifacts": {
+    "checkout.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checkout.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "environment.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "environment.stdout.txt": "482c0c86b1655274496eb875447db8efa33e6b01e970969bc8ff6c8fb2d2b370",
+    "fetch.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "fetch.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "init.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "init.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "jq-version.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "jq-version.stdout.txt": "2292a8fb4fb7f1acaba560309e1da16b5724247cc1fd7542f6698941ff8e4579",
+    "sarif-tests.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sarif-tests.stdout.txt": "9dd34e2b7c4c08100f3ec70aa54093f46ee98666cb6cd7968bd3376f82912d41",
+    "sarif-tests.xml": "12913566e7f4ce0e83a1ae23b2b779fd8cd7c38b7616b1d47de3cf67516b152f",
+    "source-status.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "source-status.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tool-version.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tool-version.stdout.txt": "a7279ba670271bcbd208941945c1dabce84cee1531dc36ab5212df69892d29de",
+    "tracemantle-manifest.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tracemantle-manifest.stdout.txt": "d7cbec3d302504b3a30f9bfdd25dffc47e89901b901714076571d3b7913c599b",
+    "tracemantle-validation.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tracemantle-validation.stdout.txt": "e8a61c1469aed414be02e8a5c589d703c91e2a05b1b152694fea8ef09ce3f951",
+    "upstream-interfaces.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "upstream-interfaces.stdout.txt": "767549689308265a27a635f71ab1e80299578de5788c9919308cfa301dfc6c6f",
+    "upstream-metadata-self-test.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "upstream-metadata-self-test.stdout.txt": "a103f57f399678c294905cd838439cbb8c7e9c330fe5bd57c77a331a1dcd23d2",
+    "upstream-metadata.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "upstream-metadata.stdout.txt": "0b9ef34ecf9cf4163a516d5c304e6e2bb2eb75d70c2773d482d4303d5b8198a3"
+  }
+}

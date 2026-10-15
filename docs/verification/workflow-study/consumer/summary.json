@@ -1,0 +1,775 @@
+{
+  "implementation": "b1f68fb13b4fcf4edb43d4eea19e079d132bcd69",
+  "measurement_revision": "42bba507fe5ff13fb8bd10a3d3ed7261b8be20f3",
+  "trials": 66,
+  "cases": 22,
+  "repetitions": 3,
+  "natural_mistakes": 0,
+  "historical_mistakes": 0,
+  "controlled_failure_cases": 6,
+  "controlled_failure_trials": 18,
+  "tm_static_caught_cases": 2,
+  "tm_static_caught_trials": 6,
+  "consumer_caught_cases": 6,
+  "consumer_caught_trials": 18,
+  "required_failures_missed_by_C": 0,
+  "proposed_reuses": 0,
+  "justified_reuses": 0,
+  "incorrect_reuses": 0,
+  "reference_passing_trials_with_nonpassing_evidence_gate": 48,
+  "mandatory_trust_control_blocks": 24,
+  "conservative_coverage_blocks": 24,
+  "incorrect_workflow_blocks": 0,
+  "arms": {
+    "A": {
+      "required_maintenance_checks_executed": 198,
+      "required_scanner_gates_executed": 66,
+      "reused": 0,
+      "commands_executed": 330,
+      "cli_wall_seconds": 21.709747414995945,
+      "workflow_seconds": 18.753810961000454,
+      "scanner_only_seconds": 1.9999682610023228,
+      "tm_gate_seconds": 0,
+      "failed_maintenance_checks": 24,
+      "failed_scanner_gates": 3
+    },
+    "B": {
+      "required_maintenance_checks_executed": 198,
+      "required_scanner_gates_executed": 66,
+      "reused": 0,
+      "commands_executed": 330,
+      "cli_wall_seconds": 21.791316272002405,
+      "workflow_seconds": 18.857467289998567,
+      "scanner_only_seconds": 2.0570530000013605,
+      "tm_gate_seconds": 0,
+      "failed_maintenance_checks": 24,
+      "failed_scanner_gates": 3
+    },
+    "C": {
+      "required_maintenance_checks_executed": 198,
+      "required_scanner_gates_executed": 66,
+      "reused": 0,
+      "commands_executed": 330,
+      "cli_wall_seconds": 27.552212702005818,
+      "workflow_seconds": 24.666031256003407,
+      "scanner_only_seconds": 2.1271292629953678,
+      "tm_gate_seconds": 3.0073155510017386,
+      "failed_maintenance_checks": 24,
+      "failed_scanner_gates": 3
+    }
+  },
+  "cases_detail": [
+    {
+      "case": "control",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.31240261099992495,
+          0.313587994000045,
+          0.3067318849998628
+        ],
+        "B": [
+          0.33425090400032786,
+          0.3066438719997677,
+          0.3223155619998579
+        ],
+        "C": [
+          0.39138178899975173,
+          0.3836396019996755,
+          0.4106309279995912
+        ]
+      }
+    },
+    {
+      "case": "history-0",
+      "revision": "721845b35ef450ebaaf4c7bfb20990db92d0ed3c",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.3099503020002885,
+          0.32349213599991344,
+          0.3179575800004386
+        ],
+        "B": [
+          0.32184275500003423,
+          0.3160581629999797,
+          0.3105954290003865
+        ],
+        "C": [
+          0.39297191800051223,
+          0.39677864699933707,
+          0.39613196499976766
+        ]
+      }
+    },
+    {
+      "case": "history-1",
+      "revision": "192cfb6d11f3fbf568da16b1ace484fdfead6287",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.3090182960004313,
+          0.32985075999931723,
+          0.33369717899950047
+        ],
+        "B": [
+          0.3264640609995695,
+          0.31479077999938454,
+          0.316787247999855
+        ],
+        "C": [
+          0.39985303200046474,
+          0.4081331079996744,
+          0.39362634500048443
+        ]
+      }
+    },
+    {
+      "case": "history-2",
+      "revision": "cd63b4991002258fda2a7f76edec16628056056f",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.3096854329996859,
+          0.3192601310001919,
+          0.3131329989992082
+        ],
+        "B": [
+          0.3261675749999995,
+          0.33248835900030826,
+          0.3017110210003011
+        ],
+        "C": [
+          0.41270671900019806,
+          0.4057878460007487,
+          0.3924996169998849
+        ]
+      }
+    },
+    {
+      "case": "history-3",
+      "revision": "ce6c4f0cfb78ee82aee6e84fa7aa0ccbe38d2df9",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.31600728600005823,
+          0.30499340900041716,
+          0.3130448530000649
+        ],
+        "B": [
+          0.3177902309998899,
+          0.31254166000053374,
+          0.32241279399931955
+        ],
+        "C": [
+          0.41219326999998884,
+          0.41296612600035587,
+          0.46299926200026675
+        ]
+      }
+    },
+    {
+      "case": "history-4",
+      "revision": "b1f68fb13b4fcf4edb43d4eea19e079d132bcd69",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.32898583600035636,
+          0.327009370000269,
+          0.31617563999952836
+        ],
+        "B": [
+          0.31535019900002226,
+          0.324307681999926,
+          0.3263600170002974
+        ],
+        "C": [
+          0.4117646839995359,
+          0.4015548970000964,
+          0.3984281259999989
+        ]
+      }
+    },
+    {
+      "case": "invalid-metadata",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [
+        "bundle-contract"
+      ],
+      "static_validation_errors": [
+        "frontmatter.name.type",
+        "frontmatter.name.directory-mismatch"
+      ],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.33036973799971747,
+          0.3166109290004897,
+          0.32344061999992846
+        ],
+        "B": [
+          0.3317795630000546,
+          0.3420515739999246,
+          0.3242295460004243
+        ],
+        "C": [
+          0.40721569299967086,
+          0.42442807400038873,
+          0.40985440200074663
+        ]
+      }
+    },
+    {
+      "case": "missing-helper",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [
+        "bundle-contract",
+        "report",
+        "upstream-tests"
+      ],
+      "static_validation_errors": [
+        "references.broken-link"
+      ],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.31602404299974296,
+          0.3118589999994583,
+          0.300516969000455
+        ],
+        "B": [
+          0.293468347000271,
+          0.31565460300043924,
+          0.3312143580005795
+        ],
+        "C": [
+          0.41353660300046613,
+          0.3838578970007802,
+          0.394078516999798
+        ]
+      }
+    },
+    {
+      "case": "changed-helper",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [
+        "report"
+      ],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.32222807400012243,
+          0.324190185999214,
+          0.32558061000054295
+        ],
+        "B": [
+          0.3196487770001113,
+          0.3211769270001241,
+          0.32828311799949006
+        ],
+        "C": [
+          0.4020681299998614,
+          0.43019708599968,
+          0.40303124799993384
+        ]
+      }
+    },
+    {
+      "case": "changed-query",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [
+        "report",
+        "upstream-tests"
+      ],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.3687995159998536,
+          0.36516502699942066,
+          0.3586474539997653
+        ],
+        "B": [
+          0.3629619230005119,
+          0.37090586599970266,
+          0.3669737569998688
+        ],
+        "C": [
+          0.4651242350000757,
+          0.45807784799944784,
+          0.44872478999968735
+        ]
+      }
+    },
+    {
+      "case": "shared-fixture",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [
+        "upstream-tests"
+      ],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.3412666699996407,
+          0.33598928500032343,
+          0.3466317809998145
+        ],
+        "B": [
+          0.3359899179995409,
+          0.3332568269997864,
+          0.33179976799965516
+        ],
+        "C": [
+          0.4426635060008266,
+          0.4295436940001309,
+          0.4305937230001291
+        ]
+      }
+    },
+    {
+      "case": "description",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.3388402999999016,
+          0.33241738400010945,
+          0.32258793599976343
+        ],
+        "B": [
+          0.3304764859994975,
+          0.3435798629998317,
+          0.34530760399957217
+        ],
+        "C": [
+          0.40100530900053855,
+          0.4208882780003478,
+          0.4412661850001314
+        ]
+      }
+    },
+    {
+      "case": "unrelated",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.3406008550000479,
+          0.3339284450003106,
+          0.3472495139994862
+        ],
+        "B": [
+          0.32256046000020433,
+          0.3225531360003515,
+          0.3414770050003426
+        ],
+        "C": [
+          0.42262223700072354,
+          0.40264302600007795,
+          0.421994526999697
+        ]
+      }
+    },
+    {
+      "case": "checker",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.3243012409993753,
+          0.3234068189995014,
+          0.3360191350002424
+        ],
+        "B": [
+          0.33157687400034774,
+          0.3367711090004377,
+          0.32131264100007684
+        ],
+        "C": [
+          0.41322023200063995,
+          0.43618953299937857,
+          0.4199563229994965
+        ]
+      }
+    },
+    {
+      "case": "configuration",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.3437835389995598,
+          0.32785715000045457,
+          0.3394357000006494
+        ],
+        "B": [
+          0.33688716600045154,
+          0.32290192100026616,
+          0.33887777800009644
+        ],
+        "C": [
+          0.4179146900005435,
+          0.41386551100004,
+          0.42250106600022264
+        ]
+      }
+    },
+    {
+      "case": "environment",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.32531445199947484,
+          0.3300346719997833,
+          0.3276407460007249
+        ],
+        "B": [
+          0.33598448199973063,
+          0.31256449800002883,
+          0.32481969200034655
+        ],
+        "C": [
+          0.4202874270004031,
+          0.43221442900085094,
+          0.4134821659999943
+        ]
+      }
+    },
+    {
+      "case": "model",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.3200893939992966,
+          0.3458474879998903,
+          0.3433122189999267
+        ],
+        "B": [
+          0.32361496500016074,
+          0.3296578560002672,
+          0.33892073500010156
+        ],
+        "C": [
+          0.4156950950000464,
+          0.41378867300045385,
+          0.4216379319996122
+        ]
+      }
+    },
+    {
+      "case": "missing-evidence",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.332458914000199,
+          0.3230192649998571,
+          0.3388484150000295
+        ],
+        "B": [
+          0.33759173699945677,
+          0.3445348390005165,
+          0.3329529009997714
+        ],
+        "C": [
+          0.4160985720000099,
+          0.43009592599992175,
+          0.4143520070001614
+        ]
+      }
+    },
+    {
+      "case": "expired-evidence",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.334247681999841,
+          0.341320024000197,
+          0.3352438070005519
+        ],
+        "B": [
+          0.3441901639998832,
+          0.3342182110000067,
+          0.34107487600067543
+        ],
+        "C": [
+          0.4403902089998155,
+          0.42015266499947757,
+          0.41989330900014465
+        ]
+      }
+    },
+    {
+      "case": "conflicting-evidence",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "fail",
+        "fail",
+        "fail"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.3287580589994832,
+          0.32804651799960993,
+          0.3371542499999123
+        ],
+        "B": [
+          0.3234588129998883,
+          0.32889053500002774,
+          0.3344932370000606
+        ],
+        "C": [
+          0.445586667000498,
+          0.42514507600026263,
+          0.42466029100069136
+        ]
+      }
+    },
+    {
+      "case": "unapproved-evidence",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.3490701290002107,
+          0.3292887769994195,
+          0.34840514899951813
+        ],
+        "B": [
+          0.32950033799988887,
+          0.3567693100003453,
+          0.3330323709997174
+        ],
+        "C": [
+          0.409434913000041,
+          0.43262217699975736,
+          0.42592852400048287
+        ]
+      }
+    },
+    {
+      "case": "scanner-finding",
+      "revision": "b5d86f339bd25cf85d86f6d6a545159e8a3cc9c3",
+      "trials": 3,
+      "required_failures": [
+        "scanner"
+      ],
+      "static_validation_errors": [],
+      "evidence_states": [
+        "unknown",
+        "unknown",
+        "unknown"
+      ],
+      "reused": 0,
+      "cli_seconds": {
+        "A": [
+          0.3285434509998595,
+          0.3313416110004255,
+          0.32903077300034056
+        ],
+        "B": [
+          0.3349307950002185,
+          0.3467587799996181,
+          0.35080190999997285
+        ],
+        "C": [
+          0.416290215999652,
+          0.4294634319994657,
+          0.42388275200028147
+        ]
+      }
+    }
+  ],
+  "tm_added_cli_seconds": 5.8424652870098726,
+  "scoring_total_wall_seconds": 84.07725136499994,
+  "scoring_preparation_and_recording_seconds": 13.02397497599577,
+  "earlier_scored_wall_seconds": 71.83986058699975,
+  "live": {
+    "invocations": 3,
+    "accepted": 3,
+    "seconds": 64.93919539600029,
+    "usage": {
+      "input_tokens": 339112,
+      "cached_input_tokens": 275968,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 1249,
+      "reasoning_output_tokens": 0
+    },
+    "model_requests": null,
+    "monetary_cost_usd": null,
+    "behavioral_reuse": 0,
+    "model": "gpt-6-astra",
+    "immutable_revision": null,
+    "tool_errors_recovered": 3
+  },
+  "setup_run_seconds": {
+    "seed": 0.38774994000050356,
+    "seed-v2": 0.2807513239995387
+  },
+  "missing_measurements": [
+    "Human authoring and intervention time",
+    "Authoring model tokens/cost",
+    "Live underlying model request count and monetary charges",
+    "CI billing and complete parallel critical-path savings"
+  ]
+}

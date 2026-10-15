@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Experimental policy schema 3 binds reviewed per-check input scopes through trusted Git and evidence profile identity. Deterministic helper tests can reuse approved results despite unrelated documentation uncertainty; explicit resource errors still prevent reuse. Manifest schema 2 preserves the resource-error distinction; legacy policies and evidence retain their behavior.
+- The maintainer SARIF workflow always generates fresh scans/reports and separately registers maintenance checks. A prospective comparison includes a simple cache with the same reviewed inputs and execution context.
+
 ## [1.7.0] - 2026-10-15
 
 ### Added

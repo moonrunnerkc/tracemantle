@@ -1,0 +1,103 @@
+{
+  "observed_at": "2026-10-15T14:39:45.824057+00:00",
+  "root": "/home/brad/projects",
+  "command": [
+    "rg",
+    "--files",
+    "--hidden",
+    "--no-ignore",
+    "-g",
+    "SKILL.md",
+    "-g",
+    "!node_modules",
+    "-g",
+    "!.git",
+    "-g",
+    "!.venv*",
+    "-g",
+    "!venv",
+    "-g",
+    "!__pycache__",
+    "-g",
+    "!dist",
+    "-g",
+    "!anthropics-skills",
+    "-g",
+    "!tests",
+    "-g",
+    "!test",
+    "-g",
+    "!site-packages",
+    "-g",
+    "!vendor",
+    "/home/brad/projects"
+  ],
+  "exit_code": 0,
+  "top_level_directories": 51,
+  "matched_paths": 71,
+  "candidate_checkouts": [
+    {
+      "directory": "copilot-swarm-orchestrator",
+      "revision": "b91639fd9c0075e36ce0e3786cea5c7474f6ad0d",
+      "last_commit": "2026-04-08T18:27:25-06:00 Merge swarm/swarm-2026-04-09T00-09-14-274Z/step-3-integratorfinalizer",
+      "skill_paths": [
+        "plugin/skills/swarm-orchestrate/SKILL.md",
+        "plugin/skills/swarm-verify/SKILL.md",
+        "plugin/skills/swarm-gates/SKILL.md",
+        ".github/plugin/skills/swarm-orchestrate/SKILL.md",
+        ".github/plugin/skills/swarm-verify/SKILL.md",
+        ".github/plugin/skills/swarm-gates/SKILL.md"
+      ],
+      "last_skill_commit": "3a466c31cbdd0d2e526f69c3225dcd624769226b 2026-03-17T22:47:52-06:00 scope enforcement via verification layer, fleet parser fix, MCP notification handling, agent export name matching, plugin system, 951 tests"
+    },
+    {
+      "directory": "swarm-orchestrator copy",
+      "revision": "c3094a0e0439c907b30c8913aa9c6fc49fedf8f7",
+      "last_commit": "2026-04-17T22:10:58-06:00 fix: resolve PermissionError by using repo-relative paths instead of /app",
+      "skill_paths": [
+        "plugin/skills/swarm-orchestrate/SKILL.md",
+        "plugin/skills/swarm-verify/SKILL.md",
+        "plugin/skills/swarm-gates/SKILL.md"
+      ],
+      "last_skill_commit": "3a466c31cbdd0d2e526f69c3225dcd624769226b 2026-03-17T22:47:52-06:00 scope enforcement via verification layer, fleet parser fix, MCP notification handling, agent export name matching, plugin system, 951 tests"
+    },
+    {
+      "directory": "swarm-orchestrator",
+      "revision": "2e19b1d6eb551389e5d578c4e9052c5f6886251c",
+      "last_commit": "2026-08-05T22:16:04-06:00 feat(gate): commit the error-swallow layer-coverage probe",
+      "skill_paths": [],
+      "last_skill_commit": ""
+    },
+    {
+      "directory": "skillcheck",
+      "revision": "f2c2946e7007cc745a66d365849a1a740b24fb2c",
+      "last_commit": "2026-07-09T16:56:09-06:00 fix(ci): pin pypa/gh-action-pypi-publish by version tag not SHA",
+      "skill_paths": [
+        "skills/skillcheck/SKILL.md",
+        "SKILL.md"
+      ],
+      "last_skill_commit": "63e7dfd0f72a8aa658bf982949c0908a64a5c648 2026-07-09T15:57:35-06:00 chore: release 1.4.1"
+    },
+    {
+      "directory": "tracemantle",
+      "revision": "721845b35ef450ebaaf4c7bfb20990db92d0ed3c",
+      "last_commit": "2026-10-14T21:31:19-06:00 docs: record verified 1.7.0 publication and public installs",
+      "skill_paths": [
+        "skills/tracemantle/SKILL.md"
+      ],
+      "last_skill_commit": "f35821830f249df847faf57c0db6e45a50245740 2026-10-14T20:51:54-06:00 feat: add scoped evidence approvals and release 1.7.0"
+    }
+  ],
+  "exclusions": [
+    "Old run worktrees duplicate the March plugin skills; not independently maintained skills.",
+    "Third-party .swarm/tier-a-clones are copied public repositories.",
+    "skillcheck is the earlier version of TraceMantle, not a separate consumer.",
+    "tracemantle-study is this study worktree."
+  ],
+  "removal": {
+    "repository": "moonrunnerkc/swarm-orchestrator",
+    "revision": "58bd6a1cf4fd9650867b10e37304147e840a0181",
+    "reason": "Local Git history deletes plugin/skills on 2026-05-14, before current maintained branches."
+  },
+  "interpretation": "No qualifying current local consumer established. Historical checkouts are available but no ongoing skill maintenance was established; no files changed in those checkouts."
+}

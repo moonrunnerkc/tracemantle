@@ -4,7 +4,7 @@ from collections.abc import Hashable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any
+from typing import Any, Literal
 
 import yaml
 
@@ -31,6 +31,7 @@ class DocumentSettings:
     extension_fields: frozenset[str] = frozenset()
     reserved_words: tuple[str, ...] = ('anthropic', 'claude')
     tokenizer: str = 'heuristic'
+    reference_format: Literal['relative', 'skill-base-dir'] = 'relative'
 
 
 def _freeze(value: Any) -> Any:

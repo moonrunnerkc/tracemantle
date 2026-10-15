@@ -151,10 +151,10 @@ def test_markdown_code_examples_are_not_dependencies(example: str) -> None:
 
 
 @pytest.mark.parametrize('body,target,kind,line', [
-    ('`scripts/helper.py`', 'scripts/helper.py', 'resource', 8),
-    ('`assets(v1)/helper.py`', 'assets(v1)/helper.py', 'resource', 8),
-    ('`scripts/helper[old].py`', 'scripts/helper[old].py', 'resource', 8),
-    ('``scripts/helper.py``', 'scripts/helper.py', 'resource', 8),
+    ('`scripts/helper.py`', 'scripts/helper.py', 'mention', 8),
+    ('`assets(v1)/helper.py`', 'assets(v1)/helper.py', 'mention', 8),
+    ('`scripts/helper[old].py`', 'scripts/helper[old].py', 'mention', 8),
+    ('``scripts/helper.py``', 'scripts/helper.py', 'mention', 8),
     ('`report.json`', 'report.json', 'generated', 8),
     ('`example` [real](actual.md)', 'actual.md', 'link', 8),
     ('`` a ` b ``\n[real](actual.md)', 'actual.md', 'link', 9),

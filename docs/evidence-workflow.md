@@ -366,3 +366,59 @@ Hashes identify content. Signatures identify an approving key holder. Execution
 records depend on the trusted observer and its environment. None individually
 establishes universal safety or correctness, and this deterministic example
 establishes workflow mechanics only.
+
+## Experimental closed check scopes (unreleased)
+
+Schema 3 retains schema-2 approval controls and permits `input_scope_path` on a
+`static` check or the new `deterministic` kind. The latter requires real
+`observed-execution`, plus known runner, adapter, Python and OS context. It means
+non-model maintenance execution, such as helper regression tests. Evidence must
+set both model and model_revision to the literal `none`; naming a model prevents
+reuse even with digest approval. It does not
+satisfy a behavioral/routing check and does not relax model identity requirements.
+
+The scope path names a JSON blob in the same selected trusted Git revision as
+the policy and checker. Its SHA-256 must equal the check's `profile_sha256`, which
+also binds every approved evidence record. Scope JSON contains exactly:
+
+```json
+{
+  "schema_version": 1,
+  "inputs": ["SKILL.md", "resources/helper.py"],
+  "rationale": "Reviewed checker reads only these files; describe the actual review here.",
+  "assumptions": ["Pin interpreter, tools, configuration and all external inputs in configuration_sha256/context."],
+  "unresolved": []
+}
+```
+
+Inputs must exactly equal the check's sorted normalized input set. Rationale and
+assumptions must be nonempty, unresolved must be empty, and coverage_complete
+must be true. These are **trusted assertions requiring review**, not proof inferred
+from prose or one file-read trace. A boolean alone cannot opt into this contract.
+An unresolved execution input requires running that check; do not issue a closed
+scope for it. Changes to declaration bytes invalidate the profile and require
+new evidence approval. Candidate scope/policy files never replace trusted blobs.
+
+For this opt-in only, the reviewed set replaces inferred Markdown closure for
+that check. An example in documentation need not be a test input; a command
+extracted from that documentation must be. Include transitive helpers, fixtures,
+configuration, executable identity, environment and loader assumptions. Bind
+external inputs to the existing configuration/context fields and compare their
+**current** identity before omitting execution. Comparison cannot observe a
+runner's environment or verify a prose assertion. The SARIF integration checks
+installed file hashes and refuses upstream-suite reuse on unreviewed new modules.
+
+Manifest schema 2 distinguishes `resource_errors` from documentation uncertainty.
+Closed scopes require schema-2 manifests with no resource errors on either side.
+Broken explicit links, escapes, unreadable resources, cycles, symlinks and limits
+cannot be excused by a declaration. Legacy manifests and policies still load;
+legacy incomplete coverage remains conservative. Bundle content hashes and
+schema-1 evidence identities are unchanged. Documentation uncertainty remains
+visible in comparison issues, even when all required closed scopes pass.
+
+A workflow may execute the required reruns and reuse independently passing checks;
+that is not permission to treat an unknown release comparison as a passing release.
+Always generate required current outputs. A maintenance pass does not supply a
+new scan/report, and immutable identity does not prove arbitrary determinism.
+See the [maintainer deployment](../integrations/sarif/README.md) for the bounded
+reviewed scope and separate simple-cache comparison.

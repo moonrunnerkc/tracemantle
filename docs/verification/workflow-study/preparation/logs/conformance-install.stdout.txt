@@ -1,0 +1,17 @@
+Collecting strictyaml
+  Downloading strictyaml-1.7.3-py3-none-any.whl.metadata (11 kB)
+Collecting click
+  Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+Collecting python-dateutil>=2.6.0 (from strictyaml)
+  Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting six>=1.5 (from python-dateutil>=2.6.0->strictyaml)
+  Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Downloading strictyaml-1.7.3-py3-none-any.whl (123 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 123.9/123.9 kB 3.4 MB/s eta 0:00:00
+Downloading click-8.5.0-py3-none-any.whl (125 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 125.3/125.3 kB 15.5 MB/s eta 0:00:00
+Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 229.9/229.9 kB 14.3 MB/s eta 0:00:00
+Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Installing collected packages: six, click, python-dateutil, strictyaml
+Successfully installed click-8.5.0 python-dateutil-2.9.0.post0 six-1.17.0 strictyaml-1.7.3

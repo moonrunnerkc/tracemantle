@@ -1,0 +1,104 @@
+{
+  "tool": "TraceMantle",
+  "schema_version": 2,
+  "version": "1.7.0",
+  "gate": {
+    "exit_code": 1,
+    "passed": false
+  },
+  "tokenizer": {
+    "backend": "word-punctuation",
+    "version": "1",
+    "network": "none"
+  },
+  "files_checked": 1,
+  "files_passed": 0,
+  "files_failed": 1,
+  "results": [
+    {
+      "path": "plugins/static-analysis/skills/sarif-parsing/SKILL.md",
+      "valid": false,
+      "diagnostics": [
+        {
+          "rule": "description.quality-score",
+          "severity": "info",
+          "message": "Description quality score: 67/100. Suggestions: No trigger context found. Add phrases like 'Use this skill whenever the user mentions...'.; Description is getting long. Consider trimming to the essentials.",
+          "line": null,
+          "context": null,
+          "source": "advisory",
+          "confidence": "medium",
+          "breakdown": {
+            "action": 25,
+            "trigger": 0,
+            "keywords": 25,
+            "specificity": 10,
+            "length": 7
+          }
+        },
+        {
+          "rule": "references.broken-link",
+          "severity": "error",
+          "message": "Referenced file does not exist: 'auth/login.py'.",
+          "line": 262,
+          "context": "resolved to: auth/login.py",
+          "source": "advisory",
+          "confidence": "medium"
+        },
+        {
+          "rule": "references.broken-link",
+          "severity": "error",
+          "message": "Referenced file does not exist: 'admin/login.py'.",
+          "line": 263,
+          "context": "resolved to: admin/login.py",
+          "source": "advisory",
+          "confidence": "medium"
+        },
+        {
+          "rule": "references.escape",
+          "severity": "error",
+          "message": "Reference '/github/workspace/' resolves outside the skill directory.",
+          "line": 91,
+          "context": null,
+          "source": "advisory",
+          "confidence": "medium"
+        },
+        {
+          "rule": "references.escape",
+          "severity": "error",
+          "message": "Reference '/path/to/project/' resolves outside the skill directory.",
+          "line": 91,
+          "context": null,
+          "source": "advisory",
+          "confidence": "medium"
+        },
+        {
+          "rule": "disclosure.metadata-budget",
+          "severity": "warning",
+          "message": "Frontmatter uses ~122 tokens, exceeding the recommended ~100-token metadata budget. Keep metadata concise; move details to the body.",
+          "line": null,
+          "context": null,
+          "source": "spec",
+          "confidence": "high"
+        },
+        {
+          "rule": "disclosure.body-budget",
+          "severity": "warning",
+          "message": "Body uses ~5087 tokens, exceeding the recommended 5000-token instruction budget. Move large content blocks to referenced files in a resources/ directory.",
+          "line": null,
+          "context": null,
+          "source": "spec",
+          "confidence": "high"
+        },
+        {
+          "rule": "compat.unverified",
+          "severity": "info",
+          "message": "Behavior of field 'allowed-tools' in codex, cursor is unverified (as of Codex: 2026-04-20; Cursor: 2026-04-20).",
+          "line": null,
+          "context": null,
+          "source": "advisory",
+          "confidence": "medium"
+        }
+      ]
+    }
+  ]
+}

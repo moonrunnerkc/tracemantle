@@ -1,0 +1,68 @@
+# Original-version reproduction and repair
+
+The original environment remains an editable clean checkout of
+`721845b35ef450ebaaf4c7bfb20990db92d0ed3c`, version 1.7.0. Its Python API was run
+against unmodified Trail of Bits SARIF sources at
+`1f68e03536f7980d4c0e6869596f708043a19443`. `original-reproduction.json` retains
+the diagnostics and manifest. Independently tokenizing
+`[helper]({baseDir}/resources/sarif_helpers.py)` returns zero resources and
+`uncertain=true`: removing the illustrative examples would not repair templates.
+
+SKILL.md line 91 contrasts scanner checkout locations `/path/to/project/` and
+`/github/workspace/`. Lines 260–263 explain why `auth/login.py` and
+`admin/login.py` must have different deduplication keys. These are explanations
+about analyzed projects, not instructions to open packaged files. The actual
+helper and query links occur at lines 80–82. The retained upstream bytes and
+license are in `integrations/sarif/vendor`, with per-file SHA-256 provenance.
+
+Before implementation, the first 18 new regressions all failed
+(`regressions-before.txt`). The four authentic cases failed on definite error
+claims; template API cases failed because the interpretation did not exist.
+The after log covers 132 focused tests, including three additional provenance
+and dependency-invalidation tests added after implementation. Those three were
+not demonstrated failing before the repair. Existing inline token-kind tests
+were updated from `resource` to `mention` for the intentional contract change;
+explicit-link expectations were preserved.
+
+The repair leaves ambiguous inline mentions incomplete. It neither infers
+arbitrary author intent nor grants an ignore/coverage override. Skill-root
+interpretation is an explicit Python setting, bound in the consumer checker.
+No candidate metadata can select it. The raw `{baseDir}` spelling remains part
+of token identity. Explicit links, including transitive links, still diagnose
+missing resources and boundary escapes. Template support does not establish
+complete dependency coverage for the authentic SARIF bundle.
+
+After scoring, an additional boundary probe found decoded NUL references raised
+`ValueError` instead of returning a diagnostic. It also found a template suffix
+starting `~/` inherited legacy home expansion rather than staying literal under
+the selected root. All three added cases failed before correction and passed
+after (`boundary-before.txt`, `boundary-after.txt`). Decoded controls now fail
+before filesystem calls; home expansion remains only for ordinary legacy
+references. These inputs were not scored cases. The original b1f68fb scores are
+retained without pooling; the affected 25-test classification/boundary regression
+protocol is rerun on the final repaired source. No new savings claim is made.
+
+The first boundary correction at cb29e58 passed 24/25 focused cases but still
+failed the leading bare-path NUL case in the full suite. `urlsplit` strips leading
+controls before dependency analysis. `boundary-first-repair.txt` and
+`full-intermediate-boundary-failure.txt` preserve that failure. The tokenizer now
+retains decoded controls for explicit rejection before URL parsing can erase
+them. The final `boundary-after.txt` records all 25 cases passing. This corrects
+the incomplete intermediate repair; no scored result is replaced.
+
+`initial-full-setup-failures.txt` also preserves the first broad development run:
+four obsolete inline token-kind assertions, five failures caused by relocating
+the upstream data while that run was active, one self-host enumeration failure
+because a new consumer skill had been added, and one pre-commit failure because
+the venv bin directory was absent from PATH. These were setup/contract-update
+failures, not scored consumer outcomes. Subsequent runs use stable source and an
+activated PATH. Only the exact separately pinned consumer skill is excluded from
+self-host version coherence; a provenance regression checks its authentic bytes.
+
+Other interventions were isolating upstream pytest configuration, correcting the
+measurement harness to capture process startup and trusted Git objects, fixing
+one import-formatting diagnostic after scoring, and correcting the jq version
+transcription. Their automated verification costs are retained where measured;
+authoring time is missing. No reference or trust assertion was relaxed to obtain
+reuse. The final tool changes are committed at 7da20ad; scored results remain
+pinned to the earlier implementation and are not pooled with those refinements.

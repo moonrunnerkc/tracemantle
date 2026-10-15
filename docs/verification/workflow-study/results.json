@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "status": "inconclusive-no-deployment",
+  "tracemantle_version": "1.7.0",
+  "tracemantle_revision": "721845b35ef450ebaaf4c7bfb20990db92d0ed3c",
+  "protocol_commit": "192cfb6d11f3fbf568da16b1ace484fdfead6287",
+  "scored_revision_count": 0,
+  "deployed_projects": 0,
+  "caught_mistakes": null,
+  "missed_mistakes": null,
+  "incorrect_reuse_decisions": null,
+  "unnecessary_blocks_scored": null,
+  "avoided_check_executions": 0,
+  "proposed_skips": 0,
+  "verified_skips": 0,
+  "skip_justification_denominator": 0,
+  "existing_workflow_cost": null,
+  "optimized_workflow_cost": null,
+  "full_reference_cost": null,
+  "estimated_operational_savings": null,
+  "preparation_wall_seconds": 406.49832718200014,
+  "public_probe_wall_seconds": 4.07619190000014,
+  "trace_validation_probe_seconds": 0.114342840000063,
+  "trace_manifest_probe_seconds": 0.11452941499965164,
+  "evaluation_model_calls": 0,
+  "evaluation_model_tokens": 0,
+  "evaluation_model_cost_usd": 0,
+  "authoring_model_tokens": null,
+  "authoring_model_cost_usd": null,
+  "manual_interventions": [
+    "Read local and remote repository instructions and current workflow sources.",
+    "Reviewed and excluded retired local plugin copies; no consumer files modified.",
+    "Corrected two unused imports and a redundant local variable in the preparation harness before the public probe.",
+    "Reviewed the four public skill diagnostics against surrounding prose; did not suppress reference checks."
+  ],
+  "exclusions": [
+    "No eligible current owner-controlled local consumer established.",
+    "Public source probe was setup only; no scored history or controlled-fault results.",
+    "No installed live-agent skill workflow, immutable model identity, or behavioral reuse claimed.",
+    "No upstream integration accepted or deployed."
+  ],
+  "public_observation": {
+    "repository": "https://github.com/trailofbits/skills.git",
+    "revision": "1f68e03536f7980d4c0e6869596f708043a19443",
+    "skill": "plugins/static-analysis/skills/sarif-parsing",
+    "upstream_metadata_exit": 0,
+    "upstream_interfaces_exit": 0,
+    "upstream_helper_tests_passed": 24,
+    "tracemantle_validation_exit": 1,
+    "tracemantle_manifest_exit": 4,
+    "explanatory_paths_reported_as_errors": [
+      "/path/to/project/",
+      "/github/workspace/",
+      "auth/login.py",
+      "admin/login.py"
+    ]
+  }
+}

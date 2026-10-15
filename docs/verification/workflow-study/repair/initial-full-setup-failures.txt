@@ -1,0 +1,544 @@
+........................................................................ [  4%]
+........................................................................ [  9%]
+....................................FFFF................................ [ 13%]
+........................................................................ [ 18%]
+........................................................................ [ 22%]
+........................................................................ [ 27%]
+........................................................................ [ 31%]
+........................................................................ [ 36%]
+...................ssss................................................. [ 41%]
+........................................................................ [ 45%]
+........................................................................ [ 50%]
+........................................................................ [ 54%]
+........................................................................ [ 59%]
+........................................................................ [ 63%]
+........................................................................ [ 68%]
+........................................................................ [ 73%]
+........................................................................ [ 77%]
+......................................................F................. [ 82%]
+..........................FFFF..F....................................... [ 86%]
+........................................................................ [ 91%]
+.....................................s.................................. [ 95%]
+................................................F................        [100%]
+=================================== FAILURES ===================================
+_ test_markdown_real_resources_keep_locations[`scripts/helper.py`-scripts/helper.py-resource-8] _
+
+body = '`scripts/helper.py`', target = 'scripts/helper.py', kind = 'resource'
+line = 8
+
+    @pytest.mark.parametrize('body,target,kind,line', [
+        ('`scripts/helper.py`', 'scripts/helper.py', 'resource', 8),
+        ('`assets(v1)/helper.py`', 'assets(v1)/helper.py', 'resource', 8),
+        ('`scripts/helper[old].py`', 'scripts/helper[old].py', 'resource', 8),
+        ('``scripts/helper.py``', 'scripts/helper.py', 'resource', 8),
+        ('`report.json`', 'report.json', 'generated', 8),
+        ('`example` [real](actual.md)', 'actual.md', 'link', 8),
+        ('`` a ` b ``\n[real](actual.md)', 'actual.md', 'link', 9),
+        ('`unclosed [real](actual.md)', 'actual.md', 'link', 8),
+        ('`unclosed\n\n[real](actual.md) `', 'actual.md', 'link', 10),
+        ('`unclosed\n```\nexample\n```\n[real](actual.md) `', 'actual.md', 'link', 12),
+        ('[label]: actual.md\n[label]', 'actual.md', 'link', 8),
+        ('    [example](missing.md)\n\n[real](actual.md)', 'actual.md', 'link', 10),
+    ])
+    def test_markdown_real_resources_keep_locations(body: str, target: str, kind: str, line: int) -> None:
+        resources = tokenize(body, 8).resources
+>       assert [(r.target, r.kind, r.line) for r in resources] == [(target, kind, line)]
+E       AssertionError: assert [('scripts/he...'mention', 8)] == [('scripts/he...resource', 8)]
+E         
+E         At index 0 diff: ('scripts/helper.py', 'mention', 8) != ('scripts/helper.py', 'resource', 8)
+E         Use -v to get more diff
+
+tests/test_audit_regressions.py:169: AssertionError
+_ test_markdown_real_resources_keep_locations[`assets(v1)/helper.py`-assets(v1)/helper.py-resource-8] _
+
+body = '`assets(v1)/helper.py`', target = 'assets(v1)/helper.py'
+kind = 'resource', line = 8
+
+    @pytest.mark.parametrize('body,target,kind,line', [
+        ('`scripts/helper.py`', 'scripts/helper.py', 'resource', 8),
+        ('`assets(v1)/helper.py`', 'assets(v1)/helper.py', 'resource', 8),
+        ('`scripts/helper[old].py`', 'scripts/helper[old].py', 'resource', 8),
+        ('``scripts/helper.py``', 'scripts/helper.py', 'resource', 8),
+        ('`report.json`', 'report.json', 'generated', 8),
+        ('`example` [real](actual.md)', 'actual.md', 'link', 8),
+        ('`` a ` b ``\n[real](actual.md)', 'actual.md', 'link', 9),
+        ('`unclosed [real](actual.md)', 'actual.md', 'link', 8),
+        ('`unclosed\n\n[real](actual.md) `', 'actual.md', 'link', 10),
+        ('`unclosed\n```\nexample\n```\n[real](actual.md) `', 'actual.md', 'link', 12),
+        ('[label]: actual.md\n[label]', 'actual.md', 'link', 8),
+        ('    [example](missing.md)\n\n[real](actual.md)', 'actual.md', 'link', 10),
+    ])
+    def test_markdown_real_resources_keep_locations(body: str, target: str, kind: str, line: int) -> None:
+        resources = tokenize(body, 8).resources
+>       assert [(r.target, r.kind, r.line) for r in resources] == [(target, kind, line)]
+E       AssertionError: assert [('assets(v1)...'mention', 8)] == [('assets(v1)...resource', 8)]
+E         
+E         At index 0 diff: ('assets(v1)/helper.py', 'mention', 8) != ('assets(v1)/helper.py', 'resource', 8)
+E         Use -v to get more diff
+
+tests/test_audit_regressions.py:169: AssertionError
+_ test_markdown_real_resources_keep_locations[`scripts/helper[old].py`-scripts/helper[old].py-resource-8] _
+
+body = '`scripts/helper[old].py`', target = 'scripts/helper[old].py'
+kind = 'resource', line = 8
+
+    @pytest.mark.parametrize('body,target,kind,line', [
+        ('`scripts/helper.py`', 'scripts/helper.py', 'resource', 8),
+        ('`assets(v1)/helper.py`', 'assets(v1)/helper.py', 'resource', 8),
+        ('`scripts/helper[old].py`', 'scripts/helper[old].py', 'resource', 8),
+        ('``scripts/helper.py``', 'scripts/helper.py', 'resource', 8),
+        ('`report.json`', 'report.json', 'generated', 8),
+        ('`example` [real](actual.md)', 'actual.md', 'link', 8),
+        ('`` a ` b ``\n[real](actual.md)', 'actual.md', 'link', 9),
+        ('`unclosed [real](actual.md)', 'actual.md', 'link', 8),
+        ('`unclosed\n\n[real](actual.md) `', 'actual.md', 'link', 10),
+        ('`unclosed\n```\nexample\n```\n[real](actual.md) `', 'actual.md', 'link', 12),
+        ('[label]: actual.md\n[label]', 'actual.md', 'link', 8),
+        ('    [example](missing.md)\n\n[real](actual.md)', 'actual.md', 'link', 10),
+    ])
+    def test_markdown_real_resources_keep_locations(body: str, target: str, kind: str, line: int) -> None:
+        resources = tokenize(body, 8).resources
+>       assert [(r.target, r.kind, r.line) for r in resources] == [(target, kind, line)]
+E       AssertionError: assert [('scripts/he...'mention', 8)] == [('scripts/he...resource', 8)]
+E         
+E         At index 0 diff: ('scripts/helper[old].py', 'mention', 8) != ('scripts/helper[old].py', 'resource', 8)
+E         Use -v to get more diff
+
+tests/test_audit_regressions.py:169: AssertionError
+_ test_markdown_real_resources_keep_locations[``scripts/helper.py``-scripts/helper.py-resource-8] _
+
+body = '``scripts/helper.py``', target = 'scripts/helper.py', kind = 'resource'
+line = 8
+
+    @pytest.mark.parametrize('body,target,kind,line', [
+        ('`scripts/helper.py`', 'scripts/helper.py', 'resource', 8),
+        ('`assets(v1)/helper.py`', 'assets(v1)/helper.py', 'resource', 8),
+        ('`scripts/helper[old].py`', 'scripts/helper[old].py', 'resource', 8),
+        ('``scripts/helper.py``', 'scripts/helper.py', 'resource', 8),
+        ('`report.json`', 'report.json', 'generated', 8),
+        ('`example` [real](actual.md)', 'actual.md', 'link', 8),
+        ('`` a ` b ``\n[real](actual.md)', 'actual.md', 'link', 9),
+        ('`unclosed [real](actual.md)', 'actual.md', 'link', 8),
+        ('`unclosed\n\n[real](actual.md) `', 'actual.md', 'link', 10),
+        ('`unclosed\n```\nexample\n```\n[real](actual.md) `', 'actual.md', 'link', 12),
+        ('[label]: actual.md\n[label]', 'actual.md', 'link', 8),
+        ('    [example](missing.md)\n\n[real](actual.md)', 'actual.md', 'link', 10),
+    ])
+    def test_markdown_real_resources_keep_locations(body: str, target: str, kind: str, line: int) -> None:
+        resources = tokenize(body, 8).resources
+>       assert [(r.target, r.kind, r.line) for r in resources] == [(target, kind, line)]
+E       AssertionError: assert [('scripts/he...'mention', 8)] == [('scripts/he...resource', 8)]
+E         
+E         At index 0 diff: ('scripts/helper.py', 'mention', 8) != ('scripts/helper.py', 'resource', 8)
+E         Use -v to get more diff
+
+tests/test_audit_regressions.py:169: AssertionError
+_____________________________ test_pre_commit_pass _____________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-4/test_pre_commit_pass0')
+
+    def test_pre_commit_pass(tmp_path: Path) -> None:
+        """A clean SKILL.md passes the pre-commit hook."""
+        repo = _make_repo(tmp_path)
+        _commit_skill(repo, FIXTURES_DIR / "valid_basic.md", dest_dir="valid-skill")
+    
+        result = subprocess.run(
+            ["pre-commit", "run", "tracemantle", "--all-files"],
+            cwd=repo,
+            capture_output=True,
+            text=True,
+        )
+>       assert result.returncode == 0
+E       AssertionError: assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['pre-commit', 'run', 'tracemantle', '--all-files'], returncode=1, stdout='tracemantle...............................Failed\n- hook id: tracemantle\n- exit code: 1\n\nExecutable `tracemantle` not found\n\n', stderr='').returncode
+
+tests/test_pre_commit.py:71: AssertionError
+____ test_authentic_examples_are_not_asserted_resources[/path/to/project/] _____
+
+path = PosixPath('/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md')
+max_bytes = 4194304, what = 'SKILL.md'
+error_cls = <class 'tracemantle.parser.ParseError'>
+
+    def read_bounded_bytes(
+        path: Path, *, max_bytes: int, what: str, error_cls: type[Exception] = UntrustedInputError,
+    ) -> bytes:
+        """Open regular files only and enforce the cap on the actual read."""
+        flags = os.O_RDONLY | getattr(os, "O_NONBLOCK", 0)
+        try:
+>           fd = os.open(path, flags)
+                 ^^^^^^^^^^^^^^^^^^^^
+E           FileNotFoundError: [Errno 2] No such file or directory: '/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md'
+
+src/tracemantle/io_limits.py:183: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+target = '/path/to/project/'
+
+    @pytest.mark.parametrize('target', ['/path/to/project/', '/github/workspace/', 'auth/login.py', 'admin/login.py'])
+    def test_authentic_examples_are_not_asserted_resources(target: str) -> None:
+>       skill = parse(UPSTREAM / 'SKILL.md')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_reference_intent.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/tracemantle/parser.py:121: in parse
+    raw = read_bounded_bytes(path, max_bytes=min(max_bytes, MAX_SKILL_BYTES), what='SKILL.md', error_cls=ParseError)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md')
+max_bytes = 4194304, what = 'SKILL.md'
+error_cls = <class 'tracemantle.parser.ParseError'>
+
+    def read_bounded_bytes(
+        path: Path, *, max_bytes: int, what: str, error_cls: type[Exception] = UntrustedInputError,
+    ) -> bytes:
+        """Open regular files only and enforce the cap on the actual read."""
+        flags = os.O_RDONLY | getattr(os, "O_NONBLOCK", 0)
+        try:
+            fd = os.open(path, flags)
+            with os.fdopen(fd, "rb") as stream:
+                if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+                    raise error_cls(f"{what} at {display_path(path)} must be a regular file.")
+                raw = stream.read(max_bytes + 1)
+        except (OSError, RuntimeError) as exc:
+>           raise error_cls(f"Cannot read {what} at {display_path(path)}: {exc}. Check the path and permissions.") from exc
+E           tracemantle.parser.ParseError: Cannot read SKILL.md at tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md: [Errno 2] No such file or directory: '/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md'. Check the path and permissions.
+
+src/tracemantle/io_limits.py:189: ParseError
+____ test_authentic_examples_are_not_asserted_resources[/github/workspace/] ____
+
+path = PosixPath('/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md')
+max_bytes = 4194304, what = 'SKILL.md'
+error_cls = <class 'tracemantle.parser.ParseError'>
+
+    def read_bounded_bytes(
+        path: Path, *, max_bytes: int, what: str, error_cls: type[Exception] = UntrustedInputError,
+    ) -> bytes:
+        """Open regular files only and enforce the cap on the actual read."""
+        flags = os.O_RDONLY | getattr(os, "O_NONBLOCK", 0)
+        try:
+>           fd = os.open(path, flags)
+                 ^^^^^^^^^^^^^^^^^^^^
+E           FileNotFoundError: [Errno 2] No such file or directory: '/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md'
+
+src/tracemantle/io_limits.py:183: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+target = '/github/workspace/'
+
+    @pytest.mark.parametrize('target', ['/path/to/project/', '/github/workspace/', 'auth/login.py', 'admin/login.py'])
+    def test_authentic_examples_are_not_asserted_resources(target: str) -> None:
+>       skill = parse(UPSTREAM / 'SKILL.md')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_reference_intent.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/tracemantle/parser.py:121: in parse
+    raw = read_bounded_bytes(path, max_bytes=min(max_bytes, MAX_SKILL_BYTES), what='SKILL.md', error_cls=ParseError)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md')
+max_bytes = 4194304, what = 'SKILL.md'
+error_cls = <class 'tracemantle.parser.ParseError'>
+
+    def read_bounded_bytes(
+        path: Path, *, max_bytes: int, what: str, error_cls: type[Exception] = UntrustedInputError,
+    ) -> bytes:
+        """Open regular files only and enforce the cap on the actual read."""
+        flags = os.O_RDONLY | getattr(os, "O_NONBLOCK", 0)
+        try:
+            fd = os.open(path, flags)
+            with os.fdopen(fd, "rb") as stream:
+                if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+                    raise error_cls(f"{what} at {display_path(path)} must be a regular file.")
+                raw = stream.read(max_bytes + 1)
+        except (OSError, RuntimeError) as exc:
+>           raise error_cls(f"Cannot read {what} at {display_path(path)}: {exc}. Check the path and permissions.") from exc
+E           tracemantle.parser.ParseError: Cannot read SKILL.md at tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md: [Errno 2] No such file or directory: '/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md'. Check the path and permissions.
+
+src/tracemantle/io_limits.py:189: ParseError
+______ test_authentic_examples_are_not_asserted_resources[auth/login.py] _______
+
+path = PosixPath('/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md')
+max_bytes = 4194304, what = 'SKILL.md'
+error_cls = <class 'tracemantle.parser.ParseError'>
+
+    def read_bounded_bytes(
+        path: Path, *, max_bytes: int, what: str, error_cls: type[Exception] = UntrustedInputError,
+    ) -> bytes:
+        """Open regular files only and enforce the cap on the actual read."""
+        flags = os.O_RDONLY | getattr(os, "O_NONBLOCK", 0)
+        try:
+>           fd = os.open(path, flags)
+                 ^^^^^^^^^^^^^^^^^^^^
+E           FileNotFoundError: [Errno 2] No such file or directory: '/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md'
+
+src/tracemantle/io_limits.py:183: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+target = 'auth/login.py'
+
+    @pytest.mark.parametrize('target', ['/path/to/project/', '/github/workspace/', 'auth/login.py', 'admin/login.py'])
+    def test_authentic_examples_are_not_asserted_resources(target: str) -> None:
+>       skill = parse(UPSTREAM / 'SKILL.md')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_reference_intent.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/tracemantle/parser.py:121: in parse
+    raw = read_bounded_bytes(path, max_bytes=min(max_bytes, MAX_SKILL_BYTES), what='SKILL.md', error_cls=ParseError)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md')
+max_bytes = 4194304, what = 'SKILL.md'
+error_cls = <class 'tracemantle.parser.ParseError'>
+
+    def read_bounded_bytes(
+        path: Path, *, max_bytes: int, what: str, error_cls: type[Exception] = UntrustedInputError,
+    ) -> bytes:
+        """Open regular files only and enforce the cap on the actual read."""
+        flags = os.O_RDONLY | getattr(os, "O_NONBLOCK", 0)
+        try:
+            fd = os.open(path, flags)
+            with os.fdopen(fd, "rb") as stream:
+                if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+                    raise error_cls(f"{what} at {display_path(path)} must be a regular file.")
+                raw = stream.read(max_bytes + 1)
+        except (OSError, RuntimeError) as exc:
+>           raise error_cls(f"Cannot read {what} at {display_path(path)}: {exc}. Check the path and permissions.") from exc
+E           tracemantle.parser.ParseError: Cannot read SKILL.md at tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md: [Errno 2] No such file or directory: '/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md'. Check the path and permissions.
+
+src/tracemantle/io_limits.py:189: ParseError
+______ test_authentic_examples_are_not_asserted_resources[admin/login.py] ______
+
+path = PosixPath('/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md')
+max_bytes = 4194304, what = 'SKILL.md'
+error_cls = <class 'tracemantle.parser.ParseError'>
+
+    def read_bounded_bytes(
+        path: Path, *, max_bytes: int, what: str, error_cls: type[Exception] = UntrustedInputError,
+    ) -> bytes:
+        """Open regular files only and enforce the cap on the actual read."""
+        flags = os.O_RDONLY | getattr(os, "O_NONBLOCK", 0)
+        try:
+>           fd = os.open(path, flags)
+                 ^^^^^^^^^^^^^^^^^^^^
+E           FileNotFoundError: [Errno 2] No such file or directory: '/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md'
+
+src/tracemantle/io_limits.py:183: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+target = 'admin/login.py'
+
+    @pytest.mark.parametrize('target', ['/path/to/project/', '/github/workspace/', 'auth/login.py', 'admin/login.py'])
+    def test_authentic_examples_are_not_asserted_resources(target: str) -> None:
+>       skill = parse(UPSTREAM / 'SKILL.md')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_reference_intent.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/tracemantle/parser.py:121: in parse
+    raw = read_bounded_bytes(path, max_bytes=min(max_bytes, MAX_SKILL_BYTES), what='SKILL.md', error_cls=ParseError)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md')
+max_bytes = 4194304, what = 'SKILL.md'
+error_cls = <class 'tracemantle.parser.ParseError'>
+
+    def read_bounded_bytes(
+        path: Path, *, max_bytes: int, what: str, error_cls: type[Exception] = UntrustedInputError,
+    ) -> bytes:
+        """Open regular files only and enforce the cap on the actual read."""
+        flags = os.O_RDONLY | getattr(os, "O_NONBLOCK", 0)
+        try:
+            fd = os.open(path, flags)
+            with os.fdopen(fd, "rb") as stream:
+                if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+                    raise error_cls(f"{what} at {display_path(path)} must be a regular file.")
+                raw = stream.read(max_bytes + 1)
+        except (OSError, RuntimeError) as exc:
+>           raise error_cls(f"Cannot read {what} at {display_path(path)}: {exc}. Check the path and permissions.") from exc
+E           tracemantle.parser.ParseError: Cannot read SKILL.md at tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md: [Errno 2] No such file or directory: '/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing/SKILL.md'. Check the path and permissions.
+
+src/tracemantle/io_limits.py:189: ParseError
+____________ test_base_dir_is_an_explicit_skill_root_interpretation ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-4/test_base_dir_is_an_explicit_s0')
+
+    def test_base_dir_is_an_explicit_skill_root_interpretation(tmp_path: Path) -> None:
+>       shutil.copytree(UPSTREAM, tmp_path / 'sarif-parsing')
+
+tests/test_reference_intent.py:38: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+src = PosixPath('/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing')
+dst = PosixPath('/tmp/pytest-of-brad/pytest-4/test_base_dir_is_an_explicit_s0/sarif-parsing')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7d103df0f6a0>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def copytree(src, dst, symlinks=False, ignore=None, copy_function=copy2,
+                 ignore_dangling_symlinks=False, dirs_exist_ok=False):
+        """Recursively copy a directory tree and return the destination directory.
+    
+        If exception(s) occur, an Error is raised with a list of reasons.
+    
+        If the optional symlinks flag is true, symbolic links in the
+        source tree result in symbolic links in the destination tree; if
+        it is false, the contents of the files pointed to by symbolic
+        links are copied. If the file pointed by the symlink doesn't
+        exist, an exception will be added in the list of errors raised in
+        an Error exception at the end of the copy process.
+    
+        You can set the optional ignore_dangling_symlinks flag to true if you
+        want to silence this exception. Notice that this has no effect on
+        platforms that don't support os.symlink.
+    
+        The optional ignore argument is a callable. If given, it
+        is called with the `src` parameter, which is the directory
+        being visited by copytree(), and `names` which is the list of
+        `src` contents, as returned by os.listdir():
+    
+            callable(src, names) -> ignored_names
+    
+        Since copytree() is called recursively, the callable will be
+        called once for each directory that is copied. It returns a
+        list of names relative to the `src` directory that should
+        not be copied.
+    
+        The optional copy_function argument is a callable that will be used
+        to copy each file. It will be called with the source path and the
+        destination path as arguments. By default, copy2() is used, but any
+        function that supports the same signature (like copy()) can be used.
+    
+        If dirs_exist_ok is false (the default) and `dst` already exists, a
+        `FileExistsError` is raised. If `dirs_exist_ok` is true, the copying
+        operation will continue if it encounters existing directories, and files
+        within the `dst` tree will be overwritten by corresponding files from the
+        `src` tree.
+        """
+        sys.audit("shutil.copytree", src, dst)
+>       with os.scandir(src) as itr:
+             ^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/brad/projects/tracemantle-study/tests/fixtures/upstream/trailofbits-sarif/sarif-parsing'
+
+/usr/lib/python3.12/shutil.py:598: FileNotFoundError
+___________________ test_only_one_self_host_skill_is_tracked ___________________
+
+    def test_only_one_self_host_skill_is_tracked():
+        """One skill definition, so there is nothing to drift against.
+    
+        The version, description, and body checks above all read
+        skills/tracemantle/SKILL.md. Any other SKILL.md in the tree is unguarded by
+        them, which is how the former root copy fell two versions behind.
+        """
+        found = _tracked_skill_files()
+>       assert found == [SELF_HOST_SKILL], (
+            f"Expected exactly one tracked SKILL.md at {SELF_HOST_SKILL}, found "
+            f"{[str(p) for p in found]}. A second copy is not covered by the coherence "
+            f"checks in this module and will drift."
+        )
+E       AssertionError: Expected exactly one tracked SKILL.md at skills/tracemantle/SKILL.md, found ['integrations/sarif/vendor/sarif-parsing/SKILL.md', 'skills/tracemantle/SKILL.md']. A second copy is not covered by the coherence checks in this module and will drift.
+E       assert [PosixPath('i...le/SKILL.md')] == [PosixPath('s...le/SKILL.md')]
+E         
+E         At index 0 diff: PosixPath('integrations/sarif/vendor/sarif-parsing/SKILL.md') != PosixPath('skills/tracemantle/SKILL.md')
+E         Left contains one more item: PosixPath('skills/tracemantle/SKILL.md')
+E         Use -v to get more diff
+
+tests/test_version_coherence.py:113: AssertionError
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.12.3-final-0 ________________
+
+Name                                               Stmts   Miss  Cover   Missing
+--------------------------------------------------------------------------------
+src/tracemantle/__init__.py                            5      0   100%
+src/tracemantle/__main__.py                            1      0   100%
+src/tracemantle/adapters/__init__.py                  31      3    90%   60, 63, 66
+src/tracemantle/adapters/neutral.py                   17     10    41%   14-24
+src/tracemantle/adapters/promptfoo.py                 94     12    87%   33, 39, 42, 45, 48, 50, 57, 67, 71, 75, 95, 109
+src/tracemantle/agents/__init__.py                    29      0   100%
+src/tracemantle/agents/_ingest.py                     35      1    97%   134
+src/tracemantle/agents/_response_text.py              12      0   100%
+src/tracemantle/agents/base.py                        17      0   100%
+src/tracemantle/agents/claude.py                       4      0   100%
+src/tracemantle/agents/codex.py                        8      0   100%
+src/tracemantle/agents/cursor.py                       8      0   100%
+src/tracemantle/agents/graph_base.py                  17      0   100%
+src/tracemantle/agents/graph_claude.py                 4      0   100%
+src/tracemantle/agents/graph_codex.py                  8      0   100%
+src/tracemantle/agents/graph_cursor.py                 8      0   100%
+src/tracemantle/agents/graph_parser.py               107      8    93%   125, 138, 154, 176, 198, 243, 288, 295
+src/tracemantle/agents/parser.py                      71      2    97%   144, 149
+src/tracemantle/agents/schema.py                      35      0   100%
+src/tracemantle/approvals.py                          36      8    78%   40, 42, 48, 54, 56, 58, 60-61
+src/tracemantle/bundle.py                            128     23    82%   61, 64-65, 67, 81, 86, 91, 94, 100, 102-103, 108, 117-118, 123, 125, 127, 131, 133, 139, 141, 146, 148
+src/tracemantle/cli.py                               154     26    83%   333, 335-345, 360, 363-366, 393-394, 405, 407, 412, 425, 427, 429, 431, 443, 446
+src/tracemantle/commands.py                          392     98    75%   105, 110, 121-122, 125-127, 129-130, 136, 138, 140-142, 156-158, 160-165, 173, 180-181, 187-189, 200-204, 235-238, 242, 249-250, 289-317, 340-345, 363, 377-382, 398, 430, 433, 470, 501, 506, 519-520, 543, 566-568, 572, 601, 636-643, 651, 672-673, 696-697, 712, 716-717, 731
+src/tracemantle/comparison.py                        123      4    97%   68, 83, 165-166
+src/tracemantle/config.py                             18      0   100%
+src/tracemantle/config_loader.py                     165     11    93%   13-14, 103-104, 154, 159, 166, 170, 178, 230-231
+src/tracemantle/core/__init__.py                      11      0   100%
+src/tracemantle/core/activation.py                    76      0   100%
+src/tracemantle/core/activation_render.py             20      0   100%
+src/tracemantle/core/graph.py                        156      4    97%   234, 368, 381, 407
+src/tracemantle/core/graph_analyzers.py               88      3    97%   266, 271, 301
+src/tracemantle/core/graph_model.py                   54      0   100%
+src/tracemantle/core/graph_render.py                  42      0   100%
+src/tracemantle/core/history.py                       89     19    79%   274-307
+src/tracemantle/core/history_io.py                   113     18    84%   45, 50-52, 54, 57, 94, 122, 159, 169, 209-214, 251-254
+src/tracemantle/core/semantic.py                      42      0   100%
+src/tracemantle/core/symbolic.py                      19      3    84%   46-47, 76
+src/tracemantle/dependencies.py                      104     10    90%   25, 49-52, 76-77, 94, 99-101
+src/tracemantle/display.py                             7      0   100%
+src/tracemantle/evidence.py                           90      2    98%   35, 77
+src/tracemantle/formatters.py                        145      5    97%   95-96, 204-206
+src/tracemantle/history_store.py                      62      5    92%   40, 43, 45, 54, 72
+src/tracemantle/io_limits.py                          61      3    95%   90-91, 186
+src/tracemantle/markdown.py                          198      8    96%   120, 163, 171-173, 218-220
+src/tracemantle/modes.py                              46      0   100%
+src/tracemantle/parser.py                            120      4    97%   96-99
+src/tracemantle/policy.py                            136     22    84%   15-16, 63, 67, 69, 71-72, 74, 82-83, 91, 96, 103, 105, 108, 111, 116, 119, 122, 124, 128, 131
+src/tracemantle/product_commands.py                  149     29    81%   75, 80-82, 84, 89-90, 96, 101, 116, 130, 132, 135, 137, 144, 155-165, 168-173
+src/tracemantle/profile_freshness.py                  81      2    98%   26-27
+src/tracemantle/promptfoo.py                           2      0   100%
+src/tracemantle/result.py                             49      1    98%   24
+src/tracemantle/rules/__init__.py                     56      5    91%   122, 159-162, 164
+src/tracemantle/rules/compat.py                       93      3    97%   70, 86, 199
+src/tracemantle/rules/description.py                 178      8    96%   250-252, 267, 283, 334, 371, 404
+src/tracemantle/rules/disclosure.py                   57      0   100%
+src/tracemantle/rules/frontmatter.py                   6      0   100%
+src/tracemantle/rules/frontmatter_common.py           33      4    88%   19, 22, 25, 41
+src/tracemantle/rules/frontmatter_description.py      60      4    93%   59, 75, 93, 112
+src/tracemantle/rules/frontmatter_fields.py           46      6    87%   55-60
+src/tracemantle/rules/frontmatter_name.py             88      6    93%   52, 71, 74, 101, 149, 168
+src/tracemantle/rules/references.py                   16      0   100%
+src/tracemantle/rules/sizing.py                       21      0   100%
+src/tracemantle/rules/template.py                      8      0   100%
+src/tracemantle/signatures.py                         50      3    94%   53-54, 88
+src/tracemantle/storage.py                            70      3    96%   26, 44, 91
+src/tracemantle/template_detection.py                 15      1    93%   40
+src/tracemantle/tokenizer.py                          28      4    86%   21, 30, 32, 39
+--------------------------------------------------------------------------------
+TOTAL                                               4312    391    91%
+Required test coverage of 80% reached. Total coverage: 90.93%
+=========================== short test summary info ============================
+FAILED tests/test_audit_regressions.py::test_markdown_real_resources_keep_locations[`scripts/helper.py`-scripts/helper.py-resource-8]
+FAILED tests/test_audit_regressions.py::test_markdown_real_resources_keep_locations[`assets(v1)/helper.py`-assets(v1)/helper.py-resource-8]
+FAILED tests/test_audit_regressions.py::test_markdown_real_resources_keep_locations[`scripts/helper[old].py`-scripts/helper[old].py-resource-8]
+FAILED tests/test_audit_regressions.py::test_markdown_real_resources_keep_locations[``scripts/helper.py``-scripts/helper.py-resource-8]
+FAILED tests/test_pre_commit.py::test_pre_commit_pass - AssertionError: asser...
+FAILED tests/test_reference_intent.py::test_authentic_examples_are_not_asserted_resources[/path/to/project/]
+FAILED tests/test_reference_intent.py::test_authentic_examples_are_not_asserted_resources[/github/workspace/]
+FAILED tests/test_reference_intent.py::test_authentic_examples_are_not_asserted_resources[auth/login.py]
+FAILED tests/test_reference_intent.py::test_authentic_examples_are_not_asserted_resources[admin/login.py]
+FAILED tests/test_reference_intent.py::test_base_dir_is_an_explicit_skill_root_interpretation
+FAILED tests/test_version_coherence.py::test_only_one_self_host_skill_is_tracked
+11 failed, 1561 passed, 5 skipped in 184.25s (0:03:04)

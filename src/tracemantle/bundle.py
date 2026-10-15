@@ -44,15 +44,19 @@ class BundleManifest:
     dependencies: tuple[tuple[str, str], ...]
     complete: bool
     issues: tuple[str, ...]
+    resource_errors: tuple[str, ...] | None = None
 
     @property
     def sha256(self) -> str:
         return digest({'schema_version': 1, 'files': [asdict(f) for f in self.files]})
 
     def to_dict(self) -> dict[str, Any]:
-        return {'schema_version': 1, 'bundle_sha256': self.sha256, 'files': [asdict(f) for f in self.files],
+        result = {'schema_version': 1 if self.resource_errors is None else 2, 'bundle_sha256': self.sha256, 'files': [asdict(f) for f in self.files],
                 'description_sha256': self.description_sha256, 'dependencies': [list(e) for e in self.dependencies],
                 'complete': self.complete, 'issues': list(self.issues)}
+        if self.resource_errors is not None:
+            result['resource_errors'] = list(self.resource_errors)
+        return result
 
 
 def create_manifest(root: Path, *, document: ParsedSkill | None = None) -> BundleManifest:
@@ -108,20 +112,24 @@ def create_manifest(root: Path, *, document: ParsedSkill | None = None) -> Bundl
         raise EvidenceError(f'Bundle {root} has no regular SKILL.md.')
     try:
         skill = document or parse(root / 'SKILL.md')
-        dependencies = analyze_dependencies(skill.path, skill.markdown)
+        dependencies = analyze_dependencies(skill.path, skill.markdown, reference_format=skill.settings.reference_format)
         issues.extend(d.message for d in dependencies.diagnostics if d.severity.value == 'error')
+        resource_errors = tuple(sorted(set(issues)))
         if not dependencies.complete:
             issues.append('Resource dependency coverage is incomplete; rerun the full relevant suite.')
         return BundleManifest(tuple(sorted(files, key=lambda f: f.path)), digest(description), dependencies.edges,
-                              not issues, tuple(sorted(set(issues))))
+                              not issues, tuple(sorted(set(issues))), resource_errors)
     except ParseError as exc:
         raise EvidenceError(f'Cannot manifest invalid skill: {exc}') from exc
 
 
 def manifest_from_dict(value: Any) -> BundleManifest:
-    if not isinstance(value, dict) or set(value) != {'schema_version', 'bundle_sha256', 'files', 'description_sha256', 'dependencies', 'complete', 'issues'}:
-        raise EvidenceError('Manifest must contain exactly the version-one manifest fields.')
-    if type(value['schema_version']) is not int or value['schema_version'] != 1 or type(value['complete']) is not bool:
+    fields = {'schema_version', 'bundle_sha256', 'files', 'description_sha256', 'dependencies', 'complete', 'issues'}
+    if isinstance(value, dict) and value.get('schema_version') == 2:
+        fields.add('resource_errors')
+    if not isinstance(value, dict) or set(value) != fields:
+        raise EvidenceError('Manifest must contain exactly the documented manifest fields.')
+    if type(value['schema_version']) is not int or value['schema_version'] not in {1, 2} or type(value['complete']) is not bool:
         raise EvidenceError('Unsupported manifest schema or invalid complete flag.')
     if not isinstance(value['files'], list) or len(value['files']) > MAX_SCAN_FILES:
         raise EvidenceError('Manifest files must be a bounded array.')
@@ -146,7 +154,11 @@ def manifest_from_dict(value: Any) -> BundleManifest:
         raise EvidenceError('Manifest issues must be strings.')
     if not isinstance(value['description_sha256'], str) or not re.fullmatch('[0-9a-f]{64}', value['description_sha256']):
         raise EvidenceError('Manifest description requires a full SHA-256 digest.')
-    manifest = BundleManifest(tuple(files), value['description_sha256'], tuple(tuple(e) for e in value['dependencies']), value['complete'], tuple(value['issues']))
+    errors = value.get('resource_errors')
+    if value['schema_version'] == 2 and (not isinstance(errors, list) or not all(isinstance(e, str) for e in errors)
+            or not set(errors) <= set(value['issues']) or (errors and value['complete'])):
+        raise EvidenceError('Manifest resource_errors must list errors also present in issues; errors prevent complete coverage.')
+    manifest = BundleManifest(tuple(files), value['description_sha256'], tuple(tuple(e) for e in value['dependencies']), value['complete'], tuple(value['issues']), None if errors is None else tuple(errors))
     if manifest.sha256 != value['bundle_sha256']:
         raise EvidenceError('Manifest bundle_sha256 does not match its canonical contents.')
     return manifest

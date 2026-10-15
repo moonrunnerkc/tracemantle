@@ -1,0 +1,16 @@
+{
+  "bundle-contract": {
+    "schema_version": 1,
+    "inputs": ["SKILL.md", "resources/fixtures/codeql-no-level.sarif", "resources/fixtures/levels-on-results.sarif", "resources/jq-queries.md", "resources/sarif_helpers.py", "resources/test_sarif_helpers.py"],
+    "rationale": "bundle_contract reads SKILL.md metadata and requires these six regular files. Content hashes conservatively include the bytes of presence-only inputs. It does not execute or interpret documented examples.",
+    "assumptions": ["Only the pinned trusted checker executes; candidate configuration is data.", "Python, stdlib and PyYAML files are hashed. No concurrent mutation of inputs or installed software during a run.", "No external input or network is used. Environment is explicitly set."],
+    "unresolved": []
+  },
+  "upstream-tests": {
+    "schema_version": 1,
+    "inputs": ["SKILL.md", "resources/fixtures/codeql-no-level.sarif", "resources/fixtures/levels-on-results.sarif", "resources/jq-queries.md", "resources/sarif_helpers.py", "resources/test_sarif_helpers.py"],
+    "rationale": "Reviewed upstream 1f68e035: the 24 tests import sarif_helpers (stdlib only), read both fixtures, and extract LEVEL_FN and CI_GATE plus inspect jq fences in both Markdown files. Generated temporary SARIF fixtures are functions of test code. This scope includes documented commands and the transitive jq program; it does not evaluate prose paths as runtime resources.",
+    "assumptions": ["Run only the named test module, no conftest, plugin autoload, bytecode writes or pytest result cache. Existing compilation caches are hashed, not counted as test-result reuse. New Python/native modules in resources make this reviewed scope unavailable.", "Interpreter, stdlib, pytest and its dependency files, jq and linked libraries are hashed. No concurrent mutation during a run.", "The pinned standard distribution loader and host OS are trusted. No network or unbound runtime inputs are consumed. Generated temporary data are isolated."],
+    "unresolved": []
+  }
+}

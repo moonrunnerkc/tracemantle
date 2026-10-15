@@ -1,0 +1,1 @@
+HEAD is now at 721845b docs: record verified 1.7.0 publication and public installs
