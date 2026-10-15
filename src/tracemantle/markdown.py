@@ -213,6 +213,14 @@ def tokenize(body: str, start_line: int = 1) -> Markdown:
             if any(c in template_path for c in '<>${}'):
                 uncertain = True
                 continue
+            if any(ord(c) < 32 or 127 <= ord(c) <= 159 for c in target):
+                # urlsplit strips leading controls; retain the original decoded
+                # reference so boundary validation can reject it explicitly.
+                uncertain = True
+                if (target, kind) not in seen:
+                    resources.append(Resource(target, number, kind))
+                    seen.add((target, kind))
+                continue
             try:
                 parsed = urlsplit(target)
             except ValueError:

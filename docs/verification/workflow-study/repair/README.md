@@ -41,3 +41,11 @@ before filesystem calls; home expansion remains only for ordinary legacy
 references. These inputs were not scored cases. The original b1f68fb scores are
 retained without pooling; the affected 25-test classification/boundary regression
 protocol is rerun on the final repaired source. No new savings claim is made.
+
+The first boundary correction at cb29e58 passed 24/25 focused cases but still
+failed the leading bare-path NUL case in the full suite. `urlsplit` strips leading
+controls before dependency analysis. `boundary-first-repair.txt` and
+`full-intermediate-boundary-failure.txt` preserve that failure. The tokenizer now
+retains decoded controls for explicit rejection before URL parsing can erase
+them. The final `boundary-after.txt` records all 25 cases passing. This corrects
+the incomplete intermediate repair; no scored result is replaced.

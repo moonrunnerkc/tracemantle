@@ -1,19 +1,2 @@
-......................F..                                                [100%]
-=================================== FAILURES ===================================
-________________ test_decoded_nul_is_a_diagnostic[%00helper.py] ________________
-
-tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-477/test_decoded_nul_is_a_diagnost0')
-target = '%00helper.py'
-
-    @pytest.mark.parametrize('target', ['%00helper.py', '{baseDir}/%00helper.py'])
-    def test_decoded_nul_is_a_diagnostic(tmp_path: Path, target: str) -> None:
-        result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize(f'[helper]({target})'), reference_format='skill-base-dir')
-        assert not result.complete
->       assert any(d.rule == 'references.unreadable' for d in result.diagnostics)
-E       assert False
-E        +  where False = any(<generator object test_decoded_nul_is_a_diagnostic.<locals>.<genexpr> at 0x7f5658128040>)
-
-tests/test_reference_intent.py:143: AssertionError
-=========================== short test summary info ============================
-FAILED tests/test_reference_intent.py::test_decoded_nul_is_a_diagnostic[%00helper.py]
-1 failed, 24 passed in 0.12s
+.........................                                                [100%]
+25 passed in 0.18s
