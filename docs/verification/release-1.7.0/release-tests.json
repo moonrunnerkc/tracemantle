@@ -1,0 +1,126 @@
+[
+  {
+    "job_log": "3_quality _ test (macos-latest, 3.13).txt",
+    "test_summaries": [
+      "2026-10-15T03:07:16.0099880Z ================= 1529 passed, 6 skipped in 262.89s (0:04:22) =================="
+    ],
+    "coverage": [
+      "2026-10-15T03:07:16.0099200Z Required test coverage of 80% reached. Total coverage: 88.92%"
+    ]
+  },
+  {
+    "job_log": "4_quality _ test (windows-latest, 3.11).txt",
+    "test_summaries": [
+      "2026-10-15T03:10:35.0058054Z ================ 1518 passed, 17 skipped in 448.44s (0:07:28) ================="
+    ],
+    "coverage": [
+      "2026-10-15T03:10:35.0057440Z Required test coverage of 80% reached. Total coverage: 88.71%"
+    ]
+  },
+  {
+    "job_log": "5_quality _ test (macos-latest, 3.10).txt",
+    "test_summaries": [
+      "2026-10-15T03:07:59.1058480Z ================= 1533 passed, 2 skipped in 282.46s (0:04:42) =================="
+    ],
+    "coverage": [
+      "2026-10-15T03:07:59.1058100Z Required test coverage of 80% reached. Total coverage: 89.04%"
+    ]
+  },
+  {
+    "job_log": "6_quality _ test (windows-latest, 3.12).txt",
+    "test_summaries": [
+      "2026-10-15T03:11:25.1075425Z ================ 1518 passed, 17 skipped in 497.94s (0:08:17) ================="
+    ],
+    "coverage": [
+      "2026-10-15T03:11:25.1075033Z Required test coverage of 80% reached. Total coverage: 88.74%"
+    ]
+  },
+  {
+    "job_log": "7_quality _ test (windows-latest, 3.10).txt",
+    "test_summaries": [
+      "2026-10-15T03:07:30.4809502Z ================ 1522 passed, 13 skipped in 273.12s (0:04:33) ================="
+    ],
+    "coverage": [
+      "2026-10-15T03:07:30.4809282Z Required test coverage of 80% reached. Total coverage: 88.85%"
+    ]
+  },
+  {
+    "job_log": "8_quality _ test (ubuntu-latest, 3.11).txt",
+    "test_summaries": [
+      "2026-10-15T03:04:45.1343314Z ================= 1529 passed, 6 skipped in 122.65s (0:02:02) =================="
+    ],
+    "coverage": [
+      "2026-10-15T03:04:45.1342967Z Required test coverage of 80% reached. Total coverage: 88.90%"
+    ]
+  },
+  {
+    "job_log": "9_quality _ test (windows-latest, 3.13).txt",
+    "test_summaries": [
+      "2026-10-15T03:11:36.0824626Z ================ 1518 passed, 17 skipped in 495.28s (0:08:15) ================="
+    ],
+    "coverage": [
+      "2026-10-15T03:11:36.0824030Z Required test coverage of 80% reached. Total coverage: 88.74%"
+    ]
+  },
+  {
+    "job_log": "10_quality _ test (ubuntu-latest, 3.13).txt",
+    "test_summaries": [
+      "2026-10-15T03:06:25.4410468Z ================= 1529 passed, 6 skipped in 216.75s (0:03:36) =================="
+    ],
+    "coverage": [
+      "2026-10-15T03:06:25.4410056Z Required test coverage of 80% reached. Total coverage: 88.92%"
+    ]
+  },
+  {
+    "job_log": "11_quality _ test (ubuntu-latest, 3.10).txt",
+    "test_summaries": [
+      "2026-10-15T03:06:14.2998053Z ================= 1533 passed, 2 skipped in 208.52s (0:03:28) =================="
+    ],
+    "coverage": [
+      "2026-10-15T03:06:14.2997637Z Required test coverage of 80% reached. Total coverage: 89.04%"
+    ]
+  },
+  {
+    "job_log": "12_quality _ test (ubuntu-latest, 3.12).txt",
+    "test_summaries": [
+      "2026-10-15T03:07:33.4054208Z ================= 1529 passed, 6 skipped in 290.53s (0:04:50) =================="
+    ],
+    "coverage": [
+      "2026-10-15T03:07:33.4053542Z Required test coverage of 80% reached. Total coverage: 88.92%"
+    ]
+  },
+  {
+    "job_log": "13_quality _ test (macos-latest, 3.12).txt",
+    "test_summaries": [
+      "2026-10-15T03:06:57.1456370Z ================= 1529 passed, 6 skipped in 253.29s (0:04:13) =================="
+    ],
+    "coverage": [
+      "2026-10-15T03:06:57.1455990Z Required test coverage of 80% reached. Total coverage: 88.92%"
+    ]
+  },
+  {
+    "job_log": "15_quality _ approvals.txt",
+    "test_summaries": [
+      "2026-10-15T03:03:34.4126581Z ============================= 57 passed in 30.64s =============================="
+    ],
+    "coverage": []
+  },
+  {
+    "job_log": "16_quality _ tokenizer.txt",
+    "test_summaries": [
+      "2026-10-15T03:07:30.2816946Z 1529 passed, 6 skipped in 284.69s (0:04:44)"
+    ],
+    "coverage": [
+      "2026-10-15T03:07:30.2816582Z Required test coverage of 80% reached. Total coverage: 88.90%"
+    ]
+  },
+  {
+    "job_log": "17_quality _ test (macos-latest, 3.11).txt",
+    "test_summaries": [
+      "2026-10-15T03:05:53.8531610Z ================= 1529 passed, 6 skipped in 189.06s (0:03:09) =================="
+    ],
+    "coverage": [
+      "2026-10-15T03:05:53.8531330Z Required test coverage of 80% reached. Total coverage: 88.90%"
+    ]
+  }
+]
