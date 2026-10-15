@@ -190,6 +190,8 @@ def evaluate(output: Path, trust: Path, *, preflight: bool = False) -> None:
                         assert current_report['summary']['total'] == 1
                         assert current_report['findings'][0][0] == 'F401'
                         assert current_report['findings'][0][2].endswith('/src/study_unused_import.py')
+                if case == 'unresolved-module':
+                    assert runs['C']['gate']['state'] == 'unknown'
                 # Both mechanisms bind exactly the same scope, current inputs and execution context.
                 for check in runs['C']['checks']:
                     if check['reused']:

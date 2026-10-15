@@ -123,5 +123,7 @@ def decide(skill: Path, evidence_root: Path, revision: str | None, mechanism: st
             result['reuse'] = [c.check_id for c in comparison.checks if not c.rerun and c.check_id in ELIGIBLE and not (c.check_id == 'upstream-tests' and unexpected)
                                and checks[c.check_id].configuration_sha256 == values[c.check_id]['configuration_sha256']
                                and checks[c.check_id].profile_sha256 == values[c.check_id]['profile_sha256']]
+    if result['state'] == 'pass' and set(result['reuse']) != set(ELIGIBLE):
+        result['state'] = 'unknown'
     result['seconds'] = time.perf_counter() - started
     return result
