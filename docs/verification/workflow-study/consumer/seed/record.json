@@ -1,0 +1,40 @@
+{
+  "check_id": "report",
+  "state": "pass",
+  "bundle_sha256": "50443c49f1338493a30e9fa5f24448373fa0e7c06ee568e6b44bbb22cc731aa0",
+  "configuration_sha256": "b3f22c272631015319aee0ff1dec50a77eb32fd54a80596c64c9cbbe36224b85",
+  "profile_sha256": "ad6b76b1109831407133de6c4c8276b63bb380c56b21abaebf5be6d198b4054d",
+  "checker_sha256": "595bbc15705cf609516e04a7516a793f5cdf3a702cf79673d708cc497b8b72b3",
+  "fixture_sha256": "6470cec32b748cf70513834a7404331f62d8a23ba9644645c3cbb2f73e6a7fdf",
+  "artifact_sha256": "6c5102e4b4e85c77bff0d563c205964f988877c50993f32429c6bbf193da0ece",
+  "inputs": {
+    "SKILL.md": "cc5f008f40ffb8a1ae03ebd32d7234de43e828293955a0bc251b76ba249554fa",
+    "agents/openai.yaml": "6385b46a44aad5b114744dbc2055ce3f6456c0e822b92a7a6c6870f2a248014e",
+    "assets/trail-of-bits-mark.svg": "4bf74c789b38dcf6ad762c136b6832363d27ae19fbaa9a18ec18d66ecce6ca05",
+    "resources/fixtures/codeql-no-level.sarif": "edc92b09e4d8b1247ec87f081c68caa1843d8407063508ad33aab13327ba386a",
+    "resources/fixtures/levels-on-results.sarif": "625e8175a3c68d0d11f7e4c14095dddff5056d52a539e3153180cdb37ce50c6b",
+    "resources/jq-queries.md": "f44ec4e219c93504ec69fdeb2c60668ee3934585e5565fffdaa43f6b224b5d6a",
+    "resources/sarif_helpers.py": "06d8e63849bd2b93baf31b23a33550447eed2ac457c2687f173933039e5ad247",
+    "resources/test_sarif_helpers.py": "5efc4e50f3dbd81ea223049b1892653a46bce0c273904d0b04e43e449343fe17"
+  },
+  "observed_at": "2026-10-15T15:35:26.468371+00:00",
+  "observation_method": "static-analysis",
+  "runner": "CPython",
+  "adapter": "sarif-workflow-v1",
+  "model": "none",
+  "model_revision": "none",
+  "model_immutable": false,
+  "permissions": [
+    "read-bundle",
+    "execute-helper",
+    "write-output"
+  ],
+  "environment": {
+    "python": "3.12.3",
+    "os": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39"
+  },
+  "tokenizer": {},
+  "reason": "Measured SARIF analysis matched independent Ruff JSON; deterministic helper use, no agent.",
+  "schema_version": 1,
+  "kind": "check-evidence"
+}
