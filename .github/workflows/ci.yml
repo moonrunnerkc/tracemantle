@@ -112,14 +112,21 @@ jobs:
       - run: python scripts/verify_reference_corpus.py --output conformance.json
 
   approvals:
-    # Use the distro packages and bubblewrap AppArmor profile without changing host protections.
-    runs-on: ubuntu-24.04
+    # Ubuntu 22.04 permits bubblewrap without changing host namespace protections.
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
-      - run: sudo apt-get update && sudo apt-get install -y openssh-client minisign bubblewrap
+      - run: sudo apt-get update && sudo apt-get install -y openssh-client bubblewrap
+      - name: Install pinned upstream minisign (absent from Ubuntu 22.04 repositories)
+        working-directory: ${{ runner.temp }}
+        run: |
+          curl --fail --location --output minisign.tar.gz https://github.com/jedisct1/minisign/releases/download/0.12/minisign-0.12-linux.tar.gz
+          echo '9a599b48ba6eb7b1e80f12f36b94ceca7c00b7a5173c95c3efc88d9822957e73  minisign.tar.gz' | sha256sum --check
+          tar xzf minisign.tar.gz minisign-linux/x86_64/minisign
+          sudo install -m 0755 minisign-linux/x86_64/minisign /usr/local/bin/minisign
       - run: pip install -c constraints-dev.txt -e ".[dev]"
       - name: Verify real signatures and isolated approval production
         run: |
