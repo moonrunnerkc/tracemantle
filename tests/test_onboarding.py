@@ -23,12 +23,14 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_first_use_text_and_json_contracts(tmp_path: Path, path: str, strict: bool, code: int, rule: str | None, line: int | None) -> None:
     shutil.copytree(ROOT / 'tests/fixtures/onboarding', tmp_path, dirs_exist_ok=True)
     command = [sys.executable, '-m', 'tracemantle', path, *(['--strict'] if strict else [])]
-    text = subprocess.run(command, cwd=tmp_path, capture_output=True, text=True)
+    text = subprocess.run(command, cwd=tmp_path, capture_output=True, text=True, encoding='utf-8')
     assert text.returncode == code and text.stderr == ''
     assert 'Checked 1 file:' in text.stdout and str(Path(path) / 'SKILL.md' if path.endswith('/') else Path(path)) in text.stdout
-    guide = (ROOT / 'docs/getting-started.md').read_text()
-    assert text.stdout in guide
-    result = subprocess.run([*command, '--format', 'json'], cwd=tmp_path, capture_output=True, text=True)
+    guide = (ROOT / 'docs/getting-started.md').read_text(encoding='utf-8')
+    skill_path = Path(path) / 'SKILL.md' if path.endswith('/') else Path(path)
+    # The guide displays POSIX paths; the CLI deliberately renders native paths.
+    assert text.stdout in guide.replace(skill_path.as_posix(), str(skill_path))
+    result = subprocess.run([*command, '--format', 'json'], cwd=tmp_path, capture_output=True, text=True, encoding='utf-8')
     payload = json.loads(result.stdout)
     assert result.returncode == code and payload['schema_version'] == 2
     assert payload['gate'] == {'exit_code': code, 'passed': code == 0}
@@ -40,7 +42,7 @@ def test_first_use_text_and_json_contracts(tmp_path: Path, path: str, strict: bo
 
 
 def test_readme_and_help_put_basic_validation_first() -> None:
-    readme = (ROOT / 'README.md').read_text()
+    readme = (ROOT / 'README.md').read_text(encoding='utf-8')
     assert len(readme.split()) <= 350
     assert readme.count('\n## ') <= 5 and '<details>' not in readme
     assert readme.index(f'pip install tracemantle=={__version__}') < readme.index('## Optional evidence')

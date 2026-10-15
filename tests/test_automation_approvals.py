@@ -202,7 +202,8 @@ def test_invalid_authority_configuration_fails_closed(gate: dict, change: str) -
         load_trusted_policy(gate['trust'], revision)
 
 
-@pytest.mark.parametrize('raw', [b'{"schema_version":1,"schema_version":1}', b'{"x":1e999}', b'x' * 65537])
+@pytest.mark.parametrize('raw', [b'{"schema_version":1,"schema_version":1}', b'{"x":1e999}', b'x' * 65537],
+                         ids=['duplicate-key', 'numeric-overflow', 'oversized-envelope'])
 def test_malformed_or_oversized_approval(gate: dict, raw: bytes) -> None:
     gate['approval'].write_bytes(raw)
     assert _compare(gate).returncode == 2
