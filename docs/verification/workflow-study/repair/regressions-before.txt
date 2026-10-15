@@ -1,0 +1,302 @@
+FFFFFFFFFFFFFFFFFF                                                       [100%]
+=================================== FAILURES ===================================
+____ test_authentic_examples_are_not_asserted_resources[/path/to/project/] _____
+
+target = '/path/to/project/'
+
+    @pytest.mark.parametrize('target', ['/path/to/project/', '/github/workspace/', 'auth/login.py', 'admin/login.py'])
+    def test_authentic_examples_are_not_asserted_resources(target: str) -> None:
+        skill = parse(UPSTREAM / 'SKILL.md')
+        result = analyze_dependencies(skill.path, skill.markdown)
+>       assert not any(d.severity == Severity.ERROR and target in d.message for d in result.diagnostics)
+E       assert not True
+E        +  where True = any(<generator object test_authentic_examples_are_not_asserted_resources.<locals>.<genexpr> at 0x7a2d0537cad0>)
+
+tests/test_reference_intent.py:22: AssertionError
+____ test_authentic_examples_are_not_asserted_resources[/github/workspace/] ____
+
+target = '/github/workspace/'
+
+    @pytest.mark.parametrize('target', ['/path/to/project/', '/github/workspace/', 'auth/login.py', 'admin/login.py'])
+    def test_authentic_examples_are_not_asserted_resources(target: str) -> None:
+        skill = parse(UPSTREAM / 'SKILL.md')
+        result = analyze_dependencies(skill.path, skill.markdown)
+>       assert not any(d.severity == Severity.ERROR and target in d.message for d in result.diagnostics)
+E       assert not True
+E        +  where True = any(<generator object test_authentic_examples_are_not_asserted_resources.<locals>.<genexpr> at 0x7a2d0537e260>)
+
+tests/test_reference_intent.py:22: AssertionError
+______ test_authentic_examples_are_not_asserted_resources[auth/login.py] _______
+
+target = 'auth/login.py'
+
+    @pytest.mark.parametrize('target', ['/path/to/project/', '/github/workspace/', 'auth/login.py', 'admin/login.py'])
+    def test_authentic_examples_are_not_asserted_resources(target: str) -> None:
+        skill = parse(UPSTREAM / 'SKILL.md')
+        result = analyze_dependencies(skill.path, skill.markdown)
+>       assert not any(d.severity == Severity.ERROR and target in d.message for d in result.diagnostics)
+E       assert not True
+E        +  where True = any(<generator object test_authentic_examples_are_not_asserted_resources.<locals>.<genexpr> at 0x7a2d0537ee90>)
+
+tests/test_reference_intent.py:22: AssertionError
+______ test_authentic_examples_are_not_asserted_resources[admin/login.py] ______
+
+target = 'admin/login.py'
+
+    @pytest.mark.parametrize('target', ['/path/to/project/', '/github/workspace/', 'auth/login.py', 'admin/login.py'])
+    def test_authentic_examples_are_not_asserted_resources(target: str) -> None:
+        skill = parse(UPSTREAM / 'SKILL.md')
+        result = analyze_dependencies(skill.path, skill.markdown)
+>       assert not any(d.severity == Severity.ERROR and target in d.message for d in result.diagnostics)
+E       assert not True
+E        +  where True = any(<generator object test_authentic_examples_are_not_asserted_resources.<locals>.<genexpr> at 0x7a2d0537fac0>)
+
+tests/test_reference_intent.py:22: AssertionError
+_________ test_inline_intent_does_not_depend_on_file_existence[False] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-1/test_inline_intent_does_not_de0')
+exists = False
+
+    @pytest.mark.parametrize('exists', [False, True])
+    def test_inline_intent_does_not_depend_on_file_existence(tmp_path: Path, exists: bool) -> None:
+        (tmp_path / 'resources').mkdir()
+        if exists:
+            (tmp_path / 'resources/helper.py').write_text('pass\n')
+        result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize('Consider `resources/helper.py`.'))
+        assert not result.complete
+>       assert [d.rule for d in result.diagnostics] == ['references.uncertain']
+E       AssertionError: assert ['references.broken-link'] == ['references.uncertain']
+E         
+E         At index 0 diff: 'references.broken-link' != 'references.uncertain'
+E         Use -v to get more diff
+
+tests/test_reference_intent.py:34: AssertionError
+__________ test_inline_intent_does_not_depend_on_file_existence[True] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-1/test_inline_intent_does_not_de1')
+exists = True
+
+    @pytest.mark.parametrize('exists', [False, True])
+    def test_inline_intent_does_not_depend_on_file_existence(tmp_path: Path, exists: bool) -> None:
+        (tmp_path / 'resources').mkdir()
+        if exists:
+            (tmp_path / 'resources/helper.py').write_text('pass\n')
+        result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize('Consider `resources/helper.py`.'))
+>       assert not result.complete
+E       AssertionError: assert not True
+E        +  where True = Dependencies(paths=('resources/helper.py',), edges=(('SKILL.md', 'resources/helper.py'),), diagnostics=(), complete=True).complete
+
+tests/test_reference_intent.py:33: AssertionError
+____________ test_base_dir_is_an_explicit_skill_root_interpretation ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-1/test_base_dir_is_an_explicit_s0')
+
+    def test_base_dir_is_an_explicit_skill_root_interpretation(tmp_path: Path) -> None:
+        shutil.copytree(UPSTREAM, tmp_path / 'sarif-parsing')
+        path = tmp_path / 'sarif-parsing/SKILL.md'
+        default = create_manifest(path.parent)
+        assert not default.complete
+>       settings = DocumentSettings(reference_format='skill-base-dir')
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: DocumentSettings.__init__() got an unexpected keyword argument 'reference_format'
+
+tests/test_reference_intent.py:42: TypeError
+_ test_explicit_links_keep_boundary_failures[missing.py-references.broken-link] _
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-1/test_explicit_links_keep_bound0')
+target = 'missing.py', rule = 'references.broken-link'
+
+    @pytest.mark.parametrize('target,rule', [
+        ('missing.py', 'references.broken-link'),
+        ('../outside.py', 'references.escape'),
+        ('{baseDir}/../outside.py', 'references.escape'),
+        ('{baseDir}/%2e%2e/outside.py', 'references.escape'),
+        ('{baseDir}/%2Foutside.py', 'references.escape'),
+        ('{baseDir}/..\\outside.py', 'references.escape'),
+    ])
+    def test_explicit_links_keep_boundary_failures(tmp_path: Path, target: str, rule: str) -> None:
+>       result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize(f'[required]({target})'), reference_format='skill-base-dir')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: analyze_dependencies() got an unexpected keyword argument 'reference_format'
+
+tests/test_reference_intent.py:61: TypeError
+_ test_explicit_links_keep_boundary_failures[../outside.py-references.escape] __
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-1/test_explicit_links_keep_bound1')
+target = '../outside.py', rule = 'references.escape'
+
+    @pytest.mark.parametrize('target,rule', [
+        ('missing.py', 'references.broken-link'),
+        ('../outside.py', 'references.escape'),
+        ('{baseDir}/../outside.py', 'references.escape'),
+        ('{baseDir}/%2e%2e/outside.py', 'references.escape'),
+        ('{baseDir}/%2Foutside.py', 'references.escape'),
+        ('{baseDir}/..\\outside.py', 'references.escape'),
+    ])
+    def test_explicit_links_keep_boundary_failures(tmp_path: Path, target: str, rule: str) -> None:
+>       result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize(f'[required]({target})'), reference_format='skill-base-dir')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: analyze_dependencies() got an unexpected keyword argument 'reference_format'
+
+tests/test_reference_intent.py:61: TypeError
+_ test_explicit_links_keep_boundary_failures[{baseDir}/../outside.py-references.escape] _
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-1/test_explicit_links_keep_bound2')
+target = '{baseDir}/../outside.py', rule = 'references.escape'
+
+    @pytest.mark.parametrize('target,rule', [
+        ('missing.py', 'references.broken-link'),
+        ('../outside.py', 'references.escape'),
+        ('{baseDir}/../outside.py', 'references.escape'),
+        ('{baseDir}/%2e%2e/outside.py', 'references.escape'),
+        ('{baseDir}/%2Foutside.py', 'references.escape'),
+        ('{baseDir}/..\\outside.py', 'references.escape'),
+    ])
+    def test_explicit_links_keep_boundary_failures(tmp_path: Path, target: str, rule: str) -> None:
+>       result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize(f'[required]({target})'), reference_format='skill-base-dir')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: analyze_dependencies() got an unexpected keyword argument 'reference_format'
+
+tests/test_reference_intent.py:61: TypeError
+_ test_explicit_links_keep_boundary_failures[{baseDir}/%2e%2e/outside.py-references.escape] _
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-1/test_explicit_links_keep_bound3')
+target = '{baseDir}/%2e%2e/outside.py', rule = 'references.escape'
+
+    @pytest.mark.parametrize('target,rule', [
+        ('missing.py', 'references.broken-link'),
+        ('../outside.py', 'references.escape'),
+        ('{baseDir}/../outside.py', 'references.escape'),
+        ('{baseDir}/%2e%2e/outside.py', 'references.escape'),
+        ('{baseDir}/%2Foutside.py', 'references.escape'),
+        ('{baseDir}/..\\outside.py', 'references.escape'),
+    ])
+    def test_explicit_links_keep_boundary_failures(tmp_path: Path, target: str, rule: str) -> None:
+>       result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize(f'[required]({target})'), reference_format='skill-base-dir')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: analyze_dependencies() got an unexpected keyword argument 'reference_format'
+
+tests/test_reference_intent.py:61: TypeError
+_ test_explicit_links_keep_boundary_failures[{baseDir}/%2Foutside.py-references.escape] _
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-1/test_explicit_links_keep_bound4')
+target = '{baseDir}/%2Foutside.py', rule = 'references.escape'
+
+    @pytest.mark.parametrize('target,rule', [
+        ('missing.py', 'references.broken-link'),
+        ('../outside.py', 'references.escape'),
+        ('{baseDir}/../outside.py', 'references.escape'),
+        ('{baseDir}/%2e%2e/outside.py', 'references.escape'),
+        ('{baseDir}/%2Foutside.py', 'references.escape'),
+        ('{baseDir}/..\\outside.py', 'references.escape'),
+    ])
+    def test_explicit_links_keep_boundary_failures(tmp_path: Path, target: str, rule: str) -> None:
+>       result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize(f'[required]({target})'), reference_format='skill-base-dir')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: analyze_dependencies() got an unexpected keyword argument 'reference_format'
+
+tests/test_reference_intent.py:61: TypeError
+_ test_explicit_links_keep_boundary_failures[{baseDir}/..\\outside.py-references.escape] _
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-1/test_explicit_links_keep_bound5')
+target = '{baseDir}/..\\outside.py', rule = 'references.escape'
+
+    @pytest.mark.parametrize('target,rule', [
+        ('missing.py', 'references.broken-link'),
+        ('../outside.py', 'references.escape'),
+        ('{baseDir}/../outside.py', 'references.escape'),
+        ('{baseDir}/%2e%2e/outside.py', 'references.escape'),
+        ('{baseDir}/%2Foutside.py', 'references.escape'),
+        ('{baseDir}/..\\outside.py', 'references.escape'),
+    ])
+    def test_explicit_links_keep_boundary_failures(tmp_path: Path, target: str, rule: str) -> None:
+>       result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize(f'[required]({target})'), reference_format='skill-base-dir')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: analyze_dependencies() got an unexpected keyword argument 'reference_format'
+
+tests/test_reference_intent.py:61: TypeError
+_________ test_unresolved_variables_are_incomplete[{other}/helper.py] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-1/test_unresolved_variables_are_0')
+target = '{other}/helper.py'
+
+    @pytest.mark.parametrize('target', ['{other}/helper.py', '${HOME}/helper.py', '{baseDir}/$VAR/helper.py'])
+    def test_unresolved_variables_are_incomplete(tmp_path: Path, target: str) -> None:
+>       result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize(f'[required]({target})'), reference_format='skill-base-dir')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: analyze_dependencies() got an unexpected keyword argument 'reference_format'
+
+tests/test_reference_intent.py:68: TypeError
+_________ test_unresolved_variables_are_incomplete[${HOME}/helper.py] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-1/test_unresolved_variables_are_1')
+target = '${HOME}/helper.py'
+
+    @pytest.mark.parametrize('target', ['{other}/helper.py', '${HOME}/helper.py', '{baseDir}/$VAR/helper.py'])
+    def test_unresolved_variables_are_incomplete(tmp_path: Path, target: str) -> None:
+>       result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize(f'[required]({target})'), reference_format='skill-base-dir')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: analyze_dependencies() got an unexpected keyword argument 'reference_format'
+
+tests/test_reference_intent.py:68: TypeError
+______ test_unresolved_variables_are_incomplete[{baseDir}/$VAR/helper.py] ______
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-1/test_unresolved_variables_are_2')
+target = '{baseDir}/$VAR/helper.py'
+
+    @pytest.mark.parametrize('target', ['{other}/helper.py', '${HOME}/helper.py', '{baseDir}/$VAR/helper.py'])
+    def test_unresolved_variables_are_incomplete(tmp_path: Path, target: str) -> None:
+>       result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize(f'[required]({target})'), reference_format='skill-base-dir')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: analyze_dependencies() got an unexpected keyword argument 'reference_format'
+
+tests/test_reference_intent.py:68: TypeError
+_____________ test_base_dir_in_transitive_document_uses_skill_root _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-1/test_base_dir_in_transitive_do0')
+
+    def test_base_dir_in_transitive_document_uses_skill_root(tmp_path: Path) -> None:
+        (tmp_path / 'docs').mkdir()
+        (tmp_path / 'helper.py').write_text('pass\n')
+        (tmp_path / 'docs/read.md').write_text('[helper]({baseDir}/helper.py)')
+        body = tokenize('[guide]({baseDir}/docs/read.md)')
+>       initial = analyze_dependencies(tmp_path / 'SKILL.md', body, reference_format='skill-base-dir')
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: analyze_dependencies() got an unexpected keyword argument 'reference_format'
+
+tests/test_reference_intent.py:77: TypeError
+_________________________ test_template_symlink_escape _________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-1/test_template_symlink_escape0')
+
+    @pytest.mark.skipif(__import__('sys').platform == 'win32', reason='Symlinks require Windows developer mode')
+    def test_template_symlink_escape(tmp_path: Path) -> None:
+        root = tmp_path / 'skill'
+        root.mkdir()
+        (tmp_path / 'outside.py').write_text('pass\n')
+        (root / 'helper.py').symlink_to(tmp_path / 'outside.py')
+>       result = analyze_dependencies(root / 'SKILL.md', tokenize('[helper]({baseDir}/helper.py)'), reference_format='skill-base-dir')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: analyze_dependencies() got an unexpected keyword argument 'reference_format'
+
+tests/test_reference_intent.py:92: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_reference_intent.py::test_authentic_examples_are_not_asserted_resources[/path/to/project/]
+FAILED tests/test_reference_intent.py::test_authentic_examples_are_not_asserted_resources[/github/workspace/]
+FAILED tests/test_reference_intent.py::test_authentic_examples_are_not_asserted_resources[auth/login.py]
+FAILED tests/test_reference_intent.py::test_authentic_examples_are_not_asserted_resources[admin/login.py]
+FAILED tests/test_reference_intent.py::test_inline_intent_does_not_depend_on_file_existence[False]
+FAILED tests/test_reference_intent.py::test_inline_intent_does_not_depend_on_file_existence[True]
+FAILED tests/test_reference_intent.py::test_base_dir_is_an_explicit_skill_root_interpretation
+FAILED tests/test_reference_intent.py::test_explicit_links_keep_boundary_failures[missing.py-references.broken-link]
+FAILED tests/test_reference_intent.py::test_explicit_links_keep_boundary_failures[../outside.py-references.escape]
+FAILED tests/test_reference_intent.py::test_explicit_links_keep_boundary_failures[{baseDir}/../outside.py-references.escape]
+FAILED tests/test_reference_intent.py::test_explicit_links_keep_boundary_failures[{baseDir}/%2e%2e/outside.py-references.escape]
+FAILED tests/test_reference_intent.py::test_explicit_links_keep_boundary_failures[{baseDir}/%2Foutside.py-references.escape]
+FAILED tests/test_reference_intent.py::test_explicit_links_keep_boundary_failures[{baseDir}/..\\outside.py-references.escape]
+FAILED tests/test_reference_intent.py::test_unresolved_variables_are_incomplete[{other}/helper.py]
+FAILED tests/test_reference_intent.py::test_unresolved_variables_are_incomplete[${HOME}/helper.py]
+FAILED tests/test_reference_intent.py::test_unresolved_variables_are_incomplete[{baseDir}/$VAR/helper.py]
+FAILED tests/test_reference_intent.py::test_base_dir_in_transitive_document_uses_skill_root
+FAILED tests/test_reference_intent.py::test_template_symlink_escape - TypeErr...
+18 failed in 0.11s

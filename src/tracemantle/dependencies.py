@@ -4,6 +4,7 @@ from __future__ import annotations
 from collections import defaultdict, deque
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 from tracemantle.io_limits import MAX_SCAN_BYTES, MAX_SCAN_FILES, MAX_SKILL_BYTES, UntrustedInputError, read_bounded_bytes
 from tracemantle.markdown import Markdown, tokenize
@@ -18,10 +19,14 @@ class Dependencies:
     complete: bool
 
 
-def analyze_dependencies(path: Path, markdown: Markdown) -> Dependencies:
+def analyze_dependencies(path: Path, markdown: Markdown, *,
+                         reference_format: Literal['relative', 'skill-base-dir'] = 'relative') -> Dependencies:
+    if reference_format not in {'relative', 'skill-base-dir'}:
+        raise ValueError('Unknown resource reference format.')
     root = path.parent.resolve()
     paths: set[str] = set()
     edges: set[tuple[str, str]] = set()
+    asserted_edges: set[tuple[str, str]] = set()
     diagnostics: list[Diagnostic] = []
     complete = not markdown.uncertain
     scanned = 0
@@ -34,14 +39,37 @@ def analyze_dependencies(path: Path, markdown: Markdown) -> Dependencies:
             if ref.kind in {'external', 'anchor', 'generated'}:
                 continue
             line = origin_line or ref.line
+            if ref.kind == 'mention':
+                diagnostics.append(Diagnostic('references.uncertain', Severity.WARNING,
+                    f"Inline path '{ref.target}' may be a resource, example or runtime input; dependency coverage is incomplete. Use an explicit link for a required resource.", line=line))
+                complete = False
+            target_text = ref.target
+            base = source.parent
+            if target_text.startswith('{baseDir}/'):
+                if reference_format != 'skill-base-dir':
+                    diagnostics.append(Diagnostic('references.uncertain', Severity.WARNING,
+                        f"Reference '{ref.target}' needs an explicit skill-base-dir interpretation.", line=line))
+                    complete = False
+                    continue
+                base = root
+                target_text = target_text[len('{baseDir}/'):]
+                # A rooted suffix or Windows separator must not reinterpret the
+                # selected root differently on another host.
+                if target_text.startswith('/') or '\\' in target_text or ':' in target_text:
+                    if ref.kind != 'mention':
+                        diagnostics.append(Diagnostic('references.escape', Severity.ERROR,
+                            f"Reference '{ref.target}' has an unsafe skill-root path.", line=line))
+                    complete = False
+                    continue
             try:
                 # Expand a leading ~ to the user's home directory before
                 # resolving. Without this, a reference like `~/notes/tips.md`
                 # is joined onto the skill directory as a literal "~"
                 # segment and misreported as a broken link.
-                target = (source.parent / Path(ref.target).expanduser()).resolve()
+                target = (base / Path(target_text).expanduser()).resolve()
                 if not target.is_relative_to(root):
-                    diagnostics.append(Diagnostic('references.escape', Severity.ERROR, f"Reference '{ref.target}' resolves outside the skill directory.", line=line))
+                    if ref.kind != 'mention':
+                        diagnostics.append(Diagnostic('references.escape', Severity.ERROR, f"Reference '{ref.target}' resolves outside the skill directory.", line=line))
                     complete = False
                     continue
                 relative = target.relative_to(root).as_posix()
@@ -50,6 +78,9 @@ def analyze_dependencies(path: Path, markdown: Markdown) -> Dependencies:
                     diagnostics.append(Diagnostic('references.unreadable', Severity.ERROR, 'Reference path count exceeds its limit; split the bundle.', line=line))
                     return Dependencies(tuple(sorted(paths)), tuple(sorted(edges)), tuple(diagnostics), False)
                 edges.add((source.relative_to(root).as_posix(), relative))
+                if ref.kind == 'mention':
+                    continue  # Retain a possible edge without asserting its existence or contents.
+                asserted_edges.add((source.relative_to(root).as_posix(), relative))
                 if target in ancestors:
                     diagnostics.append(Diagnostic('references.cycle', Severity.ERROR, f"Reference cycle through '{relative}'. Break the cycle.", line=line))
                     complete = False
@@ -69,13 +100,14 @@ def analyze_dependencies(path: Path, markdown: Markdown) -> Dependencies:
                 expanded.add(target)
                 pending.append((target, tokenize(raw.decode('utf-8-sig')), (*ancestors, target), line))
             except (OSError, RuntimeError, UnicodeError, UntrustedInputError) as exc:
-                diagnostics.append(Diagnostic('references.unreadable', Severity.ERROR, f"Cannot inspect reference '{ref.target}': {exc}", line=line))
+                if ref.kind != 'mention':
+                    diagnostics.append(Diagnostic('references.unreadable', Severity.ERROR, f"Cannot inspect reference '{ref.target}': {exc}", line=line))
                 complete = False
     # Shared children may be expanded before their parents; check the completed
     # edge set so traversal order cannot conceal a cross-branch cycle.
     incoming: dict[str, int] = defaultdict(int)
     outgoing: dict[str, list[str]] = defaultdict(list)
-    for source_name, target_name in sorted(edges):
+    for source_name, target_name in sorted(asserted_edges):
         outgoing[source_name].append(target_name)
         incoming[target_name] += 1
         incoming.setdefault(source_name, 0)

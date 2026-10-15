@@ -180,6 +180,7 @@ Under `[tool.tracemantle]` in pyproject.toml, or directly in tracemantle.toml.
 - `references.cycle`
 - `references.depth-exceeded`
 - `references.escape`
+- `references.uncertain`
 - `references.unreadable`
 - `semantic.context.missing`
 - `semantic.contradiction.detected`

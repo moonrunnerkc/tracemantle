@@ -8,11 +8,11 @@ from tracemantle.result import Diagnostic
 
 
 def _extract_references(body: str) -> list[str]:
-    return [r.target for r in tokenize(body).resources if r.kind in {'link', 'resource'}]
+    return [r.target for r in tokenize(body).resources if r.kind in {'link', 'resource', 'mention'}]
 
 
 def check_dependencies(skill: ParsedSkill) -> list[Diagnostic]:
-    return list(analyze_dependencies(skill.path, skill.markdown).diagnostics)
+    return list(analyze_dependencies(skill.path, skill.markdown, reference_format=skill.settings.reference_format).diagnostics)
 
 
 def check_broken_references(skill: ParsedSkill) -> list[Diagnostic]:

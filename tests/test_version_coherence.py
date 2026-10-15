@@ -95,11 +95,13 @@ def _tracked_skill_files() -> list[Path]:
     )
     if result.returncode != 0:
         pytest.skip("not a git checkout; cannot enumerate tracked files")
+    # This vendored consumer skill has its own byte-level provenance regression.
+    consumer_skill = Path("integrations/sarif/vendor/sarif-parsing/SKILL.md")
     paths = [Path(line) for line in result.stdout.split() if line]
     # Test data is not a second self-host skill. tests/fixtures holds parser
     # inputs and tests/golden holds pinned rule outputs; both legitimately
     # contain files named SKILL.md, and neither is a skill this repo publishes.
-    return sorted(set(p for p in paths if (REPO_ROOT / p).exists() and not {"fixtures", "golden"} & set(p.parts)))
+    return sorted(set(p for p in paths if p != consumer_skill and (REPO_ROOT / p).exists() and not {"fixtures", "golden"} & set(p.parts)))
 
 
 def test_only_one_self_host_skill_is_tracked():

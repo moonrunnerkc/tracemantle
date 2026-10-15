@@ -74,3 +74,9 @@ and retain immutable trusted tooling. No mutable-model/current-run exception is
 introduced. Neutral imports assign a distinct adapter identity; pin it deliberately
 when updating a check context. Promptfoo 0.118.10 retains its adapter identity;
 0.124.1 uses a different exact identity and must be approved independently.
+
+## Unreleased reference classification repair
+
+Recompute manifests and rerun comparisons after this repair. Slash-containing inline code now reports uncertain intent rather than a definite broken link or escape. A possible contained edge remains recorded; incomplete coverage still prevents release and cross-bundle reuse. Replace an ambiguous mention with an explicit Markdown link only when the author actually asserts a packaged resource. Bare inline filenames retain the existing excluded-output convention; this parser is still a documented subset, not an arbitrary program dependency analyzer.
+
+The optional Python `DocumentSettings(reference_format="skill-base-dir")` dialect resolves the SARIF format's leading `{baseDir}/` against the selected skill root. The CLI retains its default unresolved behavior. Pin the dialect in the trusted evaluator configuration, not candidate metadata. There is no automatic author-intent classification or coverage override. See [contracts](contracts.md#skill-root-reference-dialect).
