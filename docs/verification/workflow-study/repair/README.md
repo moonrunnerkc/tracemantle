@@ -49,3 +49,20 @@ controls before dependency analysis. `boundary-first-repair.txt` and
 retains decoded controls for explicit rejection before URL parsing can erase
 them. The final `boundary-after.txt` records all 25 cases passing. This corrects
 the incomplete intermediate repair; no scored result is replaced.
+
+`initial-full-setup-failures.txt` also preserves the first broad development run:
+four obsolete inline token-kind assertions, five failures caused by relocating
+the upstream data while that run was active, one self-host enumeration failure
+because a new consumer skill had been added, and one pre-commit failure because
+the venv bin directory was absent from PATH. These were setup/contract-update
+failures, not scored consumer outcomes. Subsequent runs use stable source and an
+activated PATH. Only the exact separately pinned consumer skill is excluded from
+self-host version coherence; a provenance regression checks its authentic bytes.
+
+Other interventions were isolating upstream pytest configuration, correcting the
+measurement harness to capture process startup and trusted Git objects, fixing
+one import-formatting diagnostic after scoring, and correcting the jq version
+transcription. Their automated verification costs are retained where measured;
+authoring time is missing. No reference or trust assertion was relaxed to obtain
+reuse. The final tool changes are committed at 7da20ad; scored results remain
+pinned to the earlier implementation and are not pooled with those refinements.

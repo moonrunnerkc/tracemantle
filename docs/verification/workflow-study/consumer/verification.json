@@ -1,0 +1,319 @@
+{
+  "source_revision": "7da20adf6e8eb800c87ff9362b51de4ea55aaa4d",
+  "default_suite": {
+    "command": "PATH=/tmp/tracemantle-study-venv/bin:$PATH python -m pytest tests/ --cov-fail-under=80 -q -ra",
+    "exit_code": 0,
+    "passed": 1555,
+    "skipped": 5,
+    "collected": 1560,
+    "pytest_seconds": 192.85,
+    "coverage_percent": 89.05,
+    "tiktoken_installed": false
+  },
+  "optional_suite": {
+    "exit_code": 0,
+    "passed": 1555,
+    "skipped": 5,
+    "collected": 1560,
+    "coverage_percent": 89.03,
+    "tiktoken_installed": true,
+    "full_clean_environment_seconds": 206.7845672100002
+  },
+  "skip_reasons": [
+    "four Python 3.10 tomli fallback cases do not apply to Python 3.12",
+    "minisign executable absent locally; dedicated remote job must exercise it"
+  ],
+  "clean_reproduction": {
+    "source_revision": "42bba507fe5ff13fb8bd10a3d3ed7261b8be20f3",
+    "command": "bash scripts/reproduce_sarif_study.sh /tmp/sarif-clean-reproduction",
+    "exit_code": 0,
+    "trials": 66,
+    "scoring_seconds": 88.05201224300072,
+    "reused": 0,
+    "all_arms_agree": true,
+    "model_calls": 0
+  },
+  "trusted_git_bundles_verified": 66,
+  "final_consumer": {
+    "checks": [
+      {
+        "id": "bundle-contract",
+        "reused": false,
+        "errors": [],
+        "seconds": 0.0004775929992320016
+      },
+      {
+        "id": "report",
+        "reused": false,
+        "errors": [],
+        "seconds": 0.033764363000045705
+      },
+      {
+        "id": "upstream-tests",
+        "reused": false,
+        "errors": [],
+        "seconds": 0.2296478339994792
+      }
+    ],
+    "commands": [
+      {
+        "argv": [
+          "/tmp/tracemantle-study-venv/bin/python",
+          "-m",
+          "ruff",
+          "check",
+          "--no-cache",
+          "--output-format",
+          "sarif",
+          "src",
+          "tests",
+          "scripts"
+        ],
+        "cwd": "/home/brad/projects/tracemantle-study",
+        "exit_code": 0,
+        "seconds": 0.033464524999544665,
+        "stdout": "scan.stdout",
+        "stderr": "scan.stderr",
+        "stdout_sha256": "6470cec32b748cf70513834a7404331f62d8a23ba9644645c3cbb2f73e6a7fdf",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "argv": [
+          "/tmp/tracemantle-study-venv/bin/python",
+          "-m",
+          "ruff",
+          "check",
+          "--no-cache",
+          "--output-format",
+          "json",
+          "src",
+          "tests",
+          "scripts"
+        ],
+        "cwd": "/home/brad/projects/tracemantle-study",
+        "exit_code": 0,
+        "seconds": 0.03181602600034239,
+        "stdout": "oracle.stdout",
+        "stderr": "oracle.stderr",
+        "stdout_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "argv": [
+          "/tmp/tracemantle-study-venv/bin/python",
+          "-c",
+          "import json, sys\nsys.path.insert(0, sys.argv[1])\nfrom sarif_helpers import extract_findings, load_sarif, summary\nfindings = extract_findings(load_sarif(sys.argv[2]))\nprint(json.dumps({\"summary\": summary(findings), \"findings\": [\n    [f.rule_id, f.level, f.file_path, f.start_line, f.message] for f in findings]}))\n",
+          "/home/brad/projects/tracemantle-study/integrations/sarif/vendor/sarif-parsing/resources",
+          "/tmp/sarif-final-deployment/scan.stdout"
+        ],
+        "cwd": "/home/brad/projects/tracemantle-study",
+        "exit_code": 0,
+        "seconds": 0.030770530999689072,
+        "stdout": "python-report.stdout",
+        "stderr": "python-report.stderr",
+        "stdout_sha256": "9cf4aa5987771f7ad24014a5b0e66985c1e0b8b0fa8b5741b7654ab874554905",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "argv": [
+          "jq",
+          "  def rule($run):\n    . as $r\n    | ($run.tool.driver.rules // []) as $rules\n    | (if ($r.ruleIndex | type) == \"number\" and $r.ruleIndex >= 0\n       then $rules[$r.ruleIndex] else null end)\n      // first($rules[] | select(.id == $r.ruleId))\n      // null;\n  def level($run):\n    . as $r\n    | if ($r.kind // \"fail\") != \"fail\" then \"none\"\n      else ($r.level // rule($run).defaultConfiguration.level // \"warning\") end;\n\n[.runs[] as $run | $run.results[] | select(level($run) == \"error\")] | length",
+          "/tmp/sarif-final-deployment/scan.stdout"
+        ],
+        "cwd": "/home/brad/projects/tracemantle-study",
+        "exit_code": 0,
+        "seconds": 0.0024896649993024766,
+        "stdout": "jq-report.stdout",
+        "stderr": "jq-report.stderr",
+        "stdout_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "argv": [
+          "/tmp/tracemantle-study-venv/bin/python",
+          "-m",
+          "pytest",
+          "-c",
+          "/tmp/sarif-final-deployment/pytest.ini",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--import-mode=importlib",
+          "."
+        ],
+        "cwd": "/home/brad/projects/tracemantle-study/integrations/sarif/vendor/sarif-parsing/resources",
+        "exit_code": 0,
+        "seconds": 0.22950482299984287,
+        "stdout": "upstream-tests.stdout",
+        "stderr": "upstream-tests.stderr",
+        "stdout_sha256": "dbec255dff3ea655611e0b5af6d7a01b19e6a9e60a40542837e7bbc5e693320f",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "gate": {
+      "state": "unknown",
+      "reuse": [],
+      "manifest": {
+        "schema_version": 1,
+        "bundle_sha256": "50443c49f1338493a30e9fa5f24448373fa0e7c06ee568e6b44bbb22cc731aa0",
+        "files": [
+          {
+            "path": "SKILL.md",
+            "sha256": "cc5f008f40ffb8a1ae03ebd32d7234de43e828293955a0bc251b76ba249554fa",
+            "executable": false,
+            "size": 17925
+          },
+          {
+            "path": "agents/openai.yaml",
+            "sha256": "6385b46a44aad5b114744dbc2055ce3f6456c0e822b92a7a6c6870f2a248014e",
+            "executable": false,
+            "size": 231
+          },
+          {
+            "path": "assets/trail-of-bits-mark.svg",
+            "sha256": "4bf74c789b38dcf6ad762c136b6832363d27ae19fbaa9a18ec18d66ecce6ca05",
+            "executable": false,
+            "size": 3084
+          },
+          {
+            "path": "resources/fixtures/codeql-no-level.sarif",
+            "sha256": "edc92b09e4d8b1247ec87f081c68caa1843d8407063508ad33aab13327ba386a",
+            "executable": false,
+            "size": 2302
+          },
+          {
+            "path": "resources/fixtures/levels-on-results.sarif",
+            "sha256": "625e8175a3c68d0d11f7e4c14095dddff5056d52a539e3153180cdb37ce50c6b",
+            "executable": false,
+            "size": 1782
+          },
+          {
+            "path": "resources/jq-queries.md",
+            "sha256": "f44ec4e219c93504ec69fdeb2c60668ee3934585e5565fffdaa43f6b224b5d6a",
+            "executable": false,
+            "size": 7868
+          },
+          {
+            "path": "resources/sarif_helpers.py",
+            "sha256": "06d8e63849bd2b93baf31b23a33550447eed2ac457c2687f173933039e5ad247",
+            "executable": false,
+            "size": 13027
+          },
+          {
+            "path": "resources/test_sarif_helpers.py",
+            "sha256": "5efc4e50f3dbd81ea223049b1892653a46bce0c273904d0b04e43e449343fe17",
+            "executable": false,
+            "size": 14028
+          }
+        ],
+        "description_sha256": "91e7d14e55a91a67c8ed3a471eb9bfc294584789c8e8404f6e422a6ce358a706",
+        "dependencies": [
+          [
+            "SKILL.md",
+            "admin/login.py"
+          ],
+          [
+            "SKILL.md",
+            "auth/login.py"
+          ],
+          [
+            "SKILL.md",
+            "resources/fixtures"
+          ],
+          [
+            "SKILL.md",
+            "resources/jq-queries.md"
+          ],
+          [
+            "SKILL.md",
+            "resources/sarif_helpers.py"
+          ]
+        ],
+        "complete": false,
+        "issues": [
+          "Resource dependency coverage is incomplete; rerun the full relevant suite."
+        ]
+      },
+      "validation": [
+        {
+          "rule": "description.quality-score",
+          "severity": "info",
+          "message": "Description quality score: 67/100. Suggestions: No trigger context found. Add phrases like 'Use this skill whenever the user mentions...'.; Description is getting long. Consider trimming to the essentials."
+        },
+        {
+          "rule": "references.uncertain",
+          "severity": "warning",
+          "message": "Inline path 'auth/login.py' may be a resource, example or runtime input; dependency coverage is incomplete. Use an explicit link for a required resource."
+        },
+        {
+          "rule": "references.uncertain",
+          "severity": "warning",
+          "message": "Inline path 'admin/login.py' may be a resource, example or runtime input; dependency coverage is incomplete. Use an explicit link for a required resource."
+        },
+        {
+          "rule": "references.uncertain",
+          "severity": "warning",
+          "message": "Inline path 'resources/sarif_helpers.py' may be a resource, example or runtime input; dependency coverage is incomplete. Use an explicit link for a required resource."
+        },
+        {
+          "rule": "references.uncertain",
+          "severity": "warning",
+          "message": "Inline path '/github/workspace/' may be a resource, example or runtime input; dependency coverage is incomplete. Use an explicit link for a required resource."
+        },
+        {
+          "rule": "references.uncertain",
+          "severity": "warning",
+          "message": "Inline path '/path/to/project/' may be a resource, example or runtime input; dependency coverage is incomplete. Use an explicit link for a required resource."
+        },
+        {
+          "rule": "disclosure.metadata-budget",
+          "severity": "warning",
+          "message": "Frontmatter uses ~122 tokens, exceeding the recommended ~100-token metadata budget. Keep metadata concise; move details to the body."
+        },
+        {
+          "rule": "disclosure.body-budget",
+          "severity": "warning",
+          "message": "Body uses ~5087 tokens, exceeding the recommended 5000-token instruction budget. Move large content blocks to referenced files in a resources/ directory."
+        },
+        {
+          "rule": "compat.unverified",
+          "severity": "info",
+          "message": "Behavior of field 'allowed-tools' in codex, cursor is unverified (as of Codex: 2026-04-20; Cursor: 2026-04-20)."
+        }
+      ],
+      "seconds": 0.0410788400004094
+    },
+    "seconds": 0.414618187999622,
+    "scan_exit": 0,
+    "python": "3.12.3",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39"
+  },
+  "remote_verification": "Run CI on the delivered branch commit after pushing; final run status is external to this pre-push record.",
+  "published": false,
+  "merged": false,
+  "other_gates": [
+    {
+      "command": "ruff check src tests scripts",
+      "exit_code": 0,
+      "output": "All checks passed!\n"
+    },
+    {
+      "command": "mypy",
+      "exit_code": 0,
+      "output": "Success: no issues found in 84 source files\n"
+    },
+    {
+      "command": "python scripts/generate_reference.py --check",
+      "exit_code": 0
+    },
+    {
+      "command": "python -m pytest --collect-only -q",
+      "exit_code": 0,
+      "collected": 1560
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ]
+}

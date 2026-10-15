@@ -1,3 +1,5 @@
+Continuation: the [maintainer-operated SARIF deployment and scored evaluation](consumer/case-study.md) supersede the preparation-only outcome below. The original records remain unchanged.
+
 # Workflow-value study: inconclusive preparation result
 
 No qualifying deployment was completed. No change cases were scored and no
