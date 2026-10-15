@@ -1,0 +1,103 @@
+{
+  "core_revision": "a72a2d82298fc44894b5ee4858aed87437d26869",
+  "integration_revision": "556cfd8b76a600ccefc32f28d1a193c9f4a2fe9b",
+  "full_suites_revision": "a72a2d82298fc44894b5ee4858aed87437d26869",
+  "full_without_tiktoken": {
+    "passed": 1585,
+    "skipped": 5,
+    "collected": 1590,
+    "coverage_percent": 89.1,
+    "seconds": 196.54,
+    "command": "source /tmp/tracemantle-study-venv/bin/activate; python -m pytest tests/ --cov-fail-under=80"
+  },
+  "full_with_tiktoken": {
+    "passed": 1585,
+    "skipped": 5,
+    "collected": 1590,
+    "coverage_percent": 89.08,
+    "seconds": 194.42,
+    "command": "source /tmp/scoped-optional-venv/bin/activate; python -m pytest tests/ --cov-fail-under=80"
+  },
+  "skips": "Four tomli fallback checks require Python 3.10; minisign is absent locally. Remote CI has dedicated signature tools.",
+  "focused_scope_regressions": {
+    "passed": 30,
+    "command": "python -m pytest tests/test_check_scopes.py --no-cov -q"
+  },
+  "state_correction": "State correction and non-model identity guard are included in final full suites, 16-case preflight, ten approval controls, 48 scored trials and clean reproduction.",
+  "other_gates": {
+    "ruff": "passed",
+    "mypy": "passed, 86 source files",
+    "generated_reference": "passed, no generated CLI surface change",
+    "wheel_and_sdist_clean_install": "passed"
+  },
+  "clean_reproduction": {
+    "command": "bash scripts/reproduce_scoped_sarif.sh /tmp/scoped-clean-final",
+    "trials": 48,
+    "justified_skips_each": 51,
+    "outcome_disagreements": 0,
+    "experiment_seconds": 88.79358148299798,
+    "model_calls": 0
+  },
+  "actual_checkout_deployment": {
+    "current_report": "scoped-current-v3/run.json",
+    "full_reference": "scoped-current-v3-reference/run.json",
+    "reused": [
+      "bundle-contract",
+      "upstream-tests"
+    ],
+    "fresh_report": true,
+    "source": "scoped-current-v3/source.json"
+  },
+  "preflight_resources": {
+    "scoped-preflight-1": {
+      "completed_rows": 16,
+      "recorded_seconds": 28.19681598200259
+    },
+    "scoped-preflight-2": {
+      "completed_rows": 16,
+      "recorded_seconds": 26.998756017997948
+    },
+    "scoped-preflight-final": {
+      "completed_rows": 16,
+      "recorded_seconds": 29.41590963499766
+    },
+    "scoped-preflight-frozen": {
+      "completed_rows": 16,
+      "recorded_seconds": 33.377072208000754
+    },
+    "scoped-preflight-isolated": {
+      "completed_rows": 12,
+      "recorded_seconds": 44.02456548400005
+    },
+    "scoped-preflight-v2": {
+      "completed_rows": 16,
+      "recorded_seconds": 29.19552597599977
+    },
+    "scoped-preflight-v3": {
+      "completed_rows": 16,
+      "recorded_seconds": 32.23228381399895
+    }
+  },
+  "human_setup_time": null,
+  "total_research_wall_seconds": null,
+  "missing_measurements": [
+    "Human effort",
+    "Complete research elapsed time including design, approval preflights, installation, archives and remote CI",
+    "CI compute monetary cost"
+  ],
+  "model_calls": 0,
+  "tokens": 0,
+  "model_cost_usd": 0,
+  "remote_ci": "Final exact-commit run is linked in the handoff; no pre-commit claim of remote success.",
+  "redactions": "None; no credentials or private input were used in study artifacts.",
+  "scored_revision": "fe92958c5d7748933560bc4a8f6fe6c4daa9e4cf",
+  "independent_skip_audit": {
+    "verified": {
+      "B": 51,
+      "C": 51
+    },
+    "incorrect": 0,
+    "uses_tracemantle_imports": false,
+    "implementation": "scored-v3.tar.gz/audit.py"
+  }
+}

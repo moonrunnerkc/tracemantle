@@ -36,6 +36,8 @@ Scan a directory with `tracemantle skills/`. Errors return a nonzero exit code; 
 
 Use evidence checks when a release needs approved results or you need to detect helper changes that invalidate earlier results. The [evidence workflow](docs/evidence-workflow.md) distinguishes manual approval from protected automation and neutral JSON imports.
 
+Per-check maintenance reuse remains experimental. In the [maintainer SARIF study](docs/verification/workflow-study/scoped-reuse/case-study.md), TraceMantle and a simple cache made the same justified skips, but both were slower than fresh execution.
+
 ## Task guides
 
 - [Getting started](docs/getting-started.md): create and validate a skill.

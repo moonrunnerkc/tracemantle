@@ -85,3 +85,9 @@ checkout. This deliberately consumes verification resources and claims no CI
 savings. Persisting approved evidence across CI runs remains optional and is not
 configured. The bounded study records its operational and research costs separately
 under [scoped-reuse](../../docs/verification/workflow-study/scoped-reuse/).
+
+CI's freshly generated approval is an integration-test fixture inside the quality
+job, not protected release authority. Do not promote a PR-created seed into a
+release approval. Operational trust requires maintainer-selected tooling and
+configuration, with the immutable approval revision selected outside candidate
+control, as in the study's separately retained trusted repositories.
