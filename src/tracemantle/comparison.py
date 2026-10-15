@@ -79,6 +79,8 @@ def _compatible(record: Evidence, check: RequiredCheck, candidate: BundleManifes
             reasons.append('Behavioral execution identity or environment/tokenizer assumptions are incomplete.')
         if not record.model_immutable:
             reasons.append('Hosted model aliases are not immutable model revisions; behavioral reuse is unavailable.')
+    if check.kind == 'deterministic' and (record.model != 'none' or record.model_revision != 'none'):
+        reasons.append('Deterministic maintenance evidence requires explicit non-model identities (model and model_revision: none).')
     if check.kind == 'static' and record.observation_method != 'static-analysis':
         reasons.append('Static evidence requires a declared static analysis observation.')
     age = (now - timestamp(record.observed_at)).total_seconds()

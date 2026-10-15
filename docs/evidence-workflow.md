@@ -372,7 +372,9 @@ establishes workflow mechanics only.
 Schema 3 retains schema-2 approval controls and permits `input_scope_path` on a
 `static` check or the new `deterministic` kind. The latter requires real
 `observed-execution`, plus known runner, adapter, Python and OS context. It means
-non-model maintenance execution, such as helper regression tests. It does not
+non-model maintenance execution, such as helper regression tests. Evidence must
+set both model and model_revision to the literal `none`; naming a model prevents
+reuse even with digest approval. It does not
 satisfy a behavioral/routing check and does not relax model identity requirements.
 
 The scope path names a JSON blob in the same selected trusted Git revision as

@@ -185,3 +185,14 @@ def test_scope_uncertainty_and_changes_are_per_check(scoped, change):
     assert result.checks[0].rerun
     assert result.checks[1].rerun == (change == 'shared-helper')
     assert result.state == 'unknown'
+
+
+@pytest.mark.parametrize('field', ['model', 'model_revision'])
+def test_deterministic_scope_cannot_relabel_model_execution(scoped, field):
+    root, baseline, record, trust, revision = scoped
+    policy = load_trusted_policy(trust, revision)
+    # Even approved provenance cannot turn model execution into a non-model check.
+    changed = 'hosted-model-alias'
+    record = replace(record, **{field: changed})
+    policy = replace(policy, trusted_evidence=frozenset({record.sha256}))
+    assert compare(baseline, create_manifest(root), (record,), policy, now=NOW).checks[0].rerun
