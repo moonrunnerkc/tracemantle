@@ -16,7 +16,7 @@ except ModuleNotFoundError:
     import tomli as tomllib
 from tracemantle.evidence import sha256_field, text_field
 from tracemantle.signatures import signer_key
-from tracemantle.storage import EvidenceError
+from tracemantle.storage import EvidenceError, decode_json
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,6 +33,7 @@ class RequiredCheck:
     required: bool
     context: tuple[tuple[str, str], ...]
     routing_neighbors: tuple[str, ...]
+    input_scope_sha256: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,22 +83,24 @@ def load_trusted_policy(root: Path, revision: str, path: str = 'pyproject.toml')
     except (KeyError, TypeError, UnicodeError, tomllib.TOMLDecodeError) as exc:
         raise EvidenceError('Trusted base must declare [tool.tracemantle.release] in its TOML configuration.') from exc
     required = {'schema_version', 'checks', 'trusted_evidence'}
-    if not isinstance(data, dict) or not required <= set(data) or type(data['schema_version']) is not int or data['schema_version'] not in {1, 2}:
-        raise EvidenceError('Release policy requires supported schema_version 1 or 2, checks and trusted_evidence.')
-    optional = {'required_signers'} | ({'automation'} if data['schema_version'] == 2 else set())
+    if not isinstance(data, dict) or not required <= set(data) or type(data['schema_version']) is not int or data['schema_version'] not in {1, 2, 3}:
+        raise EvidenceError('Release policy requires supported schema_version 1, 2 or 3, checks and trusted_evidence.')
+    optional = {'required_signers'} | ({'automation'} if data['schema_version'] >= 2 else set())
     if set(data) - required - optional:
-        raise EvidenceError('required_signers is the only optional key in schema 1; schema 2 also permits automation.')
+        raise EvidenceError('required_signers is the only optional key in schema 1; schemas 2 and 3 also permit automation.')
     if not isinstance(data['checks'], list) or not data['checks'] or len(data['checks']) > 1000:
         raise EvidenceError('Trusted release policy requires 1 to 1000 checks.')
     checks = []
-    expected = set(RequiredCheck.__dataclass_fields__) | {'checker_path'}
+    expected = (set(RequiredCheck.__dataclass_fields__) - {'input_scope_sha256'}) | {'checker_path'}
     for row in data['checks']:
-        if not isinstance(row, dict) or set(row) != expected:
+        scoped = isinstance(row, dict) and 'input_scope_path' in row and data['schema_version'] == 3
+        if not isinstance(row, dict) or set(row) != expected | ({'input_scope_path'} if scoped else set()):
             raise EvidenceError('Each trusted check must contain exactly the documented check fields.')
         value: dict[str, Any] = dict(row)
         text_field(value['id'], 'check.id')
-        if not isinstance(value['kind'], str) or value['kind'] not in {'static', 'behavioral', 'routing'}:
-            raise EvidenceError('Check kind must be static, behavioral or routing.')
+        kinds = {'static', 'behavioral', 'routing'} | ({'deterministic'} if data['schema_version'] == 3 else set())
+        if not isinstance(value['kind'], str) or value['kind'] not in kinds:
+            raise EvidenceError('Check kind must be static, behavioral or routing; schema 3 also permits deterministic.')
         for name in ('coverage_complete', 'required'):
             if type(value[name]) is not bool:
                 raise EvidenceError(f'Check {name} must be boolean.')
@@ -123,6 +126,34 @@ def load_trusted_policy(root: Path, revision: str, path: str = 'pyproject.toml')
         if set(context) - {'runner', 'adapter', 'model', 'model_revision', 'permissions', 'tokenizer', 'os', 'python', 'node', 'network', 'sandbox', 'architecture'}:
             raise EvidenceError('Unsupported trusted execution context field.')
         value['context'] = tuple(sorted(context.items()))
+        if scoped:
+            scope_path = value.pop('input_scope_path')
+            if not isinstance(scope_path, str):
+                raise EvidenceError('input_scope_path must name a trusted JSON declaration.')
+            scope_raw = git_blob(root, revision, scope_path)
+            scope = decode_json(scope_raw, max_bytes=1024 * 1024)
+            if (not isinstance(scope, dict) or set(scope) != {'schema_version', 'inputs', 'rationale', 'assumptions', 'unresolved'}
+                    or type(scope['schema_version']) is not int or scope['schema_version'] != 1
+                    or scope['inputs'] != list(value['inputs'])
+                    or not isinstance(scope['assumptions'], list) or not scope['assumptions']
+                    or not isinstance(scope['unresolved'], list)):
+                raise EvidenceError('Input scope requires version 1, exact sorted inputs, rationale, assumptions and unresolved inputs.')
+            text_field(scope['rationale'], 'scope.rationale')
+            for item in [*scope['assumptions'], *scope['unresolved']]:
+                text_field(item, 'scope assumption/unresolved input')
+            if value['kind'] not in {'static', 'deterministic'}:
+                raise EvidenceError('Closed input scopes cannot authorize behavioral or routing reuse.')
+            if scope['unresolved'] or not value['coverage_complete']:
+                raise EvidenceError('A closed input scope cannot contain unresolved dependencies or incomplete coverage.')
+            scope_sha = hashlib.sha256(scope_raw).hexdigest()
+            if scope_sha != value['profile_sha256']:
+                raise EvidenceError('Input scope bytes must match profile_sha256; reapprove evidence after declaration changes.')
+            value['input_scope_sha256'] = scope_sha
+        if value['kind'] == 'deterministic':
+            if not scoped or not {'runner', 'adapter', 'python', 'os'} <= dict(value['context']).keys():
+                raise EvidenceError('Deterministic checks require a closed scope and runner, adapter, python and os context.')
+            if any(not v.strip() or v.strip().casefold() == 'unknown' for _, v in value['context']):
+                raise EvidenceError('Deterministic execution context must be known.')
         checks.append(RequiredCheck(**value))
     if len({c.id for c in checks}) != len(checks):
         raise EvidenceError('Trusted check IDs must be unique.')

@@ -183,7 +183,7 @@ def test_invalid_authority_configuration_fails_closed(gate: dict, change: str) -
     config = gate['trust'] / 'pyproject.toml'
     value = config.read_text()
     if change == 'version':
-        value = value.replace('schema_version=2', 'schema_version=3')
+        value = value.replace('schema_version=2', 'schema_version=4')
     elif change == 'schema1':
         value = value.replace('schema_version=2', 'schema_version=1')
     elif change in {'empty-keys', 'bad-key'}:

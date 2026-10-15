@@ -80,3 +80,19 @@ when updating a check context. Promptfoo 0.118.10 retains its adapter identity;
 Recompute manifests and rerun comparisons after this repair. Slash-containing inline code now reports uncertain intent rather than a definite broken link or escape. A possible contained edge remains recorded; incomplete coverage still prevents release and cross-bundle reuse. Replace an ambiguous mention with an explicit Markdown link only when the author actually asserts a packaged resource. Bare inline filenames retain the existing excluded-output convention; this parser is still a documented subset, not an arbitrary program dependency analyzer.
 
 The optional Python `DocumentSettings(reference_format="skill-base-dir")` dialect resolves the SARIF format's leading `{baseDir}/` against the selected skill root. The CLI retains its default unresolved behavior. Pin the dialect in the trusted evaluator configuration, not candidate metadata. There is no automatic author-intent classification or coverage override. See [contracts](contracts.md#skill-root-reference-dialect).
+
+## Unreleased closed check scopes
+
+Existing policies retain their behavior. New manifests use schema 2, adding
+resource_errors while retaining bundle content identity. Readers limited to
+schema 1 must upgrade; old manifests remain readable, but must be regenerated
+before closed-scope reuse. Evidence records remain schema 1.
+
+To opt in, review the actual checker, declare its complete inputs and execution
+assumptions in trusted JSON, select policy schema 3 and input_scope_path, and bind
+the declaration's byte digest as profile_sha256. Existing evidence needs a new
+approved profile. Use kind=deterministic with observed-execution for non-model
+regression suites, never behavioral. Rerun whenever scope or context is unknown.
+Do not edit authentic skills to remove examples or count omitted task output as
+reuse. The [scope contract](evidence-workflow.md#experimental-closed-check-scopes-unreleased)
+explains the caller's current-context checks and remaining trust assumptions.

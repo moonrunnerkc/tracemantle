@@ -35,3 +35,19 @@ The Python API supports an explicit `DocumentSettings(reference_format="skill-ba
 In this dialect, exactly the leading `{baseDir}/` in a reference denotes the selected skill root, including in transitive Markdown documents. This matches the SARIF skill's packaged `resources/` layout and Trail of Bits' [path convention](https://github.com/trailofbits/skills/blob/1f68e03536f7980d4c0e6869596f708043a19443/AGENTS.md#path-handling). It is a static interpretation, not a claim that every host substitutes the variable; upstream [tracks that portability limitation](https://github.com/trailofbits/skills/issues/8). Other variables remain unresolved. URL decoding occurs once before interpretation; rooted suffixes, backslashes and drive prefixes fail. Resolution and symlink containment use the ordinary skill boundary. Decoded control characters are rejected before URL parsing can strip them. Template suffixes are literal, including `~`; legacy home expansion applies only to ordinary references. No shell, environment expansion or arbitrary template evaluation is introduced.
 
 This dialect does not disambiguate inline prose. No ignore declarations or natural-language intent heuristics are supplied. If actual coverage remains incomplete, the release comparison remains unknown even for an unchanged candidate. Use the full relevant suite, and do not treat a per-check historical pass as permission to bypass an unknown overall gate.
+
+## Experimental per-check scope interpretation (unreleased)
+
+The preceding unchanged-candidate restriction remains the default for legacy
+policies. Policy schema 3 can explicitly select a reviewed closed input scope for
+a static or deterministic maintenance check. It does not change Markdown parsing,
+classify author intent, clear warnings or set the bundle complete flag. See the
+[evidence contract](evidence-workflow.md#experimental-closed-check-scopes-unreleased).
+
+New manifests emit content schema 2 with `resource_errors`: the subset of issues
+that are explicit resource failures rather than inferred-coverage uncertainty.
+The file-based bundle SHA-256 still uses the original schema-1 identity algorithm.
+Schema-1 manifests round-trip unchanged; their error distinction is unknown and
+they cannot authorize closed-scope reuse. Schema-2 errors must also appear in
+issues and cannot coexist with complete=true. Regenerate manifests through trusted
+tooling; imported metadata is not a proof of the filesystem's state.

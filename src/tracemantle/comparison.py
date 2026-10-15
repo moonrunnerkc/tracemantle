@@ -68,7 +68,7 @@ def _compatible(record: Evidence, check: RequiredCheck, candidate: BundleManifes
         reasons.append('Declared input coverage or content digests do not match the evaluated bundle.')
     if check.kind != 'static' and record.observation_method != 'observed-execution':
         reasons.append('Required behavioral evidence needs observed execution; inferred traces and model judgments cannot satisfy it.')
-    if check.kind != 'static':
+    if check.kind in {'behavioral', 'routing'}:
         # All imported records are historical reuse. Approval and equal bundle
         # hashes establish neither a new execution nor immutable model identity.
         identity = [getattr(record, name) for name in ('runner', 'adapter', 'model', 'model_revision')]
@@ -89,11 +89,17 @@ def _compatible(record: Evidence, check: RequiredCheck, candidate: BundleManifes
     for key, value in check.context:
         if actual_context.get(key) != value:
             reasons.append(f'Execution context {key} differs or is unknown.')
+    scoped = check.input_scope_sha256 is not None
+    if scoped:
+        if check.profile_sha256 != check.input_scope_sha256 or not check.coverage_complete:
+            reasons.append('Closed scope identity or completeness is incompatible.')
+        if candidate.resource_errors is None or baseline.resource_errors is None or candidate.resource_errors or baseline.resource_errors:
+            reasons.append('Closed scopes require current manifests without explicit resource errors.')
     if record.bundle_sha256 != candidate.sha256:
-        if not candidate.complete or not baseline.complete or not check.coverage_complete:
+        if not check.coverage_complete or (not scoped and (not candidate.complete or not baseline.complete)):
             reasons.append('Dependency coverage is incomplete; repeat the complete relevant suite.')
         governed = set(check.inputs) | set(bound_inputs)
-        for _ in range(32):
+        for _ in range(0 if scoped else 32):
             expanded = governed | {target for source, target in (*baseline.dependencies, *candidate.dependencies) if source in governed}
             if expanded == governed:
                 break
@@ -159,7 +165,8 @@ def compare(baseline: BundleManifest, candidate: BundleManifest, records: tuple[
     required_states = {c.state for c in checks if c.required}
     state = next((s for s in ('fail', 'infrastructure-error', 'unknown', 'skipped') if s in required_states), 'pass')
     issues = candidate.issues
-    if not candidate.complete and state == 'pass':
+    scoped_required = all(c.input_scope_sha256 is not None for c in policy.checks if c.required)
+    if not candidate.complete and state == 'pass' and not scoped_required:
         state = 'unknown'
     if not required_states:
         state = 'unknown'
