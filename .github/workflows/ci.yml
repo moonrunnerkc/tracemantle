@@ -56,6 +56,17 @@ jobs:
 
       - run: python scripts/generate_reference.py --check
 
+      - name: SARIF maintainer report
+        run: python scripts/sarif_workflow.py --integrated --output "${{ runner.temp }}/sarif-report"
+
+      - name: Retain SARIF report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sarif-maintainer-report
+          path: ${{ runner.temp }}/sarif-report/
+          if-no-files-found: error
+
       - name: Mypy strict
         # Bare mypy uses the [tool.mypy] files list (src plus the checked-in
         # scripts), so the utility scripts are type-gated alongside the package.
