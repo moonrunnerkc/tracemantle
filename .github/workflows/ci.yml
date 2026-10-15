@@ -56,8 +56,29 @@ jobs:
 
       - run: python scripts/generate_reference.py --check
 
-      - name: SARIF maintainer report
-        run: python scripts/sarif_workflow.py --integrated --output "${{ runner.temp }}/sarif-report"
+      - name: Establish maintenance evidence from this checkout
+        run: python scripts/evaluate_scoped_sarif.py seed --project "$GITHUB_WORKSPACE" --output "${{ runner.temp }}/sarif-evidence"
+
+      - name: SARIF maintainer report with optional maintenance reuse
+        env:
+          SARIF_EVIDENCE: ${{ runner.temp }}/sarif-evidence
+          SARIF_REPORT: ${{ runner.temp }}/sarif-report
+        run: |
+          python - <<'PY'
+          import json, os, subprocess, sys
+          from pathlib import Path
+          root = Path(os.environ['SARIF_EVIDENCE'])
+          revision = json.loads((root / 'seed.json').read_text())['trusted_revision']
+          subprocess.run([sys.executable, 'scripts/sarif_workflow.py', '--integrated',
+                          '--evidence-root', str(root), '--trusted-revision', revision,
+                          '--output', os.environ['SARIF_REPORT']], check=True)
+          run = json.loads((Path(os.environ['SARIF_REPORT']) / 'run.json').read_text())
+          assert set(run['gate']['reuse']) == {'bundle-contract', 'upstream-tests'}
+          assert not next(c for c in run['checks'] if c['id'] == 'report')['reused']
+          PY
+
+      - name: Verify omitted maintenance checks independently
+        run: python scripts/sarif_workflow.py --output "${{ runner.temp }}/sarif-reference"
 
       - name: Retain SARIF report
         if: always()

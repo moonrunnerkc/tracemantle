@@ -54,7 +54,12 @@ def input_identity(project: Path) -> str:
 
 def execute(argv: list[str], cwd: Path, output: Path) -> dict[str, Any]:
     env = {k: v for k, v in os.environ.items() if k in {'PATH', 'HOME', 'LANG', 'LC_ALL', 'SYSTEMROOT'}}
-    env.update(PYTHONDONTWRITEBYTECODE='1', PYTHONHASHSEED='0', PYTEST_DISABLE_PLUGIN_AUTOLOAD='1')
+    jq = shutil.which('jq')
+    if jq is None:
+        raise RuntimeError('jq is required')
+    env.update(PYTHONDONTWRITEBYTECODE='1', PYTHONHASHSEED='0', PYTEST_DISABLE_PLUGIN_AUTOLOAD='1', LANG='C.UTF-8', LC_ALL='C.UTF-8',
+               HOME=str(output.parent),
+               PATH=os.pathsep.join((str(Path(jq).resolve().parent), os.defpath)))
     start = time.perf_counter()
     result = subprocess.run(argv, cwd=cwd, env=env, capture_output=True, timeout=120, check=False)
     out, err = output.with_suffix('.stdout'), output.with_suffix('.stderr')
@@ -115,44 +120,24 @@ def report(skill: Path, project: Path, output: Path) -> tuple[list[dict[str, Any
 
 
 def workflow(project: Path, skill: Path, output: Path, *, integrated: bool,
-             trusted_revision: str | None = None, evidence_root: Path | None = None) -> dict[str, Any]:
+             trusted_revision: str | None = None, evidence_root: Path | None = None, reuse_cache: Path | None = None) -> dict[str, Any]:
     output.mkdir(parents=True, exist_ok=False)
     start = time.perf_counter()
     commands = []
     checks = []
     gate: dict[str, Any] = {'state': 'not-requested', 'reuse': []}
-    if integrated:
+    if reuse_cache or (integrated and trusted_revision and evidence_root):
+        from sarif_reuse import decide
+        selected = reuse_cache or evidence_root
+        assert selected is not None
+        gate = decide(skill, selected, trusted_revision, 'cache' if reuse_cache else 'tracemantle')
+    elif integrated:
         from tracemantle import validate
-        from tracemantle.bundle import create_manifest, manifest_from_dict
-        from tracemantle.comparison import compare
-        from tracemantle.evidence import evidence_from_dict
-        from tracemantle.parser import DocumentSettings, parse
-        from tracemantle.policy import load_trusted_policy
-
-        settings = DocumentSettings(reference_format='skill-base-dir')
-        gate_start = time.perf_counter()
-        current_identity = input_identity(project)
-        validation = validate(skill / 'SKILL.md', settings=settings)
-        document = parse(skill / 'SKILL.md', settings=settings)
-        manifest = create_manifest(skill, document=document)
-        gate = {'state': 'unknown', 'reuse': [], 'manifest': manifest.to_dict(),
+        from tracemantle.parser import DocumentSettings
+        validation = validate(skill / 'SKILL.md', settings=DocumentSettings(reference_format='skill-base-dir'))
+        gate = {'state': 'unknown', 'reuse': [],
                 'validation': [{'rule': d.rule, 'severity': d.severity.value, 'message': d.message} for d in validation.diagnostics]}
-        if trusted_revision and evidence_root:
-            policy = load_trusted_policy(evidence_root, trusted_revision, 'policy.toml')
-            baseline = manifest_from_dict(json.loads((evidence_root / 'baseline.json').read_bytes()))
-            records = tuple(evidence_from_dict(json.loads(p.read_bytes())) for p in sorted((evidence_root / 'records').glob('*.json')))
-            decision = compare(baseline, manifest, records, policy)
-            gate['comparison'] = decision.to_dict()
-            gate['state'] = decision.state
-            # An individual passing record cannot override incomplete overall coverage.
-            compatible = all(c.configuration_sha256 == current_identity and c.checker_sha256 == sha(Path(__file__)) for c in policy.checks)
-            gate['external_inputs_compatible'] = compatible
-            if not compatible:
-                gate['state'] = 'unknown'
-            if decision.state == 'pass' and validation.valid and compatible:
-                gate['reuse'] = [c.check_id for c in decision.checks if not c.rerun]
-        gate['seconds'] = time.perf_counter() - gate_start
-        (output / 'decision.json').write_text(json.dumps(gate, indent=2) + '\n')
+    (output / 'decision.json').write_text(json.dumps(gate, indent=2) + '\n')
     # Freeze the decision before executing either the task or its independent checker.
     for label, fmt in [('scan', 'sarif'), ('oracle', 'json')]:
         commands.append(execute([sys.executable, '-m', 'ruff', 'check', '--no-cache', '--output-format', fmt,
@@ -161,7 +146,7 @@ def workflow(project: Path, skill: Path, output: Path, *, integrated: bool,
             raise RuntimeError(f'Ruff infrastructure failure: {output / label}')
     for check in CHECKS:
         before = time.perf_counter()
-        if check in gate['reuse']:
+        if check != 'report' and check in gate['reuse']:
             checks.append({'id': check, 'reused': True, 'errors': [], 'seconds': time.perf_counter() - before})
             continue
         if check == 'bundle-contract':
@@ -171,8 +156,8 @@ def workflow(project: Path, skill: Path, output: Path, *, integrated: bool,
             commands.extend(report_commands)
         else:
             (output / 'pytest.ini').write_text('[pytest]\n')
-            command = execute([sys.executable, '-m', 'pytest', '-c', str(output / 'pytest.ini'), '-q', '-p', 'no:cacheprovider', '--import-mode=importlib',
-                               '.'], skill / 'resources', output / 'upstream-tests')
+            command = execute([sys.executable, '-m', 'pytest', '-c', str(output / 'pytest.ini'), '-q', '--noconftest', '--basetemp', str(output / 'pytest-temp'), '-p', 'no:cacheprovider', '--import-mode=importlib',
+                               'test_sarif_helpers.py'], skill / 'resources', output / 'upstream-tests')
             commands.append(command)
             errors = [] if command['exit_code'] == 0 else ['Upstream SARIF regression suite failed.']
         checks.append({'id': check, 'reused': False, 'errors': errors, 'seconds': time.perf_counter() - before})
@@ -190,9 +175,10 @@ def main() -> int:
     parser.add_argument('--integrated', action='store_true')
     parser.add_argument('--trusted-revision')
     parser.add_argument('--evidence-root', type=Path)
+    parser.add_argument('--reuse-cache', type=Path)
     args = parser.parse_args()
     result = workflow(args.project.resolve(), args.skill.resolve(), args.output.resolve(), integrated=args.integrated,
-                      trusted_revision=args.trusted_revision, evidence_root=args.evidence_root)
+                      trusted_revision=args.trusted_revision, evidence_root=args.evidence_root, reuse_cache=args.reuse_cache)
     print(json.dumps({'scan_exit': result['scan_exit'], 'checks': result['checks'], 'evidence_state': result['gate']['state']}))
     return int(result['scan_exit'] != 0 or any(c['errors'] for c in result['checks']))
 
