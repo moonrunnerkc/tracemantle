@@ -19,3 +19,11 @@ The 1.6.1 fixes enforce these code-context and description-type boundaries. They
 The 1.6.1 delimiter and indentation corrections follow [CommonMark 0.31.2 code spans](https://spec.commonmark.org/0.31.2/#code-spans), [backslash escapes](https://spec.commonmark.org/0.31.2/#backslash-escapes) and [list items](https://spec.commonmark.org/0.31.2/#list-items) for the supported subset. This is dependency analysis, not a general Markdown renderer. [Regression verification](verification/audit-1.6.1/acceptance.md#dependency-and-numeric-boundary-corrections) records the trusted-Git and authentic-export controls.
 
 Setext underlines of one or more identical `=` or `-` characters, with up to three spaces relative to the supported list container and trailing spaces/tabs, terminate the preceding paragraph before inline span matching. All lines of multiline heading content share one inline block. Four-column indentation within an existing paragraph, escaped underlines, mixed characters and embedded spaces do not become Setext boundaries. ATX headings with up to three spaces and homogeneous thematic breaks (including spaced markers) also delimit inline spans. Fenced and indented code are resolved first. Unsupported container contexts retain incomplete coverage. Setext support here establishes dependency boundaries; the heuristic capability-heading index continues to use ATX headings. See [CommonMark Setext headings](https://spec.commonmark.org/0.31.2/#setext-headings) and [1.6.1 verification](verification/release-1.6.1/acceptance.md).
+
+
+Since 1.7.0, neutral JSON uses the same 5 MiB source limit and bounded full-document
+decoder. Approval envelopes are limited to 64 KiB and bind complete evidence
+digests. Policy schema 2 explicitly authorizes scoped automation; schema 1 remains
+digest-only. See [automation approval](evidence-workflow.md#protected-automation)
+for the run context, expiration, replay and revocation contract. No evaluator
+execution or network dependency is added to ordinary validation or data import.

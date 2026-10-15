@@ -46,9 +46,12 @@ class Comparison:
 
 
 def _compatible(record: Evidence, check: RequiredCheck, candidate: BundleManifest, baseline: BundleManifest,
-                changed: set[str], policy: TrustedPolicy, now: datetime, signed_evidence: frozenset[str]) -> list[str]:
+                changed: set[str], policy: TrustedPolicy, now: datetime, signed_evidence: frozenset[str],
+                automated_evidence: frozenset[str]) -> list[str]:
     reasons = []
-    if record.sha256 not in policy.trusted_evidence:
+    automated = (policy.automation is not None and check.id in policy.automation.checks
+                 and record.bundle_sha256 == candidate.sha256 and record.sha256 in automated_evidence)
+    if record.sha256 not in policy.trusted_evidence and not automated:
         reasons.append('Evidence digest is not approved by the trusted base; self-reported provenance is insufficient.')
     if policy.required_signers and record.sha256 not in signed_evidence:
         reasons.append('Trusted policy requires a signature and no valid one from a required signer accompanies this record.')
@@ -104,7 +107,8 @@ def _compatible(record: Evidence, check: RequiredCheck, candidate: BundleManifes
 
 def compare(baseline: BundleManifest, candidate: BundleManifest, records: tuple[Evidence, ...],
             policy: TrustedPolicy, *, now: datetime | None = None,
-            signed_evidence: frozenset[str] = frozenset(), require_observed_execution: bool = False) -> Comparison:
+            signed_evidence: frozenset[str] = frozenset(), require_observed_execution: bool = False,
+            automated_evidence: frozenset[str] = frozenset()) -> Comparison:
     """Gate ``candidate`` against ``policy`` using ``records``.
 
     With ``require_observed_execution``, a required check passes only when an
@@ -115,6 +119,10 @@ def compare(baseline: BundleManifest, candidate: BundleManifest, records: tuple[
     ``signed_evidence`` holds the digests of records whose signature the caller
     already verified against ``policy.required_signers``. It is consulted only
     when the policy declares signers, and never substitutes for digest approval.
+    ``automated_evidence`` contains digests whose run-scoped approval the caller
+    verified with ``verify_approval``. Only explicitly scoped schema-2 authority
+    permits these digests to substitute for the allowlist. Compatibility and
+    additional ``required_signers`` checks still apply.
     """
     now = now or datetime.now(timezone.utc)
     before = {f.path: (f.sha256, f.executable) for f in baseline.files}
@@ -126,7 +134,7 @@ def compare(baseline: BundleManifest, candidate: BundleManifest, records: tuple[
         valid = []
         rejected: list[str] = []
         for record in matching:
-            rejection = _compatible(record, check, candidate, baseline, changed, policy, now, signed_evidence)
+            rejection = _compatible(record, check, candidate, baseline, changed, policy, now, signed_evidence, automated_evidence)
             if rejection:
                 rejected.extend(rejection)
             else:

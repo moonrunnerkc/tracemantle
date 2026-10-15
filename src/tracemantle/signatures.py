@@ -6,8 +6,9 @@ message is the record's canonical JSON bytes, which is exactly what
 ``import-evidence`` writes under ``STORE/records/``. Verification shells out to
 the system tools, so there is no cryptography dependency.
 
-Signatures never replace the ``trusted_evidence`` digest allowlist. They are
-checked only when the trusted policy declares ``required_signers``.
+Record signatures required by ``required_signers`` never replace digest approval.
+Schema-2 automation also uses this verifier for separate, run-bound approval
+envelopes, under its explicitly scoped authority.
 """
 from __future__ import annotations
 

@@ -1,0 +1,218 @@
+{
+  "python": "Python 3.12.3",
+  "base_for_both_runs": "92502654ece308509adce630427dc7f968b734f4",
+  "results": [
+    {
+      "command": [
+        "/tmp/tracemantle-built/bin/python",
+        "-I",
+        "/tmp/tracemantle-installed-evidence/examples/protected_automation.py",
+        "setup",
+        "/tmp/tracemantle-installed-evidence/demo"
+      ],
+      "exit_code": 0,
+      "stdout": "92502654ece308509adce630427dc7f968b734f4\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/tracemantle-built/bin/python",
+        "-I",
+        "/tmp/tracemantle-installed-evidence/demo/trusted/producer.py",
+        "run",
+        "/tmp/tracemantle-installed-evidence/demo",
+        "--base-revision",
+        "92502654ece308509adce630427dc7f968b734f4",
+        "--run-id",
+        "local-demo-1",
+        "--run-started-at",
+        "2026-10-15T01:15:46.135255+00:00"
+      ],
+      "exit_code": 0,
+      "stdout": "/tmp/tracemantle-installed-evidence/demo/store/records/ef1983710f8ad8398542048bbeb3cd36691274ab4ee72ac2eeb7e912760c6c6e.json\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/tracemantle-built/bin/tracemantle",
+        "compare",
+        "/tmp/tracemantle-installed-evidence/demo/baseline/demo",
+        "/tmp/tracemantle-installed-evidence/demo/candidate/demo",
+        "--trusted-root",
+        "/tmp/tracemantle-installed-evidence/demo/trusted",
+        "--base-revision",
+        "92502654ece308509adce630427dc7f968b734f4",
+        "--evidence",
+        "/tmp/tracemantle-installed-evidence/demo/store/records/ef1983710f8ad8398542048bbeb3cd36691274ab4ee72ac2eeb7e912760c6c6e.json",
+        "--approval-run-id",
+        "local-demo-1",
+        "--approval-run-started-at",
+        "2026-10-15T01:15:46.135255+00:00"
+      ],
+      "exit_code": 0,
+      "stdout": "TraceMantle compare: pass (exit 0)\ngreeting: pass; Trusted checker compared isolated helper output with the fixed fixture; not a live agent evaluation.\nChanged inputs: helper.py\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/tracemantle-built/bin/tracemantle",
+        "compare",
+        "/tmp/tracemantle-installed-evidence/demo/baseline/demo",
+        "/tmp/tracemantle-installed-evidence/demo/candidate/demo",
+        "--trusted-root",
+        "/tmp/tracemantle-installed-evidence/demo/trusted",
+        "--base-revision",
+        "92502654ece308509adce630427dc7f968b734f4",
+        "--evidence",
+        "/tmp/tracemantle-installed-evidence/demo/store/records/ef1983710f8ad8398542048bbeb3cd36691274ab4ee72ac2eeb7e912760c6c6e.json",
+        "--approval-run-id",
+        "local-demo-1",
+        "--approval-run-started-at",
+        "2026-10-15T01:15:46.135255+00:00"
+      ],
+      "exit_code": 2,
+      "stdout": "TraceMantle compare: infrastructure-error (exit 2)\nAutomation approval is outside the trusted check or candidate bundle scope.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/tracemantle-built/bin/python",
+        "-I",
+        "/tmp/tracemantle-installed-evidence/demo/trusted/producer.py",
+        "run",
+        "/tmp/tracemantle-installed-evidence/demo",
+        "--base-revision",
+        "92502654ece308509adce630427dc7f968b734f4",
+        "--run-id",
+        "local-demo-2",
+        "--run-started-at",
+        "2026-10-15T01:15:46.602302+00:00"
+      ],
+      "exit_code": 0,
+      "stdout": "/tmp/tracemantle-installed-evidence/demo/store/records/f4966344229e7109e18aad93ec6256a8ee3bdb303cff573f7786a5aaf006bff7.json\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/tracemantle-built/bin/tracemantle",
+        "compare",
+        "/tmp/tracemantle-installed-evidence/demo/baseline/demo",
+        "/tmp/tracemantle-installed-evidence/demo/candidate/demo",
+        "--trusted-root",
+        "/tmp/tracemantle-installed-evidence/demo/trusted",
+        "--base-revision",
+        "92502654ece308509adce630427dc7f968b734f4",
+        "--evidence",
+        "/tmp/tracemantle-installed-evidence/demo/store/records/f4966344229e7109e18aad93ec6256a8ee3bdb303cff573f7786a5aaf006bff7.json",
+        "--approval-run-id",
+        "local-demo-2",
+        "--approval-run-started-at",
+        "2026-10-15T01:15:46.602302+00:00"
+      ],
+      "exit_code": 0,
+      "stdout": "TraceMantle compare: pass (exit 0)\ngreeting: pass; Trusted checker compared isolated helper output with the fixed fixture; not a live agent evaluation.\nChanged inputs: helper.py\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/tracemantle-built/bin/tracemantle",
+        "compare",
+        "/tmp/tracemantle-installed-evidence/demo/baseline/demo",
+        "/tmp/tracemantle-installed-evidence/demo/candidate/demo",
+        "--trusted-root",
+        "/tmp/tracemantle-installed-evidence/demo/trusted",
+        "--base-revision",
+        "15442456e979c2ee8fb39533720dedc597aeb9be",
+        "--evidence",
+        "/tmp/tracemantle-installed-evidence/demo/store/records/f4966344229e7109e18aad93ec6256a8ee3bdb303cff573f7786a5aaf006bff7.json",
+        "--approval-run-id",
+        "local-demo-2",
+        "--approval-run-started-at",
+        "2026-10-15T01:15:46.602302+00:00"
+      ],
+      "exit_code": 4,
+      "stdout": "TraceMantle compare: unknown (exit 4)\ngreeting: unknown; Evidence digest is not approved by the trusted base; self-reported provenance is insufficient.\nChanged inputs: helper.py\nRequired reruns: greeting\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/tracemantle-built/bin/tracemantle",
+        "compare",
+        "/tmp/tracemantle-installed-evidence/demo/baseline/demo",
+        "/tmp/tracemantle-installed-evidence/demo/candidate/demo",
+        "--trusted-root",
+        "/tmp/tracemantle-installed-evidence/demo/trusted",
+        "--base-revision",
+        "0ec89e1d2057b2c4425232e34624d46ce9c76360",
+        "--evidence",
+        "/tmp/tracemantle-installed-evidence/demo/store/records/f4966344229e7109e18aad93ec6256a8ee3bdb303cff573f7786a5aaf006bff7.json",
+        "--approval-run-id",
+        "local-demo-2",
+        "--approval-run-started-at",
+        "2026-10-15T01:15:46.602302+00:00"
+      ],
+      "exit_code": 4,
+      "stdout": "TraceMantle compare: unknown (exit 4)\ngreeting: unknown; Evidence digest is not approved by the trusted base; self-reported provenance is insufficient.\nChanged inputs: helper.py\nRequired reruns: greeting\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/tracemantle-built/bin/tracemantle",
+        "compare",
+        "/tmp/tracemantle-installed-evidence/demo/baseline/demo",
+        "/tmp/tracemantle-installed-evidence/demo/candidate/demo",
+        "--trusted-root",
+        "/tmp/tracemantle-installed-evidence/demo/trusted",
+        "--base-revision",
+        "1782e3fc603b826c7fae269aa650921a18700910",
+        "--evidence",
+        "/tmp/tracemantle-installed-evidence/demo/store/records/f4966344229e7109e18aad93ec6256a8ee3bdb303cff573f7786a5aaf006bff7.json",
+        "--approval-run-id",
+        "local-demo-2",
+        "--approval-run-started-at",
+        "2026-10-15T01:15:46.602302+00:00"
+      ],
+      "exit_code": 0,
+      "stdout": "TraceMantle compare: pass (exit 0)\ngreeting: pass; Trusted checker compared isolated helper output with the fixed fixture; not a live agent evaluation.\nChanged inputs: helper.py\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/tracemantle-built/bin/python",
+        "-I",
+        "/tmp/tracemantle-installed-evidence/examples/export_validation.py",
+        "hello"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"records\":[{\"adapter\":\"neutral-export-example\",\"artifact_sha256\":\"d73183bf4050f9313fba63c109f9b3f00a637c42599753fb429b9294239df969\",\"bundle_sha256\":\"9f9a7072b2688a41afb10e4c3599c58d2c5c88845a3aa7e1f2e26e36db37cd5a\",\"check_id\":\"static-validation\",\"checker_sha256\":\"891be75e5d01d9b9655a84fd64e6a99ed23f5a48ce175b3b546911f9d01624d5\",\"configuration_sha256\":\"d7e52a8ca8ab1ade11c79df151ef7b81825228c2fd63f95839a91d55b1edf9e4\",\"environment\":{\"network\":\"disabled\"},\"fixture_sha256\":\"f2906b2ca6a32f4bda6a0e32e53c6c40440e880f336c9a75ac097c3ccfd6a413\",\"inputs\":{\"SKILL.md\":\"b2d4a7d3e311cad50d99cf653e5f5367f0365988759ee75b1285f0ede662865c\"},\"kind\":\"check-evidence\",\"model\":\"unknown\",\"model_immutable\":false,\"model_revision\":\"unknown\",\"observation_method\":\"static-analysis\",\"observed_at\":\"2026-10-15T01:15:47.446009+00:00\",\"permissions\":[\"read-bundle\"],\"profile_sha256\":\"aefaddf8c2fcefdefdcde758b18450dea3aca65d51fd8223ad0dcc05bd8283c9\",\"reason\":\"Local static validation with default API settings; no agent evaluation.\",\"runner\":\"tracemantle/1.6.1\",\"schema_version\":1,\"state\":\"pass\",\"tokenizer\":{\"backend\":\"word-punctuation\",\"version\":\"1\"}}],\"schema_version\":1}",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/tracemantle-built/bin/tracemantle",
+        "import-evidence",
+        "result.json",
+        "--input-format",
+        "neutral",
+        "--bundle",
+        "hello",
+        "--store",
+        "evidence",
+        "--format",
+        "json"
+      ],
+      "exit_code": 4,
+      "stdout": "{\n  \"tool\": \"TraceMantle\",\n  \"version\": \"1.6.1\",\n  \"schema_version\": 1,\n  \"command\": \"import-evidence\",\n  \"exit_code\": 4,\n  \"result\": {\n    \"artifact_sha256\": \"0a5591f91406708d3533b54c7c8a45492003e99c8f999490bae9a8adec04703c\",\n    \"source_copy\": \"evidence/sources/0a5591f91406708d3533b54c7c8a45492003e99c8f999490bae9a8adec04703c.json\",\n    \"records\": [\n      \"evidence/records/c602b744216d7257c40081c2db20569015a426a4e400709fbf0bcb666e849ea4.json\"\n    ],\n    \"issues\": [],\n    \"state\": \"unknown\",\n    \"reason\": \"Imported claims require trusted-base approval before behavioral gating.\"\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/tracemantle-built/bin/python",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "Python 3.12.3\n",
+      "stderr": ""
+    }
+  ]
+}

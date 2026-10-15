@@ -4,7 +4,7 @@ Operative plan: [original DOCX](SkillCheck_Technical_Debt_and_Product_Plan.docx)
 
 The complete plan, including both tables, was read before implementation. Instruction discovery covered ancestors, hidden directories, scoped instructions and case variants; `.github/CLAUDE.md` was the only repository instruction file. Contributor guidance, build workflows and historical remediation were also read. The supplied DOCX and unrelated local files were preserved. Those implementation-stage results predate the owner's repository rename; post-rename work is recorded below. No publication occurred during that initial implementation stage; the later authorized release is recorded below.
 
-Current release: **TraceMantle 1.6.1**, published and independently verified. [Patch publication and acceptance](verification/release-1.6.1/acceptance.md#published-release-and-independent-verification) records the corrected D09/P01/P03 behavior, exact source commit, public artifacts and installed checks.
+Previous published release: **TraceMantle 1.6.1**, independently verified. The 1.7.0 candidate includes the additions recorded below; publication verification is recorded separately. [Patch publication and acceptance](verification/release-1.6.1/acceptance.md#published-release-and-independent-verification) records the corrected D09/P01/P03 behavior, exact source commit, public artifacts and installed checks.
 
 ## Requirement ledger
 
@@ -113,7 +113,7 @@ D09/P01/P03: block structure now separates Setext headings, indented ATX heading
 
 The 1.6.1 release at `4a502e7f381b6eadf57726285adfd82569461308` passed all 15 pre-tag CI jobs and all 17 Release jobs. Public PyPI and GitHub bytes match the tested artifacts and verified attestations. A fresh PyPI installation passed 153 installed acceptance cases; old-distribution migrations passed on 3.10 and 3.12. Both publishing controls are disabled again. The final documentation commit is distinct from the immutable release tag and receives its own CI. See [publication identities and hashes](verification/release-1.6.1/publication.json).
 
-## Unreleased: adapters, signers, profile freshness and observed execution
+## Included in 1.7.0: adapters, signers, profile freshness and observed execution
 
 Four opt-in additions sit under `[Unreleased]` on top of 1.6.1; no version, tag or publication changed.
 
@@ -125,3 +125,37 @@ Four opt-in additions sit under `[Unreleased]` on top of 1.6.1; no version, tag 
 Local verification on CPython 3.12.3 (Linux, OpenSSH 9.6, minisign 0.11 on PATH): `ruff check src tests scripts`, strict `mypy` (77 source files) and `scripts/generate_reference.py --check` passed; `python -m pytest tests/ --cov-fail-under=80` gave **1,448 passed, 4 skipped, 89.22% coverage** (the four skips are the existing 3.10-only TOML fallback tests). Fourteen default-path CLI invocations (manifest, Promptfoo import, compare in three formats and four outcomes, validation) produced byte-identical output and exit codes against the 1.6.1 sources at `cf3712c` with the same fixtures.
 
 Remote CI on the pull request is the evidence for the other interpreters and for macOS and Windows; this local run does not establish them. The minisign test skips wherever minisign is not installed, which includes the current CI images. The runner example was exercised with a one-line Python command standing in for an agent, so live agent or model behavior remains unexecuted.
+
+## Current development collection
+
+1535 tests cover validation, CLI integrations, bundle identity and evidence checks. This is a collection count, not a claim that every environment passed.
+
+
+## Included in 1.7.0: practical validation and scoped automation
+
+The [acceptance and source record](verification/usability-evidence/acceptance.md)
+covers local work from `a5c02e9`. The README is 306 words, starts with published
+1.6.1 validation, and links task guides with actual clean-install transcripts.
+Basic validation and its JSON/exit/strict contracts are unchanged; help now groups
+common and advanced flags. Collection statistics live here, not in the README.
+
+Policy schema 2 adds explicitly scoped automation keys and signed run-bound
+approval envelopes. Two changed candidates pass one unchanged trusted policy/base
+without digest commits. Legacy allowlists and additional record signatures remain;
+mutable-model reuse, identity, freshness, dependencies, observation distinctions
+and conservative outcomes retain their existing checks. The external Linux
+producer demonstrates isolated deterministic execution, trusted checking and real
+OpenSSH approval. No live agent evaluation or hosted deployment is claimed.
+
+Neutral canonical JSON import needs no executable adapter. The additional tested
+Promptfoo 0.124.1/results-v3 subset uses authentic locally generated npm exports
+with retained provenance; 0.118.10 remains supported. No runtime dependencies were
+added, and versions/tags/publication remain unchanged.
+
+Local Linux gates: Python 3.12 without tiktoken `make verify-release` passed with
+1,530 passed/5 skipped and 88.92% coverage; a separate 3.12 environment with tiktoken
+and minisign passed 1,531/4 skipped at 88.92%. Calibration/conformance passed.
+Python 3.10 passed 125 focused cases and clean artifact installs. Exact logs,
+initial environment corrections, source/artifact identities and unexecuted remote
+matrix checks are linked above. These results do not establish adoption or live
+skill reliability.

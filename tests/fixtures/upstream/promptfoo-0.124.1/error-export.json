@@ -1,0 +1,205 @@
+{
+  "evalId": "eval-ocG-2026-10-15T01:06:00",
+  "results": {
+    "version": 3,
+    "timestamp": "2026-10-15T01:06:00.049Z",
+    "prompts": [
+      {
+        "id": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+        "raw": "hello",
+        "label": "hello",
+        "provider": "deterministic-error",
+        "metrics": {
+          "score": 0,
+          "testPassCount": 0,
+          "testFailCount": 0,
+          "testErrorCount": 1,
+          "assertPassCount": 0,
+          "assertFailCount": 0,
+          "totalLatencyMs": 2,
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          },
+          "namedScores": {},
+          "namedScoresCount": {},
+          "namedScoreWeights": {},
+          "cost": 0
+        }
+      }
+    ],
+    "results": [
+      {
+        "cost": 0,
+        "error": "Deterministic provider failure for import contract verification",
+        "gradingResult": null,
+        "id": "a4daaf33-32f2-44e4-b6ce-2702296d6da7",
+        "latencyMs": 2,
+        "namedScores": {},
+        "prompt": {
+          "raw": "hello",
+          "label": "hello",
+          "config": {}
+        },
+        "promptId": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+        "promptIdx": 0,
+        "provider": {
+          "id": "deterministic-error",
+          "label": ""
+        },
+        "response": {
+          "error": "Deterministic provider failure for import contract verification"
+        },
+        "score": 0,
+        "success": false,
+        "testCase": {
+          "assert": [
+            {
+              "type": "equals",
+              "value": "hello"
+            }
+          ],
+          "vars": {},
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 0,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {},
+        "metadata": {
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 2
+      }
+    ],
+    "stats": {
+      "successes": 0,
+      "failures": 0,
+      "errors": 1,
+      "tokenUsage": {
+        "prompt": 0,
+        "completion": 0,
+        "cached": 0,
+        "total": 0,
+        "numRequests": 1,
+        "completionDetails": {
+          "reasoning": 0,
+          "acceptedPrediction": 0,
+          "rejectedPrediction": 0,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0
+        },
+        "assertions": {
+          "total": 0,
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "numRequests": 0,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          }
+        }
+      },
+      "durationMs": 15,
+      "evaluationDurationMs": 15
+    }
+  },
+  "config": {
+    "tags": {},
+    "prompts": [
+      "hello"
+    ],
+    "providers": [
+      "file://error-provider.cjs"
+    ],
+    "tests": [
+      {
+        "assert": [
+          {
+            "type": "equals",
+            "value": "hello"
+          }
+        ]
+      }
+    ],
+    "env": {},
+    "outputPath": [
+      "error-export.json"
+    ],
+    "extensions": [],
+    "metadata": {},
+    "evaluateOptions": {},
+    "basePath": "/tmp/tracemantle-promptfoo-run"
+  },
+  "shareableUrl": null,
+  "metadata": {
+    "promptfooVersion": "0.124.1",
+    "nodeVersion": "v24.12.0",
+    "platform": "linux",
+    "arch": "x64",
+    "exportedAt": "2026-10-15T01:06:00.093Z",
+    "evaluationCreatedAt": "2026-10-15T01:06:00.049Z"
+  },
+  "runtimeOptions": {
+    "eventSource": "cli",
+    "showProgressBar": true,
+    "repeat": 1,
+    "maxConcurrency": 4,
+    "cache": false
+  }
+}

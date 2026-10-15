@@ -5,12 +5,15 @@ import argparse
 import hashlib
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from tracemantle import __version__
 from tracemantle.adapters import adapt_external
+from tracemantle.adapters.neutral import adapt as adapt_neutral
 from tracemantle.adapters.promptfoo import ImportedExport, import_promptfoo
+from tracemantle.approvals import verify_approval
 from tracemantle.bundle import create_manifest
 from tracemantle.comparison import compare
 from tracemantle.core.history import LedgerError
@@ -31,12 +34,15 @@ def _parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest='command', required=True)
     manifest = commands.add_parser('manifest', help='Create a canonical bundle manifest')
     manifest.add_argument('bundle', type=Path)
-    importer = commands.add_parser('import-evidence', help='Import a pinned Promptfoo export without executing it')
+    importer = commands.add_parser('import-evidence', help='Import evaluator results as data; import does not approve them')
     importer.add_argument('source', type=Path)
     importer.add_argument('--bundle', type=Path, required=True)
     importer.add_argument('--bindings', type=Path, help='Explicit identity bindings for exported row IDs')
     importer.add_argument('--store', type=Path, required=True, help='Evidence store outside the bundle')
-    importer.add_argument('--adapter', type=Path, help='Python file defining adapt(export_bytes, bindings), used instead of the '
+    adapters = importer.add_mutually_exclusive_group()
+    adapters.add_argument('--input-format', choices=['promptfoo', 'neutral'], default='promptfoo',
+                          help='Data-only import format (default: promptfoo); neutral accepts canonical evidence JSON')
+    adapters.add_argument('--adapter', type=Path, help='Python file defining adapt(export_bytes, bindings), used instead of the '
                           'built-in Promptfoo adapter. Its code runs with your privileges; never take it from a candidate bundle')
     comparison = commands.add_parser('compare', help='Compare bundles using policy/checkers from a trusted Git base')
     comparison.add_argument('baseline', type=Path)
@@ -45,6 +51,8 @@ def _parser() -> argparse.ArgumentParser:
     comparison.add_argument('--trusted-root', type=Path, required=True)
     comparison.add_argument('--base-revision', required=True, help='Full trusted base commit SHA')
     comparison.add_argument('--policy-relative', default='pyproject.toml')
+    comparison.add_argument('--approval-run-id', default='', help='Unique run ID supplied by the protected scheduler, never the candidate')
+    comparison.add_argument('--approval-run-started-at', default='', help='Timezone-qualified run start supplied by the protected scheduler')
     comparison.add_argument('--require-observed-execution', action='store_true',
                             help='Treat a required check as unknown unless an accepted record observed an execution')
     migration = commands.add_parser('migrate-history', help='Copy legacy history explicitly, preserving its original')
@@ -66,12 +74,14 @@ def _run(args: argparse.Namespace) -> tuple[dict[str, Any], int, Path | None]:
         if args.adapter and args.adapter.resolve().is_relative_to(args.bundle.resolve()):
             raise EvidenceError(f'Adapter {args.adapter} is inside the evaluated bundle, and bundle content is never executed. '
                                 f'Keep adapters with trusted tooling outside {args.bundle}.')
-        raw = read_bounded_bytes(args.source, max_bytes=MAX_INGEST_BYTES, what='Evidence export' if args.adapter else 'Promptfoo export', error_cls=EvidenceError)
+        raw = read_bounded_bytes(args.source, max_bytes=MAX_INGEST_BYTES, what='Evidence export', error_cls=EvidenceError)
         bindings = read_json(args.bindings) if args.bindings else {'schema_version': 1, 'rows': {}}
         if args.adapter:
             if not isinstance(bindings, dict):
                 raise EvidenceError('Import bindings must be a JSON object.')
             imported = ImportedExport(hashlib.sha256(raw).hexdigest(), adapt_external(args.adapter, raw, bindings), ())
+        elif args.input_format == 'neutral':
+            imported = ImportedExport(hashlib.sha256(raw).hexdigest(), tuple(adapt_neutral(raw, bindings)), ())
         else:
             imported = import_promptfoo(raw, bindings)
         files = {f.path: f.sha256 for f in manifest.files}
@@ -91,6 +101,8 @@ def _run(args: argparse.Namespace) -> tuple[dict[str, Any], int, Path | None]:
         raise EvidenceError('At most 10000 evidence records may be compared.')
     evidence = []
     signed: set[str] = set()
+    automated: set[str] = set()
+    now = datetime.now(timezone.utc)
     total = 0
     for path in args.evidence:
         raw = read_bounded_bytes(path, max_bytes=min(MAX_INGEST_BYTES, MAX_SCAN_BYTES - total), what='Evidence', error_cls=EvidenceError)
@@ -99,9 +111,12 @@ def _run(args: argparse.Namespace) -> tuple[dict[str, Any], int, Path | None]:
         evidence.append(record)
         if policy.required_signers and has_required_signature(canonical(record.to_dict()), path, policy.required_signers):
             signed.add(record.sha256)
+        if verify_approval(record, path, policy, candidate_sha256=candidate.sha256, run_id=args.approval_run_id,
+                           run_started_at=args.approval_run_started_at, now=now):
+            automated.add(record.sha256)
     records = tuple(evidence)
     report = compare(baseline, candidate, records, policy, signed_evidence=frozenset(signed),
-                     require_observed_execution=args.require_observed_execution)
+                     require_observed_execution=args.require_observed_execution, now=now, automated_evidence=frozenset(automated))
     return report.to_dict(), report.exit_code, args.candidate / 'SKILL.md'
 
 

@@ -28,27 +28,20 @@ from tracemantle.profile_freshness import DEFAULT_MAX_AGE_DAYS, SHIPPED_REGISTRY
 # ---------------------------------------------------------------------------
 
 _EPILOG = """\
-bundle commands:
+examples:
+  tracemantle SKILL.md                         validate one file
+  tracemantle skills/ --strict --format github  fail CI on errors or warnings
+  tracemantle SKILL.md --format json            preserve diagnostics as structured data
+
+optional evidence commands (COMMAND --help for details):
   tracemantle manifest BUNDLE
   tracemantle import-evidence EXPORT --bundle BUNDLE --store STORE
   tracemantle compare BASELINE CANDIDATE --trusted-root REPO --base-revision SHA
   tracemantle migrate-history LEDGER --store STORE
 
-examples:
-  tracemantle SKILL.md                        validate a single file
-  tracemantle skills/                          scan a directory recursively
-  tracemantle SKILL.md --format json           machine-readable output for CI
-  tracemantle SKILL.md --max-lines 800         override sizing thresholds
-  tracemantle SKILL.md --ignore frontmatter    suppress a rule category
-  tracemantle SKILL.md --min-desc-score 50     require minimum description quality
-  tracemantle SKILL.md --target-agent vscode   scope checks to VS Code
-  tracemantle SKILL.md --strict-vscode         treat VS Code issues as errors
-  tracemantle SKILL.md --target-agent cursor   scope checks to Cursor
-  tracemantle SKILL.md --strict-cursor         treat Cursor issues as errors
-  tracemantle SKILL.md --strict                treat all warnings as errors (umbrella)
-  tracemantle SKILL.md --skip-ref-check        skip file reference validation
-  tracemantle SKILL.md --emit-critique-prompt  print prompt for agent self-critique
-  tracemantle SKILL.md --ingest-critique r.json  ingest agent response and merge diagnostics
+Diagnostics name the file, line and rule. Specification errors need fixing;
+heuristic advice and compatibility warnings are separate findings.
+Guide: https://github.com/moonrunnerkc/tracemantle/blob/main/docs/getting-started.md
 """
 
 
@@ -56,38 +49,45 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="tracemantle",
         allow_abbrev=False,
-        description="Cross-agent skill quality gate for SKILL.md files. Validates against the agentskills.io spec.",
+        usage="%(prog)s PATH [PATH ...] [options]",
+        description="Check SKILL.md files locally: frontmatter, references, size and compatibility advice.\n"
+                    "Start: tracemantle SKILL.md | Directory: tracemantle skills/\n"
+                    "No account or evidence policy needed. A static pass does not prove live agent behavior.",
         epilog=_EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    basic = parser.add_argument_group("everyday validation")
+    settings = parser.add_argument_group("configuration and thresholds")
+    compatibility = parser.add_argument_group("compatibility advice")
+    advanced = parser.add_argument_group("optional analysis, prompts and history")
     parser.add_argument(
         "path",
         nargs="+",
         type=Path,
         help="Path to a SKILL.md file or a directory to scan recursively. Multiple paths accepted.",
     )
-    parser.add_argument("--tokenizer", choices=["heuristic", "tiktoken"], default="heuristic", help="Token backend (default: heuristic; tiktoken may download on a cold cache).")
-    parser.add_argument(
+    settings.add_argument("--tokenizer", choices=["heuristic", "tiktoken"], default="heuristic", help="Token backend (default: heuristic; tiktoken may download on a cold cache).")
+    basic.add_argument(
         "--format",
         choices=["text", "json", "md", "agent", "github"],
         default="text",
         help="Output format (default: text).",
     )
-    parser.add_argument(
+    settings.add_argument(
         "--max-lines",
         type=int,
         default=None,
         metavar="N",
         help="Override the line-count threshold (default: 500).",
     )
-    parser.add_argument(
+    settings.add_argument(
         "--max-tokens",
         type=int,
         default=None,
         metavar="N",
         help="Override the token-count threshold (default: 8000).",
     )
-    parser.add_argument(
+    settings.add_argument(
         "--ignore",
         action="append",
         dest="ignore_prefixes",
@@ -95,62 +95,62 @@ def _build_parser() -> argparse.ArgumentParser:
         default=[],
         help="Suppress rules matching this prefix. Can be repeated.",
     )
-    parser.add_argument(
+    basic.add_argument(
         "--no-color",
         action="store_true",
         default=False,
         help="Disable colored output.",
     )
-    parser.add_argument(
+    basic.add_argument(
         "-q", "--quiet",
         action="store_true",
         default=False,
         help="Suppress all output. Only the exit code indicates result.",
     )
-    parser.add_argument(
+    settings.add_argument(
         "--skip-dirname-check",
         action="store_true",
         default=False,
         help="Skip directory-name matching check (useful for CI temp paths).",
     )
-    parser.add_argument(
+    settings.add_argument(
         "--skip-ref-check",
         action="store_true",
         default=False,
         help="Skip file reference validation (useful when referenced files are unavailable).",
     )
-    parser.add_argument(
+    settings.add_argument(
         "--min-desc-score",
         type=int,
         default=None,
         metavar="N",
         help="Minimum description quality score (0-100). Below this triggers a warning.",
     )
-    parser.add_argument(
+    settings.add_argument(
         "--explain-score",
         action="store_true",
         default=False,
         help="Show per-dimension breakdown for description quality scores.",
     )
-    parser.add_argument(
+    compatibility.add_argument(
         "--target-agent",
         choices=["claude", "vscode", "cursor", "all"],
         default="all",
         help="Scope compatibility checks to a specific agent (default: all).",
     )
-    parser.add_argument(
+    compatibility.add_argument(
         "--strict-vscode",
         action="store_true",
         default=False,
         help="Promote VS Code compatibility issues to errors.",
     )
-    parser.add_argument(
+    compatibility.add_argument(
         "--strict-cursor",
         action="store_true",
         default=False,
         help="Promote Cursor compatibility issues to errors.",
     )
-    parser.add_argument(
+    basic.add_argument(
         "--strict",
         dest="strict_all",
         action="store_true",
@@ -162,30 +162,30 @@ def _build_parser() -> argparse.ArgumentParser:
             "and enables the 'all' field in config for future strict rules."
         ),
     )
-    parser.add_argument(
+    basic.add_argument(
         "--version",
         action="version",
         version=f"%(prog)s {__version__}",
     )
-    parser.add_argument(
+    settings.add_argument(
         "--config",
         type=Path,
         default=None,
         help="Explicit TOML config. Otherwise merge legacy and TraceMantle settings at the nearest project root.",
     )
-    parser.add_argument(
+    advanced.add_argument(
         "--semantic",
         action="store_true",
         default=False,
         help="Run semantic-adjacent validation. Implies --analyze-graph when --ingest-graph is not supplied.",
     )
-    parser.add_argument(
+    advanced.add_argument(
         "--agent-reason",
         action="store_true",
         default=False,
         help="Agent-native workflow shortcut. Without ingested responses, emits an agent prompt packet and exits 0.",
     )
-    parser.add_argument(
+    advanced.add_argument(
         "--emit-critique-prompt",
         action="store_true",
         default=False,
@@ -194,7 +194,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "Skips all symbolic validation. Use --format json to wrap in {\"prompt\": \"...\"}."
         ),
     )
-    parser.add_argument(
+    advanced.add_argument(
         "--ingest-critique",
         metavar="PATH",
         default=None,
@@ -204,7 +204,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "Exit code 3 signals semantic drift when symbolic validation passed."
         ),
     )
-    parser.add_argument(
+    advanced.add_argument(
         "--critique-agent",
         choices=["claude", "codex", "cursor"],
         default=None,
@@ -214,7 +214,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "Requires --emit-critique-prompt or --ingest-critique."
         ),
     )
-    parser.add_argument(
+    advanced.add_argument(
         "--emit-graph",
         action="store_true",
         default=False,
@@ -223,7 +223,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "Replaces the validation report. Use --format json for machine-readable output."
         ),
     )
-    parser.add_argument(
+    advanced.add_argument(
         "--analyze-graph",
         action="store_true",
         default=False,
@@ -232,7 +232,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "into the validation report. Augments (does not replace) the report."
         ),
     )
-    parser.add_argument(
+    advanced.add_argument(
         "--emit-graph-prompt",
         action="store_true",
         default=False,
@@ -242,7 +242,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "Mutually exclusive with all other emit and augment modes."
         ),
     )
-    parser.add_argument(
+    advanced.add_argument(
         "--ingest-graph",
         metavar="PATH",
         default=None,
@@ -253,7 +253,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "Supersedes --analyze-graph (which does heuristic-only analysis)."
         ),
     )
-    parser.add_argument(
+    advanced.add_argument(
         "--graph-agent",
         choices=["claude", "codex", "cursor"],
         default=None,
@@ -263,7 +263,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "Requires --emit-graph-prompt or --ingest-graph."
         ),
     )
-    parser.add_argument(
+    advanced.add_argument(
         "--history",
         action="store_true",
         default=False,
@@ -272,7 +272,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "under its parent .tracemantle/history directory. Off by default. Incompatible with emit modes."
         ),
     )
-    parser.add_argument(
+    advanced.add_argument(
         "--show-history",
         action="store_true",
         default=False,
@@ -282,7 +282,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "Incompatible with emit modes and with --history."
         ),
     )
-    parser.add_argument(
+    advanced.add_argument(
         "--fail-on-regression",
         action="store_true",
         default=False,
@@ -292,7 +292,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "warnings that do not affect the exit code. Independent of --strict."
         ),
     )
-    parser.add_argument(
+    advanced.add_argument(
         "--activation-hypotheses",
         action="store_true",
         default=False,
@@ -301,7 +301,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "for the skill and exit 0."
         ),
     )
-    parser.add_argument(
+    compatibility.add_argument(
         "--check-profile-freshness",
         action="store_true",
         default=False,
@@ -310,14 +310,14 @@ def _build_parser() -> argparse.ArgumentParser:
             "reports a later Last-Modified. Sends one HTTP HEAD per checked profile. Never changes the exit code."
         ),
     )
-    parser.add_argument(
+    compatibility.add_argument(
         "--profile-max-age-days",
         type=int,
         default=None,
         metavar="N",
         help=f"Age limit for --check-profile-freshness (default: {DEFAULT_MAX_AGE_DAYS}).",
     )
-    parser.add_argument(
+    compatibility.add_argument(
         "--profile-registry",
         type=Path,
         default=None,

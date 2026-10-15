@@ -14,11 +14,11 @@ pytest tests/ -v   # same suite, reports coverage but does not gate on it
 
 Coverage is measured on every run but the floor is only applied by `make test`, `make verify-release`, and CI. That keeps single-file runs (`pytest tests/test_sizing.py`) usable: whole-package coverage on one test file is near zero, and a floor in `addopts` failed those runs unconditionally.
 
-The README test-count line (`N tests cover ...`) is asserted by `tests/test_readme_test_count_claim.py`; when you add or remove tests, bump the README count in the same commit.
+The implementation ledger test-count line (`N tests cover ...`) is asserted by `tests/test_readme_test_count_claim.py`; when you add or remove tests, bump the count in `docs/implementation-status.md` in the same commit.
 
 ### Platform-skipped tests
 
-A handful of tests skip on Windows because the underlying OS feature is unavailable or behaves differently. `pytest --collect-only` still counts them, so the README's `N tests cover ...` number is the same on every platform; only the pass/skip ratio shifts.
+A handful of tests skip on Windows because the underlying OS feature is unavailable or behaves differently. `pytest --collect-only` still counts them, so the ledger's `N tests cover ...` number is the same on every platform; only the pass/skip ratio shifts.
 
 - `tests/test_cli.py`: directory-symlink discovery skips on Windows because symlink creation requires privileges.
 - `tests/test_references.py`: the two `os.symlink`-based tests use the module-level `_skip_symlink = pytest.mark.skipif(sys.platform == "win32", ...)` mark. `os.symlink` on Windows requires developer mode or admin privileges, so the symlink-escape coverage runs on Linux/macOS only.
@@ -35,7 +35,7 @@ pip install -c constraints-dev.txt -e '.[dev]'
 make verify-release
 ```
 
-The release workflow reuses the entire CI workflow, including the supported OS/Python matrix, strict typing, lint, the unchanged 80% coverage floor, optional-tokenizer checks and clean wheel/source installs. It downloads those exact tested artifacts, checks the distribution identity, retains provenance attestations and uses PyPI trusted publishing. A failed quality job cannot reach publishing. Candidate artifacts are built with `--no-isolation` after installing constrained build tools, so build versions are reproducible without pinning consumer runtime requirements.
+The release workflow reuses the entire CI workflow, including the supported OS/Python matrix, strict typing, lint, the unchanged 80% coverage floor, optional-tokenizer checks and clean wheel/source installs. It downloads those exact tested artifacts, checks the distribution identity, retains provenance attestations and uses PyPI trusted publishing. The quality-gated approvals job installs OpenSSH, minisign and bubblewrap, rejects skipped signature/producer tests, and exercises the Action from the same source. A failed quality job cannot reach publishing. Candidate artifacts are built with `--no-isolation` after installing constrained build tools, so build versions are reproducible without pinning consumer runtime requirements.
 
 Publishing requires an explicit owner instruction. The Release workflow and `TRACEMANTLE_PUBLISH_ENABLED` are normally disabled; enable them for an authorized release, then disable them again after it completes. The `pypi` environment accepts version-tag refs only, and PyPI must trust `moonrunnerkc / tracemantle / release.yml / pypi`. See [rename-checklist.md](docs/rename-checklist.md). Do not upload a TraceMantle artifact to the legacy SkillCheck project. Local checks do not establish remote CI success or a public release. The manual `verify-gates.yml` workflow exercises a failed prerequisite with a nonpublishing sentinel; its expected quality failure and skipped sentinel must be checked individually. It never enables Release.
 

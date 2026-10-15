@@ -28,10 +28,18 @@ jobs:
           today=$(date -u +%Y-%m-%d)
           python3 - "$version" "$today" <<'PY'
           import re
+          import subprocess
           import sys
           from pathlib import Path
 
           version, today = sys.argv[1], sys.argv[2]
+          # A pre-promoted tag is complete even if main has newer unreleased work.
+          tagged = subprocess.check_output(
+              ['git', 'show', f'v{version}:CHANGELOG.md'], text=True
+          )
+          if re.search(rf"^##\s*\[{re.escape(version)}\]", tagged, re.MULTILINE):
+              print(f"[{version}] was recorded before tagging; nothing to promote.")
+              sys.exit(0)
           path = Path("CHANGELOG.md")
           text = path.read_text(encoding="utf-8")
 

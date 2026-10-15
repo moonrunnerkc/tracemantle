@@ -1,0 +1,23 @@
+{
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "checks": [
+    {
+      "artifact": "tracemantle-1.6.1-py3-none-any.whl",
+      "sha256": "b23bc255c8f064e2508badef74a2a48330502d602a81a692856e9d9a96a49889",
+      "version": "1.6.1",
+      "clean_install": "passed",
+      "setext_dependencies": "passed",
+      "numeric_overflow": "passed",
+      "legacy_migration": "not requested"
+    },
+    {
+      "artifact": "tracemantle-1.6.1.tar.gz",
+      "sha256": "076a04161d9b67d7050565f7b7efc1ef9cc607dc610cb15704d150ccf860e7a8",
+      "version": "1.6.1",
+      "clean_install": "passed",
+      "setext_dependencies": "passed",
+      "numeric_overflow": "passed",
+      "legacy_migration": "not requested"
+    }
+  ]
+}
