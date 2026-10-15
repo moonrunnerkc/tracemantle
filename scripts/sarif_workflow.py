@@ -17,7 +17,6 @@ from typing import Any
 
 import yaml
 
-
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / 'integrations/sarif/vendor/sarif-parsing'
 CHECKS = ('bundle-contract', 'report', 'upstream-tests')

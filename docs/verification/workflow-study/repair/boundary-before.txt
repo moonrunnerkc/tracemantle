@@ -1,0 +1,63 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+________________ test_decoded_nul_is_a_diagnostic[%00helper.py] ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-476/test_decoded_nul_is_a_diagnost0')
+target = '%00helper.py'
+
+    @pytest.mark.parametrize('target', ['%00helper.py', '{baseDir}/%00helper.py'])
+    def test_decoded_nul_is_a_diagnostic(tmp_path: Path, target: str) -> None:
+        result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize(f'[helper]({target})'), reference_format='skill-base-dir')
+        assert not result.complete
+>       assert any(d.rule == 'references.unreadable' for d in result.diagnostics)
+E       assert False
+E        +  where False = any(<generator object test_decoded_nul_is_a_diagnostic.<locals>.<genexpr> at 0x726934cd3850>)
+
+tests/test_reference_intent.py:143: AssertionError
+___________ test_decoded_nul_is_a_diagnostic[{baseDir}/%00helper.py] ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-476/test_decoded_nul_is_a_diagnost1')
+target = '{baseDir}/%00helper.py'
+
+    @pytest.mark.parametrize('target', ['%00helper.py', '{baseDir}/%00helper.py'])
+    def test_decoded_nul_is_a_diagnostic(tmp_path: Path, target: str) -> None:
+>       result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize(f'[helper]({target})'), reference_format='skill-base-dir')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_reference_intent.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/tracemantle/dependencies.py:69: in analyze_dependencies
+    target = (base / Path(target_text).expanduser()).resolve()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/pathlib.py:1242: in resolve
+    s = self._flavour.realpath(self, strict=strict)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen posixpath>:432: in realpath
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = '/tmp/pytest-of-brad/pytest-476/test_decoded_nul_is_a_diagnost1'
+rest = '', strict = False, seen = {}
+
+>   ???
+E   ValueError: embedded null byte
+
+<frozen posixpath>:476: ValueError
+______________ test_template_suffix_is_literal_not_home_expansion ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-brad/pytest-476/test_template_suffix_is_litera0')
+
+    def test_template_suffix_is_literal_not_home_expansion(tmp_path: Path) -> None:
+        (tmp_path / '~').mkdir()
+        (tmp_path / '~/helper.py').write_text('pass\n')
+        result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize('[helper]({baseDir}/~/helper.py)'), reference_format='skill-base-dir')
+>       assert result.complete
+E       assert False
+E        +  where False = Dependencies(paths=(), edges=(), diagnostics=(Diagnostic(rule='references.escape', severity=<Severity.ERROR: 'error'>,...esolves outside the skill directory.", line=1, context=None, source='advisory', confidence='medium'),), complete=False).complete
+
+tests/test_reference_intent.py:150: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_reference_intent.py::test_decoded_nul_is_a_diagnostic[%00helper.py]
+FAILED tests/test_reference_intent.py::test_decoded_nul_is_a_diagnostic[{baseDir}/%00helper.py]
+FAILED tests/test_reference_intent.py::test_template_suffix_is_literal_not_home_expansion
+3 failed, 22 deselected in 0.09s

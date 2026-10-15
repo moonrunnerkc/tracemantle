@@ -134,3 +134,18 @@ def test_ambiguous_self_mention_does_not_assert_a_cycle(tmp_path: Path) -> None:
     assert not result.complete
     assert result.edges == (('SKILL.md', 'SKILL.md'),)
     assert [d.rule for d in result.diagnostics] == ['references.uncertain']
+
+
+@pytest.mark.parametrize('target', ['%00helper.py', '{baseDir}/%00helper.py'])
+def test_decoded_nul_is_a_diagnostic(tmp_path: Path, target: str) -> None:
+    result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize(f'[helper]({target})'), reference_format='skill-base-dir')
+    assert not result.complete
+    assert any(d.rule == 'references.unreadable' for d in result.diagnostics)
+
+
+def test_template_suffix_is_literal_not_home_expansion(tmp_path: Path) -> None:
+    (tmp_path / '~').mkdir()
+    (tmp_path / '~/helper.py').write_text('pass\n')
+    result = analyze_dependencies(tmp_path / 'SKILL.md', tokenize('[helper]({baseDir}/~/helper.py)'), reference_format='skill-base-dir')
+    assert result.complete
+    assert result.paths == ('~/helper.py',)

@@ -31,3 +31,13 @@ No candidate metadata can select it. The raw `{baseDir}` spelling remains part
 of token identity. Explicit links, including transitive links, still diagnose
 missing resources and boundary escapes. Template support does not establish
 complete dependency coverage for the authentic SARIF bundle.
+
+After scoring, an additional boundary probe found decoded NUL references raised
+`ValueError` instead of returning a diagnostic. It also found a template suffix
+starting `~/` inherited legacy home expansion rather than staying literal under
+the selected root. All three added cases failed before correction and passed
+after (`boundary-before.txt`, `boundary-after.txt`). Decoded controls now fail
+before filesystem calls; home expansion remains only for ordinary legacy
+references. These inputs were not scored cases. The original b1f68fb scores are
+retained without pooling; the affected 25-test classification/boundary regression
+protocol is rerun on the final repaired source. No new savings claim is made.

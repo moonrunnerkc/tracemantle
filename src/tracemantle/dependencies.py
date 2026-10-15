@@ -43,6 +43,11 @@ def analyze_dependencies(path: Path, markdown: Markdown, *,
                 diagnostics.append(Diagnostic('references.uncertain', Severity.WARNING,
                     f"Inline path '{ref.target}' may be a resource, example or runtime input; dependency coverage is incomplete. Use an explicit link for a required resource.", line=line))
                 complete = False
+            if any(ord(c) < 32 or 127 <= ord(c) <= 159 for c in ref.target):
+                diagnostics.append(Diagnostic('references.unreadable', Severity.ERROR,
+                    'Reference contains a decoded control character.', line=line))
+                complete = False
+                continue
             target_text = ref.target
             base = source.parent
             if target_text.startswith('{baseDir}/'):
@@ -66,7 +71,10 @@ def analyze_dependencies(path: Path, markdown: Markdown, *,
                 # resolving. Without this, a reference like `~/notes/tips.md`
                 # is joined onto the skill directory as a literal "~"
                 # segment and misreported as a broken link.
-                target = (base / Path(target_text).expanduser()).resolve()
+                relative_path = Path(target_text)
+                if not ref.target.startswith('{baseDir}/'):
+                    relative_path = relative_path.expanduser()
+                target = (base / relative_path).resolve()
                 if not target.is_relative_to(root):
                     if ref.kind != 'mention':
                         diagnostics.append(Diagnostic('references.escape', Severity.ERROR, f"Reference '{ref.target}' resolves outside the skill directory.", line=line))

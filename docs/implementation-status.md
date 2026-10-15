@@ -128,7 +128,7 @@ Remote CI on the pull request is the evidence for the other interpreters and for
 
 ## Current development collection
 
-1557 tests cover validation, CLI integrations, bundle identity and evidence checks. This is a collection count, not a claim that every environment passed.
+1560 tests cover validation, CLI integrations, bundle identity and evidence checks. This is a collection count, not a claim that every environment passed.
 
 
 ## Included in 1.7.0: practical validation and scoped automation
