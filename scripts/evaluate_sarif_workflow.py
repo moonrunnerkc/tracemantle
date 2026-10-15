@@ -6,6 +6,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 import time
@@ -14,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from sarif_workflow import ROOT, SKILL, input_identity, sha, workflow
+from sarif_workflow import ROOT, SKILL, execute, input_identity, sha, workflow
 
 from tracemantle.bundle import create_manifest
 from tracemantle.evidence import Evidence, evidence_from_dict
@@ -117,7 +118,8 @@ def mutate(case: str, skill: Path, project: Path) -> None:
 
 
 def seed(output: Path) -> None:
-    from sarif_workflow import SETTINGS
+    from tracemantle.parser import DocumentSettings
+    settings = DocumentSettings(reference_format='skill-base-dir')
     output.mkdir(parents=True, exist_ok=False)
     with tempfile.TemporaryDirectory(prefix='sarif-seed-') as directory:
         project = Path(directory) / 'project'
@@ -126,7 +128,7 @@ def seed(output: Path) -> None:
         result = workflow(project, skill, output / 'run', integrated=False)
         if result['scan_exit'] or any(c['errors'] for c in result['checks']):
             raise RuntimeError('Cannot approve a failed seed run')
-        manifest = create_manifest(skill, document=parse(skill / 'SKILL.md', settings=SETTINGS))
+        manifest = create_manifest(skill, document=parse(skill / 'SKILL.md', settings=settings))
         artifact = digest({p.name: sha(p) for p in sorted((output / 'run').iterdir()) if p.is_file()})
         record = Evidence('report', 'pass', manifest.sha256, input_identity(project), digest({'format': 'sarif-2.1.0', 'dialect': 'skill-base-dir'}),
                           sha(ROOT / 'scripts/sarif_workflow.py'), sha(output / 'run/scan.stdout'), artifact,
@@ -175,6 +177,7 @@ def evaluate(output: Path, seed_root: Path) -> None:
                 case_output = output / f'{name}-{repetition}'
                 case_output.mkdir()
                 shutil.copytree(trusted, case_output / 'trusted', ignore=shutil.ignore_patterns('.git'))
+                subprocess.run(['git', 'bundle', 'create', str(case_output / 'trusted.bundle'), '--all'], cwd=trusted, capture_output=True, check=True)
                 write(case_output / 'source.json', {'revision': full_revision, 'case': name,
                                                    'kind': 'historical-replay' if name.startswith('history') else 'control' if name == 'control' else 'controlled-fault-or-change'})
                 # C decision and execution precede B. A/B order alternates to expose order effects.
@@ -185,9 +188,13 @@ def evaluate(output: Path, seed_root: Path) -> None:
                     shutil.copytree(project, isolated)
                     isolated_skill = work / f'{arm}-skill' / 'sarif-parsing'
                     shutil.copytree(skill, isolated_skill)
-                    runs[arm] = workflow(isolated, isolated_skill, case_output / arm, integrated=arm == 'C',
-                                         trusted_revision=trusted_revision if arm == 'C' else None,
-                                         evidence_root=trusted if arm == 'C' else None)
+                    argv = [sys.executable, str(ROOT / 'scripts/sarif_workflow.py'), '--project', str(isolated),
+                            '--skill', str(isolated_skill), '--output', str(case_output / arm)]
+                    if arm == 'C':
+                        argv.extend(['--integrated', '--trusted-revision', trusted_revision, '--evidence-root', str(trusted)])
+                    invocation = execute(argv, ROOT, case_output / f'{arm}-invocation')
+                    runs[arm] = json.loads((case_output / arm / 'run.json').read_bytes())
+                    runs[arm]['invocation'] = invocation
                 row = {'case': name, 'repetition': repetition, 'revision': full_revision, 'order': order, 'arms': runs}
                 rows.append(row)
                 write(output / 'results.json', {'rows': rows, 'elapsed_seconds': time.perf_counter() - started,

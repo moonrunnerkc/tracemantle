@@ -17,17 +17,9 @@ from typing import Any
 
 import yaml
 
-from tracemantle import validate
-from tracemantle.bundle import create_manifest, manifest_from_dict
-from tracemantle.comparison import compare
-from tracemantle.evidence import evidence_from_dict
-from tracemantle.parser import DocumentSettings, parse
-from tracemantle.policy import load_trusted_policy
-from tracemantle.storage import digest
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / 'integrations/sarif/vendor/sarif-parsing'
-SETTINGS = DocumentSettings(reference_format='skill-base-dir')
 CHECKS = ('bundle-contract', 'report', 'upstream-tests')
 REQUIRED_FILES = ('SKILL.md', 'resources/sarif_helpers.py', 'resources/jq-queries.md',
                   'resources/test_sarif_helpers.py', 'resources/fixtures/codeql-no-level.sarif',
@@ -46,6 +38,8 @@ def sha(path: Path) -> str:
 
 
 def input_identity(project: Path) -> str:
+    from tracemantle.storage import digest
+
     files = {str(p.relative_to(project)): sha(p) for directory in ('src', 'tests', 'scripts')
              for p in sorted((project / directory).rglob('*')) if p.is_file()
              and not {'__pycache__', '.pytest_cache', '.ruff_cache'} & set(p.parts)}
@@ -55,7 +49,7 @@ def input_identity(project: Path) -> str:
     if jq is None:
         raise RuntimeError('jq is required')
     from importlib.metadata import version
-    return digest({'files': files, 'checker': sha(Path(__file__)), 'dialect': SETTINGS.reference_format,
+    return digest({'files': files, 'checker': sha(Path(__file__)), 'dialect': 'skill-base-dir',
                    'python': sys.version, 'os': platform.platform(), 'ruff': version('ruff'), 'jq': sha(Path(jq))})
 
 
@@ -129,10 +123,18 @@ def workflow(project: Path, skill: Path, output: Path, *, integrated: bool,
     checks = []
     gate: dict[str, Any] = {'state': 'not-requested', 'reuse': []}
     if integrated:
+        from tracemantle import validate
+        from tracemantle.bundle import create_manifest, manifest_from_dict
+        from tracemantle.comparison import compare
+        from tracemantle.evidence import evidence_from_dict
+        from tracemantle.parser import DocumentSettings, parse
+        from tracemantle.policy import load_trusted_policy
+
+        settings = DocumentSettings(reference_format='skill-base-dir')
         gate_start = time.perf_counter()
         current_identity = input_identity(project)
-        validation = validate(skill / 'SKILL.md', settings=SETTINGS)
-        document = parse(skill / 'SKILL.md', settings=SETTINGS)
+        validation = validate(skill / 'SKILL.md', settings=settings)
+        document = parse(skill / 'SKILL.md', settings=settings)
         manifest = create_manifest(skill, document=document)
         gate = {'state': 'unknown', 'reuse': [], 'manifest': manifest.to_dict(),
                 'validation': [{'rule': d.rule, 'severity': d.severity.value, 'message': d.message} for d in validation.diagnostics]}

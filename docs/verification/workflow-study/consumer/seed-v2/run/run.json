@@ -1,0 +1,125 @@
+{
+  "checks": [
+    {
+      "id": "bundle-contract",
+      "reused": false,
+      "errors": [],
+      "seconds": 0.0005006769997635274
+    },
+    {
+      "id": "report",
+      "reused": false,
+      "errors": [],
+      "seconds": 0.03158705399982864
+    },
+    {
+      "id": "upstream-tests",
+      "reused": false,
+      "errors": [],
+      "seconds": 0.18311744400034513
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/tmp/tracemantle-study-venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "--no-cache",
+        "--output-format",
+        "sarif",
+        "src",
+        "tests",
+        "scripts"
+      ],
+      "cwd": "/tmp/sarif-seed-hse80an1/project",
+      "exit_code": 0,
+      "seconds": 0.03355839100004232,
+      "stdout": "scan.stdout",
+      "stderr": "scan.stderr",
+      "stdout_sha256": "6470cec32b748cf70513834a7404331f62d8a23ba9644645c3cbb2f73e6a7fdf",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-study-venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "--no-cache",
+        "--output-format",
+        "json",
+        "src",
+        "tests",
+        "scripts"
+      ],
+      "cwd": "/tmp/sarif-seed-hse80an1/project",
+      "exit_code": 0,
+      "seconds": 0.03179477600042446,
+      "stdout": "oracle.stdout",
+      "stderr": "oracle.stderr",
+      "stdout_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-study-venv/bin/python",
+        "-c",
+        "import json, sys\nsys.path.insert(0, sys.argv[1])\nfrom sarif_helpers import extract_findings, load_sarif, summary\nfindings = extract_findings(load_sarif(sys.argv[2]))\nprint(json.dumps({\"summary\": summary(findings), \"findings\": [\n    [f.rule_id, f.level, f.file_path, f.start_line, f.message] for f in findings]}))\n",
+        "/tmp/sarif-seed-hse80an1/project/integrations/sarif/vendor/sarif-parsing/resources",
+        "/tmp/sarif-approved-seed-v2/run/scan.stdout"
+      ],
+      "cwd": "/tmp/sarif-seed-hse80an1/project",
+      "exit_code": 0,
+      "seconds": 0.0276900819999355,
+      "stdout": "python-report.stdout",
+      "stderr": "python-report.stderr",
+      "stdout_sha256": "9cf4aa5987771f7ad24014a5b0e66985c1e0b8b0fa8b5741b7654ab874554905",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "jq",
+        "  def rule($run):\n    . as $r\n    | ($run.tool.driver.rules // []) as $rules\n    | (if ($r.ruleIndex | type) == \"number\" and $r.ruleIndex >= 0\n       then $rules[$r.ruleIndex] else null end)\n      // first($rules[] | select(.id == $r.ruleId))\n      // null;\n  def level($run):\n    . as $r\n    | if ($r.kind // \"fail\") != \"fail\" then \"none\"\n      else ($r.level // rule($run).defaultConfiguration.level // \"warning\") end;\n\n[.runs[] as $run | $run.results[] | select(level($run) == \"error\")] | length",
+        "/tmp/sarif-approved-seed-v2/run/scan.stdout"
+      ],
+      "cwd": "/tmp/sarif-seed-hse80an1/project",
+      "exit_code": 0,
+      "seconds": 0.003158108999741671,
+      "stdout": "jq-report.stdout",
+      "stderr": "jq-report.stderr",
+      "stdout_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-study-venv/bin/python",
+        "-m",
+        "pytest",
+        "-c",
+        "/tmp/sarif-approved-seed-v2/run/pytest.ini",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--import-mode=importlib",
+        "."
+      ],
+      "cwd": "/tmp/sarif-seed-hse80an1/project/integrations/sarif/vendor/sarif-parsing/resources",
+      "exit_code": 0,
+      "seconds": 0.18293249399994238,
+      "stdout": "upstream-tests.stdout",
+      "stderr": "upstream-tests.stderr",
+      "stdout_sha256": "493003253f128d11138e6334e3d10133769947b13b4adb8ee094b381965f85db",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "gate": {
+    "state": "not-requested",
+    "reuse": []
+  },
+  "seconds": 0.2807513239995387,
+  "scan_exit": 0,
+  "python": "3.12.3",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39"
+}
