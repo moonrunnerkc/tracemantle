@@ -1,0 +1,23 @@
+{
+  "tool": "TraceMantle",
+  "version": "1.7.0",
+  "schema_version": 1,
+  "command": "manifest",
+  "exit_code": 0,
+  "result": {
+    "schema_version": 1,
+    "bundle_sha256": "5fb966f603ae5906b71cf5d0cb8bf6e42630f7a8c03238acac4437ab9e68ec9e",
+    "files": [
+      {
+        "path": "SKILL.md",
+        "sha256": "4703349ddee511ce237a2d0c7191aa81de0f88f3eea77efc56e4e4bd151c8677",
+        "executable": false,
+        "size": 5013
+      }
+    ],
+    "description_sha256": "e6034e3619ae78160c90bedb78063d79ac2e1b6ce26f1e516743b4df2fc3bd22",
+    "dependencies": [],
+    "complete": true,
+    "issues": []
+  }
+}

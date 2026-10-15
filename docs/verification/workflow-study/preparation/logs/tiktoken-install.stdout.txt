@@ -1,0 +1,163 @@
+Obtaining file:///tmp/tracemantle-workflow-preparation/tiktoken
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Installing backend dependencies: started
+  Installing backend dependencies: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Collecting pyyaml>=6.0 (from tracemantle==1.7.0)
+  Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Collecting build>=1.2 (from tracemantle==1.7.0)
+  Downloading build-1.5.0-py3-none-any.whl.metadata (5.7 kB)
+Collecting hatchling>=1.27 (from tracemantle==1.7.0)
+  Downloading hatchling-1.32.0-py3-none-any.whl.metadata (3.9 kB)
+Collecting mypy>=1.10 (from tracemantle==1.7.0)
+  Downloading mypy-2.3.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Collecting pre-commit>=3.5 (from tracemantle==1.7.0)
+  Downloading pre_commit-4.6.2-py2.py3-none-any.whl.metadata (1.2 kB)
+Collecting pytest-cov>=5.0 (from tracemantle==1.7.0)
+  Downloading pytest_cov-7.1.0-py3-none-any.whl.metadata (32 kB)
+Collecting pytest>=8.0 (from tracemantle==1.7.0)
+  Downloading pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+Collecting ruff>=0.6 (from tracemantle==1.7.0)
+  Downloading ruff-0.16.4-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (26 kB)
+Collecting tomli>=2.0 (from tracemantle==1.7.0)
+  Downloading tomli-2.4.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (10 kB)
+Collecting types-pyyaml>=6.0 (from tracemantle==1.7.0)
+  Downloading types_pyyaml-6.0.12.20260815-py3-none-any.whl.metadata (1.8 kB)
+Collecting tiktoken>=0.7 (from tracemantle==1.7.0)
+  Downloading tiktoken-0.14.0-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (6.7 kB)
+Collecting packaging>=24.0 (from build>=1.2->tracemantle==1.7.0)
+  Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+Collecting pyproject_hooks (from build>=1.2->tracemantle==1.7.0)
+  Downloading pyproject_hooks-1.2.0-py3-none-any.whl.metadata (1.3 kB)
+Collecting pathspec>=0.10.1 (from hatchling>=1.27->tracemantle==1.7.0)
+  Downloading pathspec-1.1.1-py3-none-any.whl.metadata (14 kB)
+Collecting pluggy>=1.0.0 (from hatchling>=1.27->tracemantle==1.7.0)
+  Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+Collecting tomlkit>=0.11.1 (from hatchling>=1.27->tracemantle==1.7.0)
+  Downloading tomlkit-0.15.1-py3-none-any.whl.metadata (3.3 kB)
+Collecting trove-classifiers (from hatchling>=1.27->tracemantle==1.7.0)
+  Downloading trove_classifiers-2026.6.1.19-py3-none-any.whl.metadata (2.3 kB)
+Collecting typing_extensions>=4.6.0 (from mypy>=1.10->tracemantle==1.7.0)
+  Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting mypy_extensions>=1.0.0 (from mypy>=1.10->tracemantle==1.7.0)
+  Downloading mypy_extensions-1.1.0-py3-none-any.whl.metadata (1.1 kB)
+Collecting librt>=0.13.0 (from mypy>=1.10->tracemantle==1.7.0)
+  Downloading librt-0.15.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (1.3 kB)
+Collecting ast-serialize<1.0.0,>=0.6.0 (from mypy>=1.10->tracemantle==1.7.0)
+  Downloading ast_serialize-0.8.0-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (1.4 kB)
+Collecting cfgv>=2.0.0 (from pre-commit>=3.5->tracemantle==1.7.0)
+  Downloading cfgv-3.5.0-py2.py3-none-any.whl.metadata (8.9 kB)
+Collecting identify>=1.0.0 (from pre-commit>=3.5->tracemantle==1.7.0)
+  Downloading identify-2.6.19-py2.py3-none-any.whl.metadata (4.4 kB)
+Collecting nodeenv>=0.11.1 (from pre-commit>=3.5->tracemantle==1.7.0)
+  Downloading nodeenv-1.10.0-py2.py3-none-any.whl.metadata (24 kB)
+Collecting virtualenv>=20.10.0 (from pre-commit>=3.5->tracemantle==1.7.0)
+  Downloading virtualenv-21.7.4-py3-none-any.whl.metadata (3.5 kB)
+Collecting iniconfig>=1.0.1 (from pytest>=8.0->tracemantle==1.7.0)
+  Downloading iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting pygments>=2.7.2 (from pytest>=8.0->tracemantle==1.7.0)
+  Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting coverage>=7.10.6 (from coverage[toml]>=7.10.6->pytest-cov>=5.0->tracemantle==1.7.0)
+  Downloading coverage-7.15.4-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (8.6 kB)
+Collecting regex (from tiktoken>=0.7->tracemantle==1.7.0)
+  Downloading regex-2026.7.19-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (40 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40.5/40.5 kB 10.7 MB/s eta 0:00:00
+Collecting requests (from tiktoken>=0.7->tracemantle==1.7.0)
+  Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+Collecting distlib<1,>=0.3.7 (from virtualenv>=20.10.0->pre-commit>=3.5->tracemantle==1.7.0)
+  Downloading distlib-0.4.3-py2.py3-none-any.whl.metadata (5.3 kB)
+Collecting filelock<4,>=3.24.2 (from virtualenv>=20.10.0->pre-commit>=3.5->tracemantle==1.7.0)
+  Downloading filelock-3.32.3-py3-none-any.whl.metadata (2.0 kB)
+Collecting platformdirs<5,>=3.9.1 (from virtualenv>=20.10.0->pre-commit>=3.5->tracemantle==1.7.0)
+  Downloading platformdirs-4.11.3-py3-none-any.whl.metadata (5.5 kB)
+Collecting python-discovery>=1.4.2 (from virtualenv>=20.10.0->pre-commit>=3.5->tracemantle==1.7.0)
+  Downloading python_discovery-1.5.2-py3-none-any.whl.metadata (5.1 kB)
+Collecting charset_normalizer<4,>=2 (from requests->tiktoken>=0.7->tracemantle==1.7.0)
+  Downloading charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (45 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.9/45.9 kB 37.2 MB/s eta 0:00:00
+Collecting idna<4,>=2.5 (from requests->tiktoken>=0.7->tracemantle==1.7.0)
+  Downloading idna-3.19-py3-none-any.whl.metadata (9.2 kB)
+Collecting urllib3<3,>=1.26 (from requests->tiktoken>=0.7->tracemantle==1.7.0)
+  Downloading urllib3-2.7.0-py3-none-any.whl.metadata (6.9 kB)
+Collecting certifi>=2023.5.7 (from requests->tiktoken>=0.7->tracemantle==1.7.0)
+  Downloading certifi-2026.7.22-py3-none-any.whl.metadata (2.5 kB)
+Downloading build-1.5.0-py3-none-any.whl (26 kB)
+Downloading hatchling-1.32.0-py3-none-any.whl (78 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.4/78.4 kB 5.7 MB/s eta 0:00:00
+Downloading mypy-2.3.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (15.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 15.3/15.3 MB 16.1 MB/s eta 0:00:00
+Downloading pre_commit-4.6.2-py2.py3-none-any.whl (226 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 226.2/226.2 kB 20.1 MB/s eta 0:00:00
+Downloading pytest-9.1.1-py3-none-any.whl (386 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 386.5/386.5 kB 18.0 MB/s eta 0:00:00
+Downloading pytest_cov-7.1.0-py3-none-any.whl (22 kB)
+Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 807.9/807.9 kB 19.8 MB/s eta 0:00:00
+Downloading ruff-0.16.4-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (10.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.3/10.3 MB 16.9 MB/s eta 0:00:00
+Downloading tiktoken-0.14.0-cp312-cp312-manylinux_2_28_x86_64.whl (1.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 17.6 MB/s eta 0:00:00
+Downloading tomli-2.4.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (253 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 253.3/253.3 kB 25.2 MB/s eta 0:00:00
+Downloading types_pyyaml-6.0.12.20260815-py3-none-any.whl (21 kB)
+Downloading ast_serialize-0.8.0-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (1.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 22.5 MB/s eta 0:00:00
+Downloading cfgv-3.5.0-py2.py3-none-any.whl (7.4 kB)
+Downloading coverage-7.15.4-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (257 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 257.1/257.1 kB 22.4 MB/s eta 0:00:00
+Downloading identify-2.6.19-py2.py3-none-any.whl (99 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 99.4/99.4 kB 23.3 MB/s eta 0:00:00
+Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+Downloading librt-0.15.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (531 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 531.9/531.9 kB 16.5 MB/s eta 0:00:00
+Downloading mypy_extensions-1.1.0-py3-none-any.whl (5.0 kB)
+Downloading nodeenv-1.10.0-py2.py3-none-any.whl (23 kB)
+Downloading packaging-26.3-py3-none-any.whl (129 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 130.0/130.0 kB 17.3 MB/s eta 0:00:00
+Downloading pathspec-1.1.1-py3-none-any.whl (57 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.3/57.3 kB 213.2 MB/s eta 0:00:00
+Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 21.3 MB/s eta 0:00:00
+Downloading tomlkit-0.15.1-py3-none-any.whl (49 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 49.4/49.4 kB 322.8 MB/s eta 0:00:00
+Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.6/45.6 kB 20.2 MB/s eta 0:00:00
+Downloading virtualenv-21.7.4-py3-none-any.whl (5.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.3/5.3 MB 16.4 MB/s eta 0:00:00
+Downloading pyproject_hooks-1.2.0-py3-none-any.whl (10 kB)
+Downloading regex-2026.7.19-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (801 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 801.8/801.8 kB 20.9 MB/s eta 0:00:00
+Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 73.1/73.1 kB 27.4 MB/s eta 0:00:00
+Downloading trove_classifiers-2026.6.1.19-py3-none-any.whl (14 kB)
+Downloading certifi-2026.7.22-py3-none-any.whl (136 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 137.0/137.0 kB 30.4 MB/s eta 0:00:00
+Downloading charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (248 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 248.8/248.8 kB 20.7 MB/s eta 0:00:00
+Downloading distlib-0.4.3-py2.py3-none-any.whl (470 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 470.6/470.6 kB 17.3 MB/s eta 0:00:00
+Downloading filelock-3.32.3-py3-none-any.whl (98 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 98.9/98.9 kB 15.7 MB/s eta 0:00:00
+Downloading idna-3.19-py3-none-any.whl (68 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 68.5/68.5 kB 10.3 MB/s eta 0:00:00
+Downloading platformdirs-4.11.3-py3-none-any.whl (23 kB)
+Downloading python_discovery-1.5.2-py3-none-any.whl (38 kB)
+Downloading urllib3-2.7.0-py3-none-any.whl (131 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 131.1/131.1 kB 25.5 MB/s eta 0:00:00
+Checking if build backend supports build_editable: started
+Checking if build backend supports build_editable: finished with status 'done'
+Building wheels for collected packages: tracemantle
+  Building editable for tracemantle (pyproject.toml): started
+  Building editable for tracemantle (pyproject.toml): finished with status 'done'
+  Created wheel for tracemantle: filename=tracemantle-1.7.0-py3-none-any.whl size=3823 sha256=d447ebb9584a0fca7330727493318770ce0b8b0d0bed589b5de57af069a4b21c
+  Stored in directory: /tmp/tracemantle-workflow-preparation/tiktoken-tmpdir/pip-ephem-wheel-cache-gwyj0oe1/wheels/96/d9/a7/a21dae3da048956574ae9aab9b16a2bb1f102c0bbd170198d9
+Successfully built tracemantle
+Installing collected packages: trove-classifiers, distlib, urllib3, typing_extensions, types-pyyaml, tomlkit, tomli, ruff, regex, pyyaml, pyproject_hooks, pygments, pluggy, platformdirs, pathspec, packaging, nodeenv, mypy_extensions, librt, iniconfig, idna, identify, filelock, coverage, charset_normalizer, cfgv, certifi, ast-serialize, tracemantle, requests, python-discovery, pytest, mypy, hatchling, build, virtualenv, tiktoken, pytest-cov, pre-commit
+Successfully installed ast-serialize-0.8.0 build-1.5.0 certifi-2026.7.22 cfgv-3.5.0 charset_normalizer-3.5.1 coverage-7.15.4 distlib-0.4.3 filelock-3.32.3 hatchling-1.32.0 identify-2.6.19 idna-3.19 iniconfig-2.3.0 librt-0.15.0 mypy-2.3.1 mypy_extensions-1.1.0 nodeenv-1.10.0 packaging-26.3 pathspec-1.1.1 platformdirs-4.11.3 pluggy-1.6.0 pre-commit-4.6.2 pygments-2.21.0 pyproject_hooks-1.2.0 pytest-9.1.1 pytest-cov-7.1.0 python-discovery-1.5.2 pyyaml-6.0.3 regex-2026.7.19 requests-2.34.2 ruff-0.16.4 tiktoken-0.14.0 tomli-2.4.1 tomlkit-0.15.1 tracemantle-1.7.0 trove-classifiers-2026.6.1.19 types-pyyaml-6.0.12.20260815 typing_extensions-4.16.0 urllib3-2.7.0 virtualenv-21.7.4

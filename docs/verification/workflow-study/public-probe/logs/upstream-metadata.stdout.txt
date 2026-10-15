@@ -1,0 +1,13 @@
+Checking 44 plugin(s)
+
+7 warning(s) — these do not fail the build:
+
+  ! testing-handbook-skills: skills/aflpp/SKILL.md is 644 lines, over the 500 limit
+  ! testing-handbook-skills: skills/constant-time-testing/SKILL.md is 505 lines, over the 500 limit
+  ! testing-handbook-skills: skills/coverage-analysis/SKILL.md is 604 lines, over the 500 limit
+  ! testing-handbook-skills: skills/harness-writing/SKILL.md is 612 lines, over the 500 limit
+  ! testing-handbook-skills: skills/libafl/SKILL.md is 623 lines, over the 500 limit
+  ! testing-handbook-skills: skills/libfuzzer/SKILL.md is 793 lines, over the 500 limit
+  ! testing-handbook-skills: skills/wycheproof/SKILL.md is 531 lines, over the 500 limit
+
+✓ no errors (522 references resolved, 1139 files scanned for hardcoded paths, 763 for legacy python invocations, 132 components named in their README)

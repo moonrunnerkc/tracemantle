@@ -1,0 +1,84 @@
+{
+  "tool": "TraceMantle",
+  "version": "1.7.0",
+  "schema_version": 1,
+  "command": "manifest",
+  "exit_code": 4,
+  "result": {
+    "schema_version": 1,
+    "bundle_sha256": "50443c49f1338493a30e9fa5f24448373fa0e7c06ee568e6b44bbb22cc731aa0",
+    "files": [
+      {
+        "path": "SKILL.md",
+        "sha256": "cc5f008f40ffb8a1ae03ebd32d7234de43e828293955a0bc251b76ba249554fa",
+        "executable": false,
+        "size": 17925
+      },
+      {
+        "path": "agents/openai.yaml",
+        "sha256": "6385b46a44aad5b114744dbc2055ce3f6456c0e822b92a7a6c6870f2a248014e",
+        "executable": false,
+        "size": 231
+      },
+      {
+        "path": "assets/trail-of-bits-mark.svg",
+        "sha256": "4bf74c789b38dcf6ad762c136b6832363d27ae19fbaa9a18ec18d66ecce6ca05",
+        "executable": false,
+        "size": 3084
+      },
+      {
+        "path": "resources/fixtures/codeql-no-level.sarif",
+        "sha256": "edc92b09e4d8b1247ec87f081c68caa1843d8407063508ad33aab13327ba386a",
+        "executable": false,
+        "size": 2302
+      },
+      {
+        "path": "resources/fixtures/levels-on-results.sarif",
+        "sha256": "625e8175a3c68d0d11f7e4c14095dddff5056d52a539e3153180cdb37ce50c6b",
+        "executable": false,
+        "size": 1782
+      },
+      {
+        "path": "resources/jq-queries.md",
+        "sha256": "f44ec4e219c93504ec69fdeb2c60668ee3934585e5565fffdaa43f6b224b5d6a",
+        "executable": false,
+        "size": 7868
+      },
+      {
+        "path": "resources/sarif_helpers.py",
+        "sha256": "06d8e63849bd2b93baf31b23a33550447eed2ac457c2687f173933039e5ad247",
+        "executable": false,
+        "size": 13027
+      },
+      {
+        "path": "resources/test_sarif_helpers.py",
+        "sha256": "5efc4e50f3dbd81ea223049b1892653a46bce0c273904d0b04e43e449343fe17",
+        "executable": false,
+        "size": 14028
+      }
+    ],
+    "description_sha256": "91e7d14e55a91a67c8ed3a471eb9bfc294584789c8e8404f6e422a6ce358a706",
+    "dependencies": [
+      [
+        "SKILL.md",
+        "admin/login.py"
+      ],
+      [
+        "SKILL.md",
+        "auth/login.py"
+      ],
+      [
+        "SKILL.md",
+        "resources/sarif_helpers.py"
+      ]
+    ],
+    "complete": false,
+    "issues": [
+      "Reference '/github/workspace/' resolves outside the skill directory.",
+      "Reference '/path/to/project/' resolves outside the skill directory.",
+      "Referenced file does not exist: 'admin/login.py'.",
+      "Referenced file does not exist: 'auth/login.py'.",
+      "Resource dependency coverage is incomplete; rerun the full relevant suite."
+    ]
+  }
+}

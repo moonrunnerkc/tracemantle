@@ -1,0 +1,507 @@
+{
+  "schema_version": 1,
+  "purpose": "preparation, not a consumer deployment or scored study",
+  "source_revision": "721845b35ef450ebaaf4c7bfb20990db92d0ed3c",
+  "observed_at": "2026-10-15T14:38:35.032103+00:00",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "elapsed_seconds": 406.49832718200014,
+  "scored_cases": 0,
+  "evaluation_model_calls": 0,
+  "evaluation_model_tokens": 0,
+  "evaluation_model_cost_usd": 0,
+  "authoring_model_cost_usd": null,
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "clone",
+        "--quiet",
+        "--no-hardlinks",
+        "--no-checkout",
+        "/home/brad/projects/tracemantle-study",
+        "/tmp/tracemantle-workflow-preparation/heuristic"
+      ],
+      "cwd": "/home/brad/projects/tracemantle-study",
+      "exit_code": 0,
+      "elapsed_seconds": 0.06476329999986774,
+      "timed_out": false,
+      "stdout": "heuristic-clone.stdout.txt",
+      "stderr": "heuristic-clone.stderr.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "git",
+        "checkout",
+        "--detach",
+        "721845b35ef450ebaaf4c7bfb20990db92d0ed3c"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/heuristic",
+      "exit_code": 0,
+      "elapsed_seconds": 0.032342560999950365,
+      "timed_out": false,
+      "stdout": "heuristic-checkout.stdout.txt",
+      "stderr": "heuristic-checkout.stderr.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c2fd0bb615a6c7f9f11d01150c8726576e67dfe9f0f9f84d8c7c2108e1975b69"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "venv",
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation",
+      "exit_code": 0,
+      "elapsed_seconds": 1.7174117810000098,
+      "timed_out": false,
+      "stdout": "heuristic-venv.stdout.txt",
+      "stderr": "heuristic-venv.stderr.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        "-m",
+        "pip",
+        "install",
+        "--no-cache-dir",
+        "-c",
+        "constraints-dev.txt",
+        "-e",
+        ".[dev]"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/heuristic",
+      "exit_code": 0,
+      "elapsed_seconds": 12.091890085999694,
+      "timed_out": false,
+      "stdout": "heuristic-install.stdout.txt",
+      "stderr": "heuristic-install.stderr.txt",
+      "stdout_sha256": "1322d986ff023d31cee36222ab8f11ea2bb59a565d8d76a71e8a7da74115c92f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        "-m",
+        "pip",
+        "list",
+        "--format=json"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/heuristic",
+      "exit_code": 0,
+      "elapsed_seconds": 0.2652361769996787,
+      "timed_out": false,
+      "stdout": "heuristic-dependencies.stdout.txt",
+      "stderr": "heuristic-dependencies.stderr.txt",
+      "stdout_sha256": "482c0c86b1655274496eb875447db8efa33e6b01e970969bc8ff6c8fb2d2b370",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/heuristic",
+      "exit_code": 0,
+      "elapsed_seconds": 0.26468767400001525,
+      "timed_out": false,
+      "stdout": "heuristic-pip-check.stdout.txt",
+      "stderr": "heuristic-pip-check.stderr.txt",
+      "stdout_sha256": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        "-c",
+        "import importlib.util; present = importlib.util.find_spec('tiktoken') is not None; print('tiktoken present:', present); assert present is False"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/heuristic",
+      "exit_code": 0,
+      "elapsed_seconds": 0.01621265800031324,
+      "timed_out": false,
+      "stdout": "heuristic-tokenizer-presence.stdout.txt",
+      "stderr": "heuristic-tokenizer-presence.stderr.txt",
+      "stdout_sha256": "c484a289e961f7d78cb06ce3b7859df6dcc76b26ef51d04ecb9519b18be92465",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/",
+        "-q",
+        "-ra",
+        "-p",
+        "no:cacheprovider",
+        "--cov-fail-under=80",
+        "--junitxml=/tmp/tracemantle-workflow-preparation/logs/heuristic-tests.xml"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/heuristic",
+      "exit_code": 0,
+      "elapsed_seconds": 186.93247956300002,
+      "timed_out": false,
+      "stdout": "heuristic-tests.stdout.txt",
+      "stderr": "heuristic-tests.stderr.txt",
+      "stdout_sha256": "fa3a7620619ea3ba26a021ee458122582eee1c41eb66001442e0bbcec4b09c67",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/ruff",
+        "check",
+        "src",
+        "tests",
+        "scripts"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/heuristic",
+      "exit_code": 0,
+      "elapsed_seconds": 0.032255567999982304,
+      "timed_out": false,
+      "stdout": "ruff.stdout.txt",
+      "stderr": "ruff.stderr.txt",
+      "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/mypy"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/heuristic",
+      "exit_code": 0,
+      "elapsed_seconds": 1.5673563329996796,
+      "timed_out": false,
+      "stdout": "mypy.stdout.txt",
+      "stderr": "mypy.stderr.txt",
+      "stdout_sha256": "ea13de917fec88bface9c85c6d3b4cf4a79eb7aec66c27c95d728a1ac3f68e0b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        "scripts/generate_reference.py",
+        "--check"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/heuristic",
+      "exit_code": 0,
+      "elapsed_seconds": 0.2148102889996153,
+      "timed_out": false,
+      "stdout": "reference.stdout.txt",
+      "stderr": "reference.stderr.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        "-m",
+        "tracemantle",
+        "--version"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/heuristic",
+      "exit_code": 0,
+      "elapsed_seconds": 0.11442091300023094,
+      "timed_out": false,
+      "stdout": "version.stdout.txt",
+      "stderr": "version.stderr.txt",
+      "stdout_sha256": "a7279ba670271bcbd208941945c1dabce84cee1531dc36ab5212df69892d29de",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        "-m",
+        "tracemantle",
+        "skills/tracemantle/SKILL.md",
+        "--format",
+        "json"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/heuristic",
+      "exit_code": 0,
+      "elapsed_seconds": 0.11465557200017429,
+      "timed_out": false,
+      "stdout": "self-host-validation.stdout.txt",
+      "stderr": "self-host-validation.stderr.txt",
+      "stdout_sha256": "f5edf0ea626cf71dd0e4a86492b98eb5034da3d65311dbbd1a0b91725312cbe8",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/heuristic-venv/bin/python",
+        "-m",
+        "tracemantle",
+        "manifest",
+        "skills/tracemantle",
+        "--format",
+        "json"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/heuristic",
+      "exit_code": 0,
+      "elapsed_seconds": 0.16437488199971995,
+      "timed_out": false,
+      "stdout": "self-host-manifest.stdout.txt",
+      "stderr": "self-host-manifest.stderr.txt",
+      "stdout_sha256": "5559c6dafc9d60d3010095af68a7309af4817b4376289d7d5f3c5c95fbaf3d4e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "git",
+        "clone",
+        "--quiet",
+        "--no-hardlinks",
+        "--no-checkout",
+        "/home/brad/projects/tracemantle-study",
+        "/tmp/tracemantle-workflow-preparation/tiktoken"
+      ],
+      "cwd": "/home/brad/projects/tracemantle-study",
+      "exit_code": 0,
+      "elapsed_seconds": 0.03209522699989975,
+      "timed_out": false,
+      "stdout": "tiktoken-clone.stdout.txt",
+      "stderr": "tiktoken-clone.stderr.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "git",
+        "checkout",
+        "--detach",
+        "721845b35ef450ebaaf4c7bfb20990db92d0ed3c"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/tiktoken",
+      "exit_code": 0,
+      "elapsed_seconds": 0.032104075999995985,
+      "timed_out": false,
+      "stdout": "tiktoken-checkout.stdout.txt",
+      "stderr": "tiktoken-checkout.stderr.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c2fd0bb615a6c7f9f11d01150c8726576e67dfe9f0f9f84d8c7c2108e1975b69"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "venv",
+        "/tmp/tracemantle-workflow-preparation/tiktoken-venv"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation",
+      "exit_code": 0,
+      "elapsed_seconds": 2.1683123719999458,
+      "timed_out": false,
+      "stdout": "tiktoken-venv.stdout.txt",
+      "stderr": "tiktoken-venv.stderr.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/tiktoken-venv/bin/python",
+        "-m",
+        "pip",
+        "install",
+        "--no-cache-dir",
+        "-c",
+        "constraints-dev.txt",
+        "-e",
+        ".[dev,tiktoken]"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/tiktoken",
+      "exit_code": 0,
+      "elapsed_seconds": 13.941790699000194,
+      "timed_out": false,
+      "stdout": "tiktoken-install.stdout.txt",
+      "stderr": "tiktoken-install.stderr.txt",
+      "stdout_sha256": "625d8996730ed31caa6ffd69354e81b01f3cb49baf0aa577c3f7e0163f2401cd",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/tiktoken-venv/bin/python",
+        "-m",
+        "pip",
+        "list",
+        "--format=json"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/tiktoken",
+      "exit_code": 0,
+      "elapsed_seconds": 0.2645651879997786,
+      "timed_out": false,
+      "stdout": "tiktoken-dependencies.stdout.txt",
+      "stderr": "tiktoken-dependencies.stderr.txt",
+      "stdout_sha256": "ca4234cd10c532707f2cc0349d8032f385f976034b4fa22c3facc24c3fe88143",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/tiktoken-venv/bin/python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/tiktoken",
+      "exit_code": 0,
+      "elapsed_seconds": 0.31455924500005494,
+      "timed_out": false,
+      "stdout": "tiktoken-pip-check.stdout.txt",
+      "stderr": "tiktoken-pip-check.stderr.txt",
+      "stdout_sha256": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/tiktoken-venv/bin/python",
+        "-c",
+        "import importlib.util; present = importlib.util.find_spec('tiktoken') is not None; print('tiktoken present:', present); assert present is True"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/tiktoken",
+      "exit_code": 0,
+      "elapsed_seconds": 0.01612847900014458,
+      "timed_out": false,
+      "stdout": "tiktoken-tokenizer-presence.stdout.txt",
+      "stderr": "tiktoken-tokenizer-presence.stderr.txt",
+      "stdout_sha256": "0e5a54123d9eb8fbd06a2c2fd60a2c43c91b9d126d83f9056a7c83ff9da2f0e4",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/tiktoken-venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/",
+        "-q",
+        "-ra",
+        "-p",
+        "no:cacheprovider",
+        "--cov-fail-under=80",
+        "--junitxml=/tmp/tracemantle-workflow-preparation/logs/tiktoken-tests.xml"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/tiktoken",
+      "exit_code": 0,
+      "elapsed_seconds": 184.783124134,
+      "timed_out": false,
+      "stdout": "tiktoken-tests.stdout.txt",
+      "stderr": "tiktoken-tests.stderr.txt",
+      "stdout_sha256": "f4280aecf5363b73e7964ee921bc5b30a73b8f6ed5b885117665d49b17e09892",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/tiktoken-venv/bin/python",
+        "scripts/calibrate_advisories.py",
+        "--output",
+        "/tmp/tracemantle-workflow-preparation/logs/calibration.json"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/tiktoken",
+      "exit_code": 0,
+      "elapsed_seconds": 0.2146470830002727,
+      "timed_out": false,
+      "stdout": "calibration.stdout.txt",
+      "stderr": "calibration.stderr.txt",
+      "stdout_sha256": "a6f962d520d940bc24fa83d5d84f101865b903a4a7dcf8cb6868f154f68b4f12",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/tiktoken-venv/bin/python",
+        "-m",
+        "pip",
+        "install",
+        "--no-cache-dir",
+        "-c",
+        "constraints-dev.txt",
+        "strictyaml",
+        "click"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/tiktoken",
+      "exit_code": 0,
+      "elapsed_seconds": 1.016377325999656,
+      "timed_out": false,
+      "stdout": "conformance-install.stdout.txt",
+      "stderr": "conformance-install.stderr.txt",
+      "stdout_sha256": "6710ac8ccad816bfdd24f21edd001e49f3455615ae88b609ef8cf762e19d9f49",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/tracemantle-workflow-preparation/tiktoken-venv/bin/python",
+        "scripts/verify_reference_corpus.py",
+        "--output",
+        "/tmp/tracemantle-workflow-preparation/logs/conformance.json"
+      ],
+      "cwd": "/tmp/tracemantle-workflow-preparation/tiktoken",
+      "exit_code": 0,
+      "elapsed_seconds": 0.11438107000003583,
+      "timed_out": false,
+      "stdout": "conformance.stdout.txt",
+      "stderr": "conformance.stderr.txt",
+      "stdout_sha256": "0f46939939e9dbe7975cac74a7356e9c717e6f2133ddf86e8f13feeb5089d43a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "artifacts": {
+    "calibration.json": "a6f962d520d940bc24fa83d5d84f101865b903a4a7dcf8cb6868f154f68b4f12",
+    "calibration.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "calibration.stdout.txt": "a6f962d520d940bc24fa83d5d84f101865b903a4a7dcf8cb6868f154f68b4f12",
+    "conformance-install.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "conformance-install.stdout.txt": "6710ac8ccad816bfdd24f21edd001e49f3455615ae88b609ef8cf762e19d9f49",
+    "conformance.json": "0f46939939e9dbe7975cac74a7356e9c717e6f2133ddf86e8f13feeb5089d43a",
+    "conformance.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "conformance.stdout.txt": "0f46939939e9dbe7975cac74a7356e9c717e6f2133ddf86e8f13feeb5089d43a",
+    "heuristic-checkout.stderr.txt": "c2fd0bb615a6c7f9f11d01150c8726576e67dfe9f0f9f84d8c7c2108e1975b69",
+    "heuristic-checkout.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "heuristic-clone.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "heuristic-clone.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "heuristic-dependencies.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "heuristic-dependencies.stdout.txt": "482c0c86b1655274496eb875447db8efa33e6b01e970969bc8ff6c8fb2d2b370",
+    "heuristic-install.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "heuristic-install.stdout.txt": "1322d986ff023d31cee36222ab8f11ea2bb59a565d8d76a71e8a7da74115c92f",
+    "heuristic-pip-check.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "heuristic-pip-check.stdout.txt": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+    "heuristic-tests.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "heuristic-tests.stdout.txt": "fa3a7620619ea3ba26a021ee458122582eee1c41eb66001442e0bbcec4b09c67",
+    "heuristic-tests.xml": "035ba4a276852961fb582e6b7477057acfba16047bd601a042ba40bf17dab801",
+    "heuristic-tokenizer-presence.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "heuristic-tokenizer-presence.stdout.txt": "c484a289e961f7d78cb06ce3b7859df6dcc76b26ef51d04ecb9519b18be92465",
+    "heuristic-venv.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "heuristic-venv.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mypy.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mypy.stdout.txt": "ea13de917fec88bface9c85c6d3b4cf4a79eb7aec66c27c95d728a1ac3f68e0b",
+    "reference.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reference.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ruff.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ruff.stdout.txt": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "self-host-manifest.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "self-host-manifest.stdout.txt": "5559c6dafc9d60d3010095af68a7309af4817b4376289d7d5f3c5c95fbaf3d4e",
+    "self-host-validation.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "self-host-validation.stdout.txt": "f5edf0ea626cf71dd0e4a86492b98eb5034da3d65311dbbd1a0b91725312cbe8",
+    "tiktoken-checkout.stderr.txt": "c2fd0bb615a6c7f9f11d01150c8726576e67dfe9f0f9f84d8c7c2108e1975b69",
+    "tiktoken-checkout.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tiktoken-clone.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tiktoken-clone.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tiktoken-dependencies.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tiktoken-dependencies.stdout.txt": "ca4234cd10c532707f2cc0349d8032f385f976034b4fa22c3facc24c3fe88143",
+    "tiktoken-install.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tiktoken-install.stdout.txt": "625d8996730ed31caa6ffd69354e81b01f3cb49baf0aa577c3f7e0163f2401cd",
+    "tiktoken-pip-check.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tiktoken-pip-check.stdout.txt": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+    "tiktoken-tests.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tiktoken-tests.stdout.txt": "f4280aecf5363b73e7964ee921bc5b30a73b8f6ed5b885117665d49b17e09892",
+    "tiktoken-tests.xml": "64e748dda85b3619e2eb53bc90f277473abc718c7c294e28f6c76ac971938279",
+    "tiktoken-tokenizer-presence.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tiktoken-tokenizer-presence.stdout.txt": "0e5a54123d9eb8fbd06a2c2fd60a2c43c91b9d126d83f9056a7c83ff9da2f0e4",
+    "tiktoken-venv.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tiktoken-venv.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "version.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "version.stdout.txt": "a7279ba670271bcbd208941945c1dabce84cee1531dc36ab5212df69892d29de"
+  }
+}
