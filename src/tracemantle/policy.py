@@ -36,12 +36,20 @@ class RequiredCheck:
 
 
 @dataclass(frozen=True, slots=True)
+class AutomationAuthority:
+    signers: tuple[str, ...]
+    checks: frozenset[str]
+    max_age_seconds: int
+
+
+@dataclass(frozen=True, slots=True)
 class TrustedPolicy:
     revision: str
     checks: tuple[RequiredCheck, ...]
     trusted_evidence: frozenset[str]
     sha256: str
     required_signers: tuple[str, ...] = ()
+    automation: AutomationAuthority | None = None
 
 
 def git_blob(root: Path, revision: str, path: str) -> bytes:
@@ -74,8 +82,11 @@ def load_trusted_policy(root: Path, revision: str, path: str = 'pyproject.toml')
     except (KeyError, TypeError, UnicodeError, tomllib.TOMLDecodeError) as exc:
         raise EvidenceError('Trusted base must declare [tool.tracemantle.release] in its TOML configuration.') from exc
     required = {'schema_version', 'checks', 'trusted_evidence'}
-    if not isinstance(data, dict) or not required <= set(data) <= required | {'required_signers'} or type(data['schema_version']) is not int or data['schema_version'] != 1:
-        raise EvidenceError('Release policy requires schema_version=1, checks and trusted_evidence; required_signers is the only optional key.')
+    if not isinstance(data, dict) or not required <= set(data) or type(data['schema_version']) is not int or data['schema_version'] not in {1, 2}:
+        raise EvidenceError('Release policy requires supported schema_version 1 or 2, checks and trusted_evidence.')
+    optional = {'required_signers'} | ({'automation'} if data['schema_version'] == 2 else set())
+    if set(data) - required - optional:
+        raise EvidenceError('required_signers is the only optional key in schema 1; schema 2 also permits automation.')
     if not isinstance(data['checks'], list) or not data['checks'] or len(data['checks']) > 1000:
         raise EvidenceError('Trusted release policy requires 1 to 1000 checks.')
     checks = []
@@ -121,6 +132,21 @@ def load_trusted_policy(root: Path, revision: str, path: str = 'pyproject.toml')
     signers = data.get('required_signers', [])
     if not isinstance(signers, list) or len(signers) > 100 or ('required_signers' in data and not signers):
         raise EvidenceError('required_signers must list 1 to 100 public keys; remove the key to disable signature checks.')
+    automation = None
+    if 'automation' in data:
+        authority = data['automation']
+        if not isinstance(authority, dict) or set(authority) != {'signers', 'checks', 'max_age_seconds'}:
+            raise EvidenceError('automation requires exactly signers, checks and max_age_seconds.')
+        keys = authority['signers']
+        scope = authority['checks']
+        age = authority['max_age_seconds']
+        if not isinstance(keys, list) or not 1 <= len(keys) <= 100:
+            raise EvidenceError('automation.signers requires 1 to 100 public keys.')
+        if not isinstance(scope, list) or not scope or not all(isinstance(c, str) for c in scope) or not set(scope) <= {c.id for c in checks}:
+            raise EvidenceError('automation.checks must name existing trusted check IDs.')
+        if type(age) is not int or not 1 <= age <= 86400:
+            raise EvidenceError('automation.max_age_seconds must be an integer between 1 and 86400.')
+        automation = AutomationAuthority(tuple(sorted({signer_key(k) for k in keys})), frozenset(scope), age)
     return TrustedPolicy(revision, tuple(sorted(checks, key=lambda c: c.id)),
                          frozenset(sha256_field(v, 'trusted_evidence') for v in trusted), hashlib.sha256(raw).hexdigest(),
-                         tuple(sorted({signer_key(v) for v in signers})))
+                         tuple(sorted({signer_key(v) for v in signers})), automation)

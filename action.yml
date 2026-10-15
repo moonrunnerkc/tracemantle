@@ -16,7 +16,7 @@ inputs:
     required: false
     default: "."
   version:
-    description: "tracemantle version to install from PyPI (e.g., '1.6.0'). Leave empty to install from the action's own checkout."
+    description: "tracemantle version to install from PyPI (e.g., '1.7.0'). Leave empty to install from the action's own checkout."
     required: false
     default: ""
   min-desc-score:

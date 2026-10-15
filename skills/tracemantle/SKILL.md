@@ -1,7 +1,7 @@
 ---
 name: tracemantle
 description: Validates and scores SKILL.md files against the agentskills.io specification; use when linting skills for cross-agent compatibility, description quality, or capability graph structure.
-version: "1.6.1"
+version: "1.7.0"
 author: "moonrunnerkc, Aftermath Technologies Ltd"
 ---
 
@@ -10,8 +10,8 @@ TraceMantle is a local static analyzer for SKILL.md files. It validates frontmat
 ## Prerequisites
 
 - path - the SKILL.md file or directory to validate
-- prompt.txt - file path for a saved agent prompt (critique or graph extraction)
-- response.json - file path for an agent-provided JSON response
+- prompt.txt - optional file path for a saved agent prompt (critique or graph extraction)
+- response.json - optional file path for an agent-provided JSON response
 
 ## Validate a skill
 
@@ -84,6 +84,10 @@ Use `path` with the manifest command to identify skill content and all packaged 
 tracemantle manifest <bundle> --format json
 tracemantle compare <baseline> <candidate> --trusted-root <trusted-repo> --base-revision <full-commit-sha> --format json
 ```
+
+Ordinary validation needs no evaluator, account, evidence store or policy. Passing static validation does not prove live agent behavior.
+
+Available since 1.7.0: import canonical records with the neutral input format. Schema-2 policies can authorize scoped automation keys to approve complete records for a protected run without recurring digest commits. Existing schema-1 digest approval and additional signature requirements retain their meaning. The evidence workflow guide documents deployment and migration.
 
 ## Outputs
 

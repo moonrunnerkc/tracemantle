@@ -1,0 +1,15 @@
+prompts:
+  - '{{message}}'
+providers:
+  - echo
+tests:
+  - vars:
+      message: hello
+    assert:
+      - type: equals
+        value: hello
+  - vars:
+      message: goodbye
+    assert:
+      - type: equals
+        value: hello

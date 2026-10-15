@@ -1,94 +1,47 @@
-<!-- Layout adapted from https://github.com/othneildrew/Best-README-Template. -->
-<a id="readme-top"></a>
+# TraceMantle
 
-<div align="center">
-  <img src=".github/banner.svg" alt="TraceMantle" width="600">
-  <p>Validate agent skills and check the evidence behind a release.</p>
-  <p>
-    <a href="docs/generated-reference.md"><strong>CLI reference</strong></a>
-    &middot;
-    <a href="https://github.com/moonrunnerkc/tracemantle/issues/new">Report a bug or request a feature</a>
-  </p>
-  <a href="https://github.com/moonrunnerkc/tracemantle/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/moonrunnerkc/tracemantle/ci.yml?branch=main&amp;style=flat-square" alt="CI status"></a>
-  <a href="https://pypi.org/project/tracemantle/"><img src="https://img.shields.io/pypi/v/tracemantle?style=flat-square" alt="PyPI version"></a>
-  <a href="https://pypi.org/project/tracemantle/"><img src="https://img.shields.io/pypi/pyversions/tracemantle?style=flat-square" alt="Python versions"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/moonrunnerkc/tracemantle?style=flat-square" alt="MIT license"></a>
-</div>
+TraceMantle checks `SKILL.md` files for developers who write or maintain agent skills, finding invalid frontmatter, missing files, and portability problems before commit or CI. Optional evidence tracking helps you check whether earlier results still apply after a skill or its helpers change.
 
-<details>
-  <summary>Contents</summary>
-  <ol>
-    <li><a href="#about-the-project">About the project</a></li>
-    <li><a href="#getting-started">Getting started</a></li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#integrations">Integrations</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license-and-contact">License and contact</a></li>
-  </ol>
-</details>
+## Quick start
 
-## About the project
-
-TraceMantle is a Python CLI and library for checking agent skill bundles before they are committed or released. It provides:
-
-- **Skill validation:** checks `SKILL.md` frontmatter, file references, size limits and compatibility advice against the [Agent Skills specification](https://agentskills.io/specification).
-- **Bundle tracking:** hashes skill files and packaged resources so helper changes are detected too.
-- **Evidence checks:** imports evaluator results and compares bundles against trusted policies. Missing, stale or incompatible evidence blocks the gate.
-
-TraceMantle analyzes files; it does not execute skills or evaluators. Static checks and imported model judgments do not prove that a skill works in a live agent.
-
-## Getting started
-
-Requires Python 3.10 or later. Install in a virtual environment:
+Requires Python 3.10 or later. Create an isolated environment and install the published release:
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install tracemantle==1.6.1
-tracemantle --version
+python -m pip install tracemantle==1.7.0
+tracemantle hello/SKILL.md
 ```
 
-Version 1.6.1 corrects dependency discovery across Markdown headings and rejects numeric overflow in evidence imports. See the [changelog](CHANGELOG.md) and [implementation ledger](docs/implementation-status.md) for behavior and verification.
+Use the path to your own skill in the last command. On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1`. Need a first file? Copy the small [getting-started example](docs/getting-started.md#validate-your-first-skill).
 
-On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1`. Replacing SkillCheck? Follow the [migration guide](docs/migration.md) before installing.
+Basic validation runs locally with no account, evaluator, signing key, or evidence policy. The default token estimate is offline.
 
-## Usage
+## Read the result
 
-Validate a skill, scan a directory, or inspect a bundle:
+The getting-started example produces:
 
-```bash
-tracemantle path/to/SKILL.md
-tracemantle path/to/skills/ --strict --format json
-tracemantle path/to/SKILL.md --analyze-graph
-tracemantle manifest path/to/skill --format json
+```text
+✔ PASS  hello/SKILL.md
+            · info              description.quality-score  Description quality score: 95/100.
+
+Checked 1 file: 1 passed, 0 failed
 ```
 
-Validation exits `0` when it passes and nonzero on errors; `--strict` also fails on warnings. Text, JSON and GitHub annotation output are supported.
+This file has no validation errors. The score is heuristic advice. For failures, fix the reported rule at the named file and line, then rerun. Passing file validation does not prove that a skill behaves correctly in a live agent.
 
-For release evidence, use `import-evidence` and `compare` with a trusted base revision and approved evidence. The [evidence workflow](docs/evidence-workflow.md) covers setup, supported imports and runnable examples. It also describes the opt-in controls on `main` that are not in 1.6.1: custom import adapters (`--adapter`), signer keys in the trusted policy (`required_signers`) and `compare --require-observed-execution`.
+Scan a directory with `tracemantle skills/`. Errors return a nonzero exit code; add `--strict` to fail on warnings too. Use `--format json` for structured results or `--help` for options.
 
-Configure defaults in `tracemantle.toml` or `[tool.tracemantle]` in `pyproject.toml`. Explicit CLI flags take precedence. Token counting uses an offline estimate by default; optional `tiktoken` counting must be selected explicitly.
+## Optional evidence checks
 
-See the [CLI and configuration reference](docs/generated-reference.md), [compatibility profiles](docs/profiles.md) and [input limits](docs/contracts.md) for details.
+Use evidence checks when a release needs approved results or you need to detect helper changes that invalidate earlier results. The [evidence workflow](docs/evidence-workflow.md) distinguishes manual approval from protected automation and neutral JSON imports.
 
-## Integrations
+## Task guides
 
-Use the composite GitHub Action pinned to a release:
+- [Getting started](docs/getting-started.md): create and validate a skill.
+- [CI setup](docs/ci.md): validate skills on pull requests.
+- [Evidence workflow](docs/evidence-workflow.md): import results and approve their use.
+- [CLI reference](docs/generated-reference.md): commands and configuration.
+- [Troubleshooting](docs/getting-started.md#troubleshooting): understand diagnostics and exit codes.
 
-```yaml
-- uses: moonrunnerkc/tracemantle@v1.6.1
-  with:
-    path: skills/
-```
-
-[Action inputs](action.yml) control validation and reporting. Versions before 1.6.0 contain the older SkillCheck implementation. A [pre-commit hook](.pre-commit-hooks.yaml), [Python API](src/tracemantle/__init__.py) and [installed skill](skills/tracemantle/SKILL.md) are also included.
-
-## Contributing
-
-1455 tests cover validation, CLI integrations, bundle identity and evidence checks. CI runs Python 3.10 through 3.13 on Linux, macOS and Windows, plus optional-tokenizer and clean package-install checks.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and verification. Submit fixes through pull requests; use [issues](https://github.com/moonrunnerkc/tracemantle/issues) for bugs and proposals. Changes are recorded in the [changelog](CHANGELOG.md).
-
-## License and contact
-
-[MIT](LICENSE). Maintained by [moonrunnerkc](https://github.com/moonrunnerkc), Aftermath Technologies Ltd.
+[Contribute](CONTRIBUTING.md) · [Report an issue](https://github.com/moonrunnerkc/tracemantle/issues) · [Changelog](CHANGELOG.md) · [MIT license](LICENSE)

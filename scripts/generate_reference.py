@@ -7,6 +7,7 @@ from pathlib import Path
 
 from tracemantle.cli import _build_parser
 from tracemantle.config_loader import _KEY_MAP
+from tracemantle.product_commands import _parser as product_parser
 
 ROOT = Path(__file__).resolve().parents[1]
 DESTINATION = ROOT / 'docs/generated-reference.md'
@@ -18,6 +19,15 @@ def render() -> str:
         if action.option_strings:
             help_text = str(action.help or '').replace('|', '\\|').replace('\n', ' ')
             lines.append(f"| `{', '.join(action.option_strings)}` | `{action.default}` | {help_text} |")
+    lines.extend(['', '## Optional evidence commands', '', 'These do not run during ordinary file validation. See [evidence-workflow.md](evidence-workflow.md) for the 1.7.0 import and approval workflows.'])
+    for action in product_parser()._actions:
+        if isinstance(action, argparse._SubParsersAction):
+            for name, command in action.choices.items():
+                lines.extend(['', f'### {name}', '', '| Argument | Description |', '|---|---|'])
+                for option in command._actions:
+                    label = ', '.join(option.option_strings) or option.dest
+                    help_text = str(option.help or '').replace('|', '\\|').replace('\n', ' ')
+                    lines.append(f'| `{label}` | {help_text} |')
     lines.extend(['', '## Configuration keys', '', 'Under `[tool.tracemantle]` in pyproject.toml, or directly in tracemantle.toml.', '', '| Key | Setting |', '|---|---|'])
     for key, field in sorted(_KEY_MAP.items()):
         lines.append(f'| `{key}` | `{field}` |')

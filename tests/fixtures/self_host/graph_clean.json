@@ -47,22 +47,22 @@
   ],
   "outputs": [
     {
-      "id": "263760ac",
+      "id": "390e8dd2",
       "name": "validation report",
       "kind": "artifact",
-      "line": 84
+      "line": 88
     },
     {
-      "id": "e5319e4e",
+      "id": "c5301ddd",
       "name": "capability graph",
       "kind": "artifact",
-      "line": 85
+      "line": 89
     },
     {
-      "id": "f4c487fd",
+      "id": "241efc5b",
       "name": "validation ledger",
       "kind": "artifact",
-      "line": 86
+      "line": 90
     }
   ],
   "edges": [
@@ -73,7 +73,7 @@
     },
     {
       "source_id": "1460fbcd",
-      "target_id": "f4c487fd",
+      "target_id": "241efc5b",
       "kind": "produces"
     },
     {
@@ -93,7 +93,7 @@
     },
     {
       "source_id": "9595ee62",
-      "target_id": "e5319e4e",
+      "target_id": "c5301ddd",
       "kind": "produces"
     },
     {
@@ -103,7 +103,7 @@
     },
     {
       "source_id": "ec241b5b",
-      "target_id": "263760ac",
+      "target_id": "390e8dd2",
       "kind": "produces"
     },
     {
@@ -123,7 +123,7 @@
     },
     {
       "source_id": "f1e4138e",
-      "target_id": "263760ac",
+      "target_id": "390e8dd2",
       "kind": "produces"
     }
   ]

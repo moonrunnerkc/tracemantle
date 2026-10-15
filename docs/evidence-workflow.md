@@ -1,11 +1,13 @@
 # Bundle and release evidence workflow
 
-TraceMantle separates content identity, analysis results and trust. A SHA-256 digest identifies bytes; it does not prove that those bytes are correct or that an execution occurred. The comparison gate uses only checks, checker bytes and approved evidence digests anchored to the selected trusted base commit.
+TraceMantle separates content identity, analysis results and trust. A SHA-256 digest identifies bytes; it does not prove that those bytes are correct or that an execution occurred. The comparison gate uses checks, checker bytes and approval authority anchored to the selected trusted base commit. Start with [local validation](getting-started.md); evidence setup is optional.
+
+Choose a task: [import neutral JSON](#import-evaluator-neutral-json), [approve manually](#trusted-policy), [approve through protected automation](#protected-automation), or [detect helper changes](#detect-helper-changes). Schema-2 automation, neutral imports, Promptfoo 0.124.1, external adapters and optional signers are available in **1.7.0**. Use the [published installation](getting-started.md#install-the-published-validator); existing manual policies remain compatible.
 
 ## Commands and storage
 
 - `tracemantle manifest BUNDLE --format json` computes a canonical manifest from actual files. `--output PATH` is optional and must be outside the bundle.
-- `tracemantle import-evidence EXPORT --bundle BUNDLE --bindings BINDINGS --store STORE --format json` parses the pinned export and writes its original bytes under `STORE/sources/` and normalized records under `STORE/records/`. `--adapter PATH` selects a user-supplied adapter file in place of the built-in Promptfoo one (see the adapter contract below). Omitting bindings preserves the source and reports unknown identities. Import returns exit 4 because import itself does not establish trusted behavioral evidence.
+- `tracemantle import-evidence EXPORT --bundle BUNDLE --bindings BINDINGS --store STORE --format json` parses the selected data format and writes its original bytes under `STORE/sources/` and normalized records under `STORE/records/`. `--input-format neutral` accepts evaluator-neutral JSON. `--adapter PATH` selects a user-supplied adapter file in place of the built-in Promptfoo one (see the adapter contract below). Omitting bindings preserves the source and reports unknown identities. Import returns exit 4 because import itself does not establish trusted behavioral evidence.
 - `tracemantle compare BASELINE CANDIDATE --trusted-root REPOSITORY --base-revision FULL_COMMIT_SHA --evidence RECORD` reads both bundle directories, the trusted policy and supplied evidence. Repeat `--evidence` for additional records. `--require-observed-execution` additionally refuses to pass a required check on static analysis alone (see observed execution below). No files change unless `--output PATH` is explicitly selected.
 - `tracemantle migrate-history LEDGER --store STORE` copies version-one history explicitly. Repeating the command is safe; originals are preserved and migrated records remain unknown for release comparison.
 
@@ -13,9 +15,28 @@ Stores must be outside evaluated bundles. Content-addressed files are published 
 
 ## Promptfoo contract and provenance
 
-The narrow adapter accepts **Promptfoo 0.118.10**, JSON results schema **3**. Other versions are rejected, not guessed. Its attributable source fixture is [sample-export.json at upstream commit c0b47e4](https://github.com/promptfoo/promptfoo/blob/c0b47e4a10b38a7a54c782b32fc779802dfaf72e/test/__fixtures__/sample-export.json), retained byte-for-byte with its MIT license under `tests/fixtures/upstream/promptfoo-0.118.10/`. The containing source checkout is tag 0.120.0; the actual export's `metadata.promptfooVersion` is 0.118.10. These are deliberately distinguished.
+The narrow adapter accepts **Promptfoo 0.118.10** and **0.124.1**, both with JSON results schema **3**. Other package versions or results schemas are rejected, not guessed. Its attributable source fixture is [sample-export.json at upstream commit c0b47e4](https://github.com/promptfoo/promptfoo/blob/c0b47e4a10b38a7a54c782b32fc779802dfaf72e/test/__fixtures__/sample-export.json), retained byte-for-byte with its MIT license under `tests/fixtures/upstream/promptfoo-0.118.10/`. The containing source checkout is tag 0.120.0; the actual export's `metadata.promptfooVersion` is 0.118.10. These are deliberately distinguished.
 
-The fixture has four riddle-evaluation results containing LLM rubric judgments. It proves parser compatibility with an authentic upstream format, not skill invocation or agent execution in this session. The importer marks such records `model-judgment`; generic exports without sufficient observation data remain `unknown`. It never infers `observed-execution` from a selected agent, provider label or user binding. A separate trusted runner can supply observed-execution records (see the external runner section below), but they must cross the same full-content trust boundary.
+The additional [0.124.1 fixtures](../tests/fixtures/upstream/promptfoo-0.124.1/PROVENANCE.json)
+were generated locally by the unmodified published npm package with its echo
+provider and an explicitly deterministic error provider. They are authentic
+package exports, not upstream-authored evaluation results: one pass, one assertion
+failure, one provider error, no model calls. Original export bytes, reproduction
+configs, provider, npm integrity and upstream MIT license are retained. The exact
+release source is [421e795](https://github.com/promptfoo/promptfoo/tree/421e7959642c5d4cc1c983259a268de1c6f847b9).
+The inspected contracts are `src/util/output.ts`, `src/models/evalResult.ts` and
+`src/types/index.ts`/`src/types/shared.ts` in that revision.
+
+For 0.124.1 the supported shape adds optional `vars`/`runtimeOptions` at the root
+and `tokenUsage` in rows. `failureReason` is required: 0 with success means pass,
+1 means assertion failure, 2 means infrastructure error; unsuccessful 0 remains
+unknown. An aggregate grading pass must agree with `success`; it need not agree
+with every component because threshold grading may pass partial results. Newer
+trace, media, repeat-stability or other unverified shapes are rejected with a
+pointer to the neutral route. This is an exact tested subset, not a broad version
+range or all possible exports from either package.
+
+The original 0.118.10 fixture has four riddle-evaluation results containing LLM rubric judgments. It proves parser compatibility with an authentic upstream format, not skill invocation or agent execution in this session. The importer marks such records `model-judgment`; generic exports without sufficient observation data remain `unknown`. It never infers `observed-execution` from a selected agent, provider label or user binding. A separate trusted runner can supply observed-execution records (see the external runner section below), but they must cross the same full-content trust boundary.
 
 The export's providers, JavaScript/Python assertions, file references, extensions and environment settings are data. TraceMantle hashes or preserves them; it never imports or executes them. Source exports may contain evaluator data; keep their access controls appropriate. Normalized environment fields are limited to OS, Python, Node, network, sandbox and architecture, with no credential fields.
 
@@ -37,7 +58,7 @@ def adapt(export_bytes: bytes, bindings: dict) -> list[CheckEvidence]
 - Each returned record is revalidated. `adapter` is replaced with `external/sha256:<digest of the adapter file>` and `artifact_sha256` with the digest of the export, so an adapter cannot claim the built-in identity or a different source. A trusted check can pin one exact adapter file with `context = { adapter = "external/sha256:..." }`.
 - Records must still match the supplied bundle and its file digests, the original export is still preserved under `STORE/sources/`, and the import still exits 4. A failing adapter, a missing `adapt` function or a non-record return value is an infrastructure-error (exit 2) with no store written.
 
-An external adapter can set any `observation_method`, including `observed-execution`. That is a claim by whoever ran the adapter, not something TraceMantle observed; it carries weight only after the policy owner reviews the record and commits its digest to `trusted_evidence`.
+An external adapter can set any `observation_method`, including `observed-execution`. That is a claim by whoever ran the adapter, not something TraceMantle observed; it carries weight only after manual digest approval or a verified approval from explicitly authorized automation. Neither importing nor naming an observer establishes that an execution occurred.
 
 ## Canonical evidence fields
 
@@ -58,15 +79,15 @@ No booleans are coerced from strings or numbers. Input digests are full lowercas
 
 ## Trusted policy
 
-Use `[tool.tracemantle.release]` in a TOML file committed to the trusted repository, normally `pyproject.toml`. Comparison reads that exact Git object. `--policy-relative` can select another tracked TOML config in the same base revision. The policy contains `schema_version = 1`, `trusted_evidence` (approved full canonical record digests) and an array of checks. `required_signers` is the only optional key; any other key is rejected.
+Use `[tool.tracemantle.release]` in a TOML file committed to the trusted repository, normally `pyproject.toml`. Comparison reads that exact Git object. `--policy-relative` can select another tracked TOML config in the same base revision. The policy contains `schema_version = 1`, `trusted_evidence` (approved full canonical record digests) and an array of checks. `required_signers` is the only optional key in schema 1. Schema 2 additionally permits the explicit `automation` authority described below; unknown keys and unsupported versions fail closed.
 
 Each check declares exactly `id`, `kind` (`static`, `behavioral`, `routing`), `inputs`, `coverage_complete`, `checker_path`, `checker_sha256`, `configuration_sha256`, `fixture_sha256`, `profile_sha256`, `max_age_seconds`, `required`, `context`, and `routing_neighbors`. The checker path must exist in the trusted base and its actual bytes must match the declared SHA-256. Checkers are identified, not executed by comparison. Inputs and routing-neighbor paths are normalized relative paths. Context may bind runner, adapter, model/revision, permissions, tokenizer digest, OS, Python, Node, network, sandbox and architecture.
 
-The trust boundary is an explicit content allowlist committed by the trusted policy owner. `trusted_evidence` approves the **entire canonical evidence record**, including bundle, inputs, outcome and execution conditions; it is not an allowlist of runner names or artifact names. A candidate cannot take an authentic export and attach it to another bundle, alter the outcome or promote a model judgment without changing the digest. TraceMantle verifies that digest against the immutable trusted base. The owner or trusted automation must review a record and commit its digest to the trusted policy before it is accepted. Signer strings and attestations claimed inside a record are never read as proof; the only signature check is the opt-in one below, against keys committed to the trusted base.
+The trust boundary is an explicit content allowlist committed by the trusted policy owner. `trusted_evidence` approves the **entire canonical evidence record**, including bundle, inputs, outcome and execution conditions; it is not an allowlist of runner names or artifact names. A candidate cannot take an authentic export and attach it to another bundle, alter the outcome or promote a model judgment without changing the digest. TraceMantle verifies that digest against the immutable trusted base. For this original manual route, the owner or trusted automation reviews a record and commits its digest to the trusted policy before it is accepted. Signer strings and attestations claimed inside a record are never read as proof; record signatures use the opt-in check below, and automation approvals use the separately scoped keys described later. Both take their authority from the trusted base.
 
 ### Optional signatures: `required_signers`
 
-Signatures are an additional, opt-in control. The digest allowlist stays primary: a signed record whose digest is not in `trusted_evidence` is still rejected.
+Record signatures are an additional, opt-in control. In schema 1 (and schema 2 without automation), a signed record whose digest is not in `trusted_evidence` is still rejected. Schema-2 automation uses a separately signed approval envelope; `required_signers` still requires a record signature in addition to that approval.
 
 ```toml
 [tool.tracemantle.release]
@@ -78,7 +99,7 @@ required_signers = [
 ]
 ```
 
-When `required_signers` is present (1 to 100 keys), a record is accepted only if a valid signature from one of those keys is attached. When it is absent, sidecar files are not read and comparison behaves exactly as before. An empty list is a policy error, not a way to disable the check.
+When `required_signers` is present (1 to 100 keys), a record is accepted only if a valid signature from one of those keys is attached. When it is absent, record signature sidecars are not read; automation approval sidecars are a separate schema-2 opt-in. An empty list is a policy error, not a way to disable the check.
 
 The signature is a sidecar next to the file passed to `--evidence`, so the version-one evidence schema has no new field and record digests do not change:
 
@@ -111,9 +132,9 @@ TraceMantle does not run skills, agents or evaluators. Observed-execution eviden
 
 The runner executes the command you pass with your privileges. Model revision, tokenizer, sandbox and network state are the operator's declarations; the runner cannot observe them. Copy both example files into trusted tooling and adapt them. A trusted check can pin the exact runner and adapter files through `context.runner` and `context.adapter`, since both identities contain the file's SHA-256.
 
-`compare --require-observed-execution` (off by default) treats a required check as unknown (exit 4) unless an accepted record for it has observation method `observed-execution`. Accepted means approved in `trusted_evidence` and compatible with the check, as for any other record. Behavioral and routing checks already require observed execution, so the flag changes the result only for required `static` checks: evidence that passes without the flag becomes unknown with it. A fail or infrastructure-error stays as it is, optional checks are unaffected, and without the flag static-only workflows behave exactly as before.
+`compare --require-observed-execution` (off by default) treats a required check as unknown (exit 4) unless an accepted record for it has observation method `observed-execution`. Accepted means approved by the selected policy and compatible with the check, as for any other record. Behavioral and routing checks already require observed execution, so the flag changes the result only for required `static` checks: evidence that passes without the flag becomes unknown with it. A fail or infrastructure-error stays as it is, optional checks are unaffected, and without the flag static-only workflows behave exactly as before.
 
-A fresh run does not pass the gate by itself. Its record has a new digest, and the gate accepts only digests committed to the trusted base. The loop is: run, import, review the record (and sign it if the policy lists `required_signers`), commit its digest to `trusted_evidence` on the trusted branch, then compare against that base.
+Under the original manual route, a fresh run does not pass the gate by itself. Its new digest must be committed to the trusted base. The loop is: run, import, review the record (and sign it if the policy lists `required_signers`), commit its digest to `trusted_evidence` on the trusted branch, then compare against that base.
 
 ```yaml
 - name: Observe the skill, then gate on approved observed execution
@@ -160,3 +181,188 @@ The tests create isolated local repositories and synthetic records for valid con
 The authored [workflow controls](../tests/fixtures/ci-gates/README.md) provide a static pass, missing-evidence case and a helper-change candidate with policy/checker tampering for manual remote acceptance. The fixture README pins the original trusted control revision; the current candidate deliberately cannot satisfy it. The separate `verify-gates.yml` workflow deliberately fails a quality job and verifies that its dependent nonpublishing sentinel is skipped. It has read-only permissions and no publish step, environment or tag trigger. This tests failed-prerequisite behavior without enabling Release or uploading artifacts. See the [post-release audit record](verification/audit-1.6.1/acceptance.md) for executed runs and remaining live-evaluation limits.
 
 Version 1.6.1 includes the Setext-heading, escaped-backtick, list-continuation and numeric-overflow corrections. [Patch verification](verification/release-1.6.1/acceptance.md) records the new heading and adjacent-block controls. [Current regression evidence](verification/audit-1.6.1/acceptance.md#dependency-and-numeric-boundary-corrections) uses synthetic approved records in temporary trusted Git repositories and mutations of the attributable Promptfoo export. No skill or evaluator was executed.
+
+## Import evaluator-neutral JSON
+
+Use `--input-format neutral` for data exported by any evaluator. The envelope is
+`{"schema_version": 1, "records": [...]}`; each entry is a complete
+[check-evidence-v1 object](../src/tracemantle/schemas/evidence-v1.json). No bindings
+or executable adapter are needed. Unknown observations and identities must remain
+explicit `unknown` values, never invented revisions or execution claims.
+
+This complete [exporter example](examples/export_validation.py) runs real local
+static validation through the Python API and emits the envelope. With the built
+package installed and an absolute path to the owner-reviewed examples:
+
+```bash
+python -I "$EXAMPLES/export_validation.py" hello > result.json
+tracemantle import-evidence result.json --input-format neutral --bundle hello --store evidence --format json
+```
+
+The import returns **4**, with state `unknown`: it stores the result but does not
+approve it. The example produces static analysis, not agent execution. External
+evaluators can emit the same full schema with their actual outcomes and identity.
+All source fields are validated before the importer assigns
+`adapter = tracemantle/neutral-v1` and `artifact_sha256 = SHA256(original export)`.
+The source copy retains the original artifact reference. Complete source decoding
+rejects duplicate keys, overflow, excessive depth/size and malformed records before
+any store writes. Bundle and input hashes must match real supplied files.
+Imported strings, commands and observation labels are data and are never executed.
+Custom Python adapters remain available only for trusted code; use them from the
+trusted tooling checkout in CI, with the caller's privileges understood.
+
+## Protected automation
+
+Read the [design and baseline checklist](automation-design.md) before deployment.
+An owner initially commits policy schema 2 with scoped authority:
+
+```toml
+[tool.tracemantle.release]
+schema_version = 2
+trusted_evidence = []
+# Existing checks and optional required_signers retain their contracts.
+[tool.tracemantle.release.automation]
+signers = ["ssh-ed25519 <actual public key>"]
+checks = ["greeting"]
+max_age_seconds = 3600
+```
+
+Use an actual OpenSSH public key or minisign public-key string. Keys approve only
+listed check IDs; every check must exist in the same trusted policy. Required
+check definitions, checker bytes, configuration/profile/fixture digests and context
+remain governed by the immutable base. The comparison command never runs them.
+The installed package, adapter and producer must also come from approved tooling;
+Git identity checking cannot protect a candidate-replaced Python installation.
+
+An approval sidecar is `RECORD.json.approval.json`, signed as
+`RECORD.json.approval.json.sig` or `.minisig` using the existing
+`tracemantle-evidence` OpenSSH namespace. Sign its canonical JSON bytes. The
+`approval_envelope` helper constructs exactly these fields:
+
+| Field | Binding |
+| --- | --- |
+| `schema_version`, `kind` | `1`, `automation-approval` |
+| `evidence_sha256` | Entire canonical record, including outcome, inputs and execution context |
+| `policy_sha256`, `trusted_revision` | Exact policy file and selected immutable trusted commit |
+| `check_id`, `bundle_sha256` | Intended check and full candidate bundle |
+| `run_id`, `run_started_at` | Unique protected scheduler run and timezone-qualified start |
+| `issued_at`, `expires_at` | Approval issue/expiry timestamps with timezone |
+
+Comparison requires independently supplied `--approval-run-id` and
+`--approval-run-started-at`. Never read these flags from the candidate or its
+artifacts. Evidence must have been observed between that start and issue time;
+issue time cannot be in the future, and comparison must precede expiration.
+Expiration minus run start cannot exceed the policy lifetime (1–86400 seconds).
+Wrong records, subjects, policies, keys and run contexts fail closed. Missing tools
+or malformed sidecars return infrastructure-error (2); missing/unapproved evidence
+remains unknown (4). There is no fallback to an unchecked signature.
+
+Replay into a different run is rejected. Repeated verification inside the same
+unexpired run is allowed; there is no consumption database. The protected scheduler
+must never reuse a run ID/start pair. Revocation takes effect when the verifier
+selects a new base that removes the key; selecting an old base retains that old
+base's authority. Removing `automation` restores the digest allowlist. Schema 1
+cannot enable automation, and `required_signers` never independently bypasses
+digest approval. Existing policies require no migration; enabling schema 2 is an
+explicit owner review of authority. Optional record signatures remain additional
+requirements on both approval routes.
+
+All historical compatibility restrictions still apply, including refusal to reuse
+mutable model aliases. There is **no** current-run alias exception. Required
+unknown/skipped/missing, incompatible or conflicting records cannot produce a pass.
+Signing a candidate-supplied JSON record without observing and validating its
+result does not implement this workflow.
+
+### Runnable isolated producer and verifier
+
+The [protected producer](examples/protected_automation.py) is a Linux mechanics
+example, not a general evaluator. Prerequisites: the trusted built package,
+Python 3.10+, Git, OpenSSH with `-Y`, bubblewrap with permitted user namespaces,
+and `/usr/bin/python3` plus `prlimit`. The host, system runtime and operator-owned
+workspace must be trusted and inaccessible to candidate processes. This example
+has no network or model calls and does not claim to evaluate an agent.
+
+One-time setup generates an example key and commits a scoped policy, runner,
+checker, fixture, configuration and profile into a temporary trusted repository.
+Use an empty destination. `$EXAMPLES` is an absolute path to the reviewed
+`docs/examples` directory. Use the built-package virtual environment:
+
+```bash
+DEMO=/tmp/tracemantle-protected-example
+BASE=$(python -I "$EXAMPLES/protected_automation.py" setup "$DEMO")
+```
+
+For the first candidate, change only its helper and supply protected run context:
+
+```bash
+printf 'print("hello")\n# candidate one\n' > "$DEMO/candidate/demo/helper.py"
+RUN_ID=local-demo-1
+START=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+RECORD=$(python -I "$DEMO/trusted/producer.py" run "$DEMO" \
+  --base-revision "$BASE" --run-id "$RUN_ID" --run-started-at "$START")
+tracemantle compare "$DEMO/baseline/demo" "$DEMO/candidate/demo" \
+  --trusted-root "$DEMO/trusted" --base-revision "$BASE" --evidence "$RECORD" \
+  --approval-run-id "$RUN_ID" --approval-run-started-at "$START"
+```
+
+Comparison returns 0 and reports `greeting: pass`. The protected observer copies
+and verifies the bundle, then starts a bubblewrap sandbox with only system runtime
+files and the read-only bundle. It clears the environment, disables network,
+limits output/CPU/time, and mounts no signing keys, host home or observer output.
+Candidate helper execution ends before the trusted checker compares captured
+stdout/exit status with the trusted fixture. The observer constructs the record
+itself, imports through the built-in neutral adapter, validates compatibility,
+then signs an approval. It accepts no uploaded record to sign. Records, original
+exports and transcripts remain outside the evaluated bundle.
+
+The signed record uses an explicitly deterministic stand-in identity, not a real
+model. A failed checker produces no approval. Candidate policy, adapter or checker
+files cannot replace the selected base files. The test also attempts to read a
+host key path and inherited secret inside the sandbox; both are absent.
+
+A production scheduler must select the base/run context outside candidate control,
+use a protected immutable workflow and trusted installed toolchain, enforce sandbox
+isolation, and secure the key. For multi-job evaluation, only an authenticated
+trusted observer may transfer the bounded transcript to approval; a candidate job's
+self-reported result is insufficient. Do not place signing credentials in an
+evaluator job, install candidate packages in the signing job, or permit candidate
+workflow edits to run with those credentials. This local example does not configure
+repository protections or a hosted runner for you.
+
+## Detect helper changes
+
+Continue the isolated example above, keeping its original `$BASE` and policy:
+
+```bash
+printf 'print("hello")\n# candidate two\n' > "$DEMO/candidate/demo/helper.py"
+tracemantle compare "$DEMO/baseline/demo" "$DEMO/candidate/demo" \
+  --trusted-root "$DEMO/trusted" --base-revision "$BASE" --evidence "$RECORD" \
+  --approval-run-id "$RUN_ID" --approval-run-started-at "$START"
+```
+
+The old approval returns **2**, `outside the trusted check or candidate bundle
+scope`: the signed bundle is different. Manual historical reuse also invalidates
+checks affected by direct or transitive helper changes, returning unknown and
+required reruns; incomplete discovery never authorizes reuse across a changed
+bundle. The existing trusted-Git dependency tests cover that separate reuse route.
+
+Now run the changed candidate with new scheduler context and compare:
+
+```bash
+RUN_ID=local-demo-2
+START=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+RECORD=$(python -I "$DEMO/trusted/producer.py" run "$DEMO" \
+  --base-revision "$BASE" --run-id "$RUN_ID" --run-started-at "$START")
+tracemantle compare "$DEMO/baseline/demo" "$DEMO/candidate/demo" \
+  --trusted-root "$DEMO/trusted" --base-revision "$BASE" --evidence "$RECORD" \
+  --approval-run-id "$RUN_ID" --approval-run-started-at "$START"
+```
+
+This returns **0**, using the same policy and base commit. No evidence digest was
+committed for either run. Run IDs shown here are local examples; deployment must
+use unique scheduler IDs including retry/attempt identity.
+
+Hashes identify content. Signatures identify an approving key holder. Execution
+records depend on the trusted observer and its environment. None individually
+establishes universal safety or correctness, and this deterministic example
+establishes workflow mechanics only.

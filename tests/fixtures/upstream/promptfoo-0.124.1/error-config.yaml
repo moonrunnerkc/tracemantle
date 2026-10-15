@@ -1,0 +1,8 @@
+prompts:
+  - hello
+providers:
+  - file://error-provider.cjs
+tests:
+  - assert:
+      - type: equals
+        value: hello

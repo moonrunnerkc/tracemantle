@@ -1,0 +1,25 @@
+{
+  "source": "https://github.com/promptfoo/promptfoo/tree/421e7959642c5d4cc1c983259a268de1c6f847b9",
+  "source_revision": "421e7959642c5d4cc1c983259a268de1c6f847b9",
+  "containing_tag": "0.124.1",
+  "export_version": "0.124.1",
+  "results_schema_version": 3,
+  "npm_integrity": "sha512-Y6fq/WGTL7lPvDsirNSmmmcPLhURwRao03iv8fCoLbFq6H1eqg5VVTmXiap5Jl+fiRaQQZXYMHb2N1gQm1tGyQ==",
+  "license": "MIT",
+  "origin": "Generated locally by the unmodified published Promptfoo npm package, not copied from its upstream test corpus. Original export bytes retained.",
+  "observations": "Deterministic echo pass/assertion-failure and deterministic provider error. No model calls or agent evaluation. Configs and error provider authored for this fixture under this repository MIT license.",
+  "command": "PROMPTFOO_DISABLE_TELEMETRY=1 PROMPTFOO_DISABLE_UPDATE=1 promptfoo eval -c promptfooconfig.yaml --output export.json --no-cache; repeat with error-config.yaml and error-export.json (expected exit 100).",
+  "environment": {
+    "node": "v24.12.0",
+    "platform": "linux",
+    "architecture": "x64"
+  },
+  "sha256": {
+    "LICENSE": "bf813686553f451e1b833fbd827488aee49b60b189626915bf3108d10b754e44",
+    "error-config.yaml": "4e287e54ea0eca17ca5b55c1fed2ca5b41823cafdb4585c67ce9dc73374f0e56",
+    "error-export.json": "0aa1310b8793b8edcf6d025a77e42f52523e6197bd5cdc4e307053a35946854a",
+    "error-provider.cjs": "29dad1e599c3b15a7f4815a028d2d73a392b0d6dddbe3f50e4edafe3c11ec816",
+    "export.json": "41f8d8802dc83afeceedd762e5683a8c0792ac80033417e03eeebf5727873c7b",
+    "promptfooconfig.yaml": "99be95b052098163a12659ea34c8f5ce02819b506ea26f7721a6fa6f8a957f43"
+  }
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "command": "tracemantle hello/SKILL.md",
+    "exit_code": 0,
+    "stdout": "\u2714 PASS  hello/SKILL.md\n            \u00b7 info              description.quality-score  Description quality score: 95/100.\n\nChecked 1 file: 1 passed, 0 failed\n",
+    "stderr": ""
+  },
+  {
+    "command": "tracemantle invalid/SKILL.md",
+    "exit_code": 1,
+    "stdout": "\u2717 FAIL  invalid/SKILL.md\n    line 3  \u2717 error             parse.error  Duplicate YAML key 'name'. Keep one value per key.\n\nChecked 1 file: 0 passed, 1 failed\n",
+    "stderr": ""
+  },
+  {
+    "command": "tracemantle missing/SKILL.md",
+    "exit_code": 1,
+    "stdout": "\u2717 FAIL  missing/SKILL.md\n            \u00b7 info              description.quality-score  Description quality score: 95/100.\n    line 6  \u2717 error             references.broken-link  Referenced file does not exist: 'helper.py'.\n              resolved to: helper.py\n\nChecked 1 file: 0 passed, 1 failed\n",
+    "stderr": ""
+  },
+  {
+    "command": "tracemantle hello/",
+    "exit_code": 0,
+    "stdout": "\u2714 PASS  hello/SKILL.md\n            \u00b7 info              description.quality-score  Description quality score: 95/100.\n\nChecked 1 file: 1 passed, 0 failed\n",
+    "stderr": ""
+  },
+  {
+    "command": "tracemantle warning/SKILL.md",
+    "exit_code": 0,
+    "stdout": "\u2714 PASS  warning/SKILL.md\n    line 4  \u26a0 warning           frontmatter.field.unknown  Unknown frontmatter field 'unrecognized-field'. Known fields: allowed-tools, compatibility, description, license, metadata, name.\n              unrecognized-field: ...\n            \u00b7 info              description.quality-score  Description quality score: 95/100.\n\nChecked 1 file: 1 passed, 0 failed, 1 warning\n",
+    "stderr": ""
+  },
+  {
+    "command": "tracemantle warning/SKILL.md --strict",
+    "exit_code": 1,
+    "stdout": "\u2714 PASS  warning/SKILL.md\n    line 4  \u26a0 warning           frontmatter.field.unknown  Unknown frontmatter field 'unrecognized-field'. Known fields: allowed-tools, compatibility, description, license, metadata, name.\n              unrecognized-field: ...\n            \u00b7 info              description.quality-score  Description quality score: 95/100.\n\nChecked 1 file: 1 passed, 0 failed, 1 warning\n",
+    "stderr": ""
+  }
+]

@@ -87,7 +87,7 @@ Identify the requirement, affected callers, and observable acceptance criteria. 
 - Mock external boundaries when appropriate without replacing the logic being tested. Preserve authentic upstream fixtures, their bytes, licenses, and provenance under `tests/fixtures/upstream/`.
 - Never weaken assertions, alter inputs, skip failures, lower coverage, or regenerate expected outputs solely to obtain a pass. Review golden-file diffs against independently intended behavior.
 - Run focused tests while iterating and the applicable full gates before claiming completion. Preserve the 80% full-suite coverage floor; do not impose whole-package coverage on an isolated test run.
-- When test collection changes, update the README test count from actual collection as required by `tests/test_readme_test_count_claim.py`. Never hard-code a historical pass count as current evidence.
+- When test collection changes, update the implementation-status test count from actual collection as required by `tests/test_readme_test_count_claim.py`. Never hard-code a historical pass count as current evidence.
 - No findings is a valid review result. Report a defect only with a reproducible failure or a concrete execution path that violates a requirement. Do not invent work to satisfy repeated review requests.
 
 From an activated virtual environment at the repository root:

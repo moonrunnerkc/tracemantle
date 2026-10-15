@@ -7,11 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-10-15
+
 ### Added
+
+- Explicit schema-2 `automation` approval authority: scoped OpenSSH/minisign keys can approve a complete evidence digest for an independently supplied protected run, policy and candidate bundle, without recurring digest commits. Legacy allowlists and additional `required_signers` retain their meaning; freshness, immutable-model and compatibility restrictions remain unchanged.
+- Built-in data-only `import-evidence --input-format neutral` for complete canonical records, with bounded full-source validation, source preservation and importer-owned provenance.
+- Verified Promptfoo 0.124.1/results-schema-3 subset alongside 0.118.10. Authentic npm-generated echo and provider-error exports retain reproduction inputs and provenance; unverified versions/shapes point to neutral import.
+- Task-focused onboarding, CI instructions, a neutral exporter and an isolated Linux automation example using a deterministic helper. The README leads with local validation. Validation help groups everyday and advanced options without removing flags. Generated reference now includes evidence commands.
 
 - Adapter contract `adapt(export_bytes, bindings) -> list[CheckEvidence]` in the new `tracemantle.adapters` package. The Promptfoo 0.118.10 adapter moved to `tracemantle.adapters.promptfoo`; `tracemantle.promptfoo` remains as an import alias.
 - `import-evidence --adapter PATH` loads a user-supplied Python adapter in place of the built-in one. The file executes with the caller's privileges, is refused when it sits inside the evaluated bundle, and its records are stamped with `adapter = external/sha256:<file digest>` and the export's own `artifact_sha256`. Without the flag no external code is loaded.
-- Optional `required_signers` in `[tool.tracemantle.release]`: a list of OpenSSH or minisign public keys. When present, `compare` accepts a record only if a sidecar signature (`RECORD.json.sig` or `RECORD.json.minisig`) over its canonical bytes verifies against one of them, using the system `ssh-keygen -Y verify` or `minisign -V`. The `trusted_evidence` digest allowlist is still required. Policies without the key, the evidence schema and record digests are unchanged.
+- Optional `required_signers` in `[tool.tracemantle.release]`: a list of OpenSSH or minisign public keys. When present, `compare` accepts a record only if a sidecar signature (`RECORD.json.sig` or `RECORD.json.minisig`) over its canonical bytes verifies against one of them, using the system `ssh-keygen -Y verify` or `minisign -V`. The `trusted_evidence` digest allowlist is still required unless schema-2 automation explicitly approves the record. Policies without the key, the evidence schema and record digests are unchanged.
 - Verified-profile registry `src/tracemantle/profiles/verified.toml` recording, per agent, the version or docs revision checked, what was inspected, the date and the rules confirmed or contradicted. Shipped entries carry over the unverified 2026-04-20 provenance; advisory profiles are unchanged.
 - `--check-profile-freshness` warns on stderr when a registry entry is older than `--profile-max-age-days` (default 90) or its docs URL returns a later `Last-Modified` to a single HTTP HEAD. `--profile-registry PATH` selects another registry. Warnings never change stdout or the exit code, and no request is made without the flag.
 - `compare --require-observed-execution` (default off) treats a required check as unknown (exit 4) unless an accepted record for it has observation method `observed-execution`. Failures are not softened and optional checks are unaffected.
