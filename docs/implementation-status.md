@@ -4,7 +4,7 @@ Operative plan: [original DOCX](SkillCheck_Technical_Debt_and_Product_Plan.docx)
 
 The complete plan, including both tables, was read before implementation. Instruction discovery covered ancestors, hidden directories, scoped instructions and case variants; `.github/CLAUDE.md` was the only repository instruction file. Contributor guidance, build workflows and historical remediation were also read. The supplied DOCX and unrelated local files were preserved. Those implementation-stage results predate the owner's repository rename; post-rename work is recorded below. No publication occurred during that initial implementation stage; the later authorized release is recorded below.
 
-Previous published release: **TraceMantle 1.6.1**, independently verified. The 1.7.0 candidate includes the additions recorded below; publication verification is recorded separately. [Patch publication and acceptance](verification/release-1.6.1/acceptance.md#published-release-and-independent-verification) records the corrected D09/P01/P03 behavior, exact source commit, public artifacts and installed checks.
+Current release: **TraceMantle 1.7.0**, published and independently verified. [Release acceptance](verification/release-1.7.0/acceptance.md) records the exact source, full remote matrix, public artifacts, installed checks and restored publishing controls. Historical 1.6.1 verification follows. [Patch publication and acceptance](verification/release-1.6.1/acceptance.md#published-release-and-independent-verification) records the corrected D09/P01/P03 behavior, exact source commit, public artifacts and installed checks.
 
 ## Requirement ledger
 
@@ -115,7 +115,7 @@ The 1.6.1 release at `4a502e7f381b6eadf57726285adfd82569461308` passed all 15 pr
 
 ## Included in 1.7.0: adapters, signers, profile freshness and observed execution
 
-Four opt-in additions sit under `[Unreleased]` on top of 1.6.1; no version, tag or publication changed.
+The initial development snapshot placed four opt-in additions under `[Unreleased]` on top of 1.6.1. They are now included in 1.7.0; the measurements below retain their original scope.
 
 - **Adapter contract and `import-evidence --adapter`.** The Promptfoo importer moved to `tracemantle.adapters.promptfoo`. An external adapter is user-supplied Python that runs with the caller's privileges only when the flag is given; it is refused inside the evaluated bundle and its records are stamped with the adapter file digest and the export digest.
 - **`required_signers`.** Optional OpenSSH or minisign public keys in the trusted policy. Sidecar signatures over canonical record bytes are verified with the system tools, in addition to digest approval.
@@ -134,8 +134,9 @@ Remote CI on the pull request is the evidence for the other interpreters and for
 ## Included in 1.7.0: practical validation and scoped automation
 
 The [acceptance and source record](verification/usability-evidence/acceptance.md)
-covers local work from `a5c02e9`. The README is 306 words, starts with published
-1.6.1 validation, and links task guides with actual clean-install transcripts.
+covers the initial local work from `a5c02e9`. That handoff had a 306-word README
+and published 1.6.1 onboarding; 1.7.0 now has a 305-word README and independently
+verified public installation and evidence checks linked above.
 Basic validation and its JSON/exit/strict contracts are unchanged; help now groups
 common and advanced flags. Collection statistics live here, not in the README.
 
@@ -150,7 +151,7 @@ OpenSSH approval. No live agent evaluation or hosted deployment is claimed.
 Neutral canonical JSON import needs no executable adapter. The additional tested
 Promptfoo 0.124.1/results-v3 subset uses authentic locally generated npm exports
 with retained provenance; 0.118.10 remains supported. No runtime dependencies were
-added, and versions/tags/publication remain unchanged.
+added. Versions, tags and publication were unchanged at that initial handoff.
 
 Local Linux gates: Python 3.12 without tiktoken `make verify-release` passed with
 1,530 passed/5 skipped and 88.92% coverage; a separate 3.12 environment with tiktoken

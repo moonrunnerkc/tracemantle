@@ -1,0 +1,38 @@
+[
+  {
+    "python": "3.10",
+    "artifact": "tracemantle-1.7.0-py3-none-any.whl",
+    "sha256": "7074b85cf9c112da84de04713afddd00c6aafefbdafc6de3f1835f54e54af77c",
+    "tests": 147,
+    "skipped": 0,
+    "result": "passed",
+    "environment": "/tmp/tracemantle170-installed/3.10-wheel"
+  },
+  {
+    "python": "3.10",
+    "artifact": "tracemantle-1.7.0.tar.gz",
+    "sha256": "9eab683d8a0d449e42669a25fb95d3c3cf6bc0e2242e465e65e89b646347c980",
+    "tests": 147,
+    "skipped": 0,
+    "result": "passed",
+    "environment": "/tmp/tracemantle170-installed/3.10-source"
+  },
+  {
+    "python": "3.12",
+    "artifact": "tracemantle-1.7.0-py3-none-any.whl",
+    "sha256": "7074b85cf9c112da84de04713afddd00c6aafefbdafc6de3f1835f54e54af77c",
+    "tests": 147,
+    "skipped": 0,
+    "result": "passed",
+    "environment": "/tmp/tracemantle170-installed/3.12-wheel"
+  },
+  {
+    "python": "3.12",
+    "artifact": "tracemantle-1.7.0.tar.gz",
+    "sha256": "9eab683d8a0d449e42669a25fb95d3c3cf6bc0e2242e465e65e89b646347c980",
+    "tests": 147,
+    "skipped": 0,
+    "result": "passed",
+    "environment": "/tmp/tracemantle170-installed/3.12-source"
+  }
+]

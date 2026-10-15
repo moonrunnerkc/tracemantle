@@ -1,0 +1,32 @@
+[
+  {
+    "artifact": "tracemantle-1.7.0-py3-none-any.whl",
+    "sha256": "7074b85cf9c112da84de04713afddd00c6aafefbdafc6de3f1835f54e54af77c",
+    "matches_quality": true,
+    "pypi_provenance": "https://pypi.org/integrity/tracemantle/1.7.0/tracemantle-1.7.0-py3-none-any.whl/provenance",
+    "verified_predicates": [
+      "https://docs.pypi.org/attestations/publish/v1"
+    ],
+    "certificate_policy": {
+      "repository": "moonrunnerkc/tracemantle",
+      "workflow": "release.yml",
+      "ref": "refs/tags/v1.7.0",
+      "source_commit": "f35821830f249df847faf57c0db6e45a50245740"
+    }
+  },
+  {
+    "artifact": "tracemantle-1.7.0.tar.gz",
+    "sha256": "9eab683d8a0d449e42669a25fb95d3c3cf6bc0e2242e465e65e89b646347c980",
+    "matches_quality": true,
+    "pypi_provenance": "https://pypi.org/integrity/tracemantle/1.7.0/tracemantle-1.7.0.tar.gz/provenance",
+    "verified_predicates": [
+      "https://docs.pypi.org/attestations/publish/v1"
+    ],
+    "certificate_policy": {
+      "repository": "moonrunnerkc/tracemantle",
+      "workflow": "release.yml",
+      "ref": "refs/tags/v1.7.0",
+      "source_commit": "f35821830f249df847faf57c0db6e45a50245740"
+    }
+  }
+]

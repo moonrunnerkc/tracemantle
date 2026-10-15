@@ -28,8 +28,8 @@ Read the staged diff and write a conventional commit message.
 ```
 
 Run the first command below from the parent of `hello`. All six transcripts below
-were captured from a clean published 1.6.1 installation outside the source checkout,
-and checked against the locally built package. Output was redirected, so it has
+were verified from a clean published 1.7.0 installation outside the source checkout
+([recorded commands and output](verification/release-1.7.0/onboarding-public.json)). Output was redirected, so it has
 no terminal colors. `--no-color` produces the same text interactively. Windows
 displays backslashes in paths; diagnostic text and exit codes are unchanged.
 

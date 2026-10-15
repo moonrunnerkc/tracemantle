@@ -1,5 +1,7 @@
 # Validation and evidence workflow handoff
 
+This is the historical pre-release handoff. [1.7.0 publication verification](../release-1.7.0/acceptance.md) records the later owner-authorized release and supersedes publication status below.
+
 ## Source and scope
 
 Started on clean `main` at `a5c02e9d7101da85665e75eec471d7dc92bbd4f8`, equal
