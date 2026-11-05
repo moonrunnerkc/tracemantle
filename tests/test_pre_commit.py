@@ -23,7 +23,10 @@ def _make_repo(tmp_path: Path) -> Path:
     subprocess.run(["git", "config", "user.email", "test@test.com"], cwd=tmp_path, capture_output=True, check=True)
     subprocess.run(["git", "config", "user.name", "Test"], cwd=tmp_path, capture_output=True, check=True)
 
-    # Use local repo type so pre-commit resolves the hook from the installed package
+    # A local system hook runs the tracemantle installed beside the tests. A
+    # python hook would also build a hook venv first, which pip-installs a
+    # placeholder package with setuptools fetched from PyPI, and then run this
+    # same tracemantle from PATH: the venv never holds it.
     config = tmp_path / ".pre-commit-config.yaml"
     config.write_text(
         textwrap.dedent("""\
@@ -33,7 +36,7 @@ def _make_repo(tmp_path: Path) -> Path:
               - id: tracemantle
                 name: tracemantle
                 entry: tracemantle
-                language: python
+                language: system
                 files: '(^|/)SKILL\\.md$'
                 pass_filenames: true
                 args: [--skip-dirname-check]
