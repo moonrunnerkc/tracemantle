@@ -7,6 +7,10 @@ import pytest
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
+# tiktoken reads cl100k_base from this cache before it would fetch it, so the
+# tokenizer tests run offline. See tests/fixtures/tiktoken/SOURCE.txt.
+os.environ["TIKTOKEN_CACHE_DIR"] = str(FIXTURES_DIR / "tiktoken")
+
 # Invoke the CLI through the same interpreter that runs the tests, rather than a
 # bare ``tracemantle`` entry on PATH. PATH may resolve to a stale console script
 # built for a different Python (e.g. a system 3.9 install that cannot import the

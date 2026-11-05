@@ -1,0 +1,16 @@
+tiktoken's cl100k_base vocabulary, vendored so the tokenizer tests run with the network closed.
+
+File:     9b5ad71b2ce5302211f9c61530b329a4922fc6a4
+Upstream: https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken
+SHA-256:  223921b76ee99bde995b7ff738513eef100fb51d18c93597a113bcffe865b2a7
+
+tiktoken caches a downloaded vocabulary in TIKTOKEN_CACHE_DIR under the SHA-1 of its URL,
+which is the file name above, and accepts a cached copy only when its SHA-256 equals the hash
+tiktoken_ext/openai_public.py pins for that URL (the value above, as of tiktoken 0.14.0).
+tests/conftest.py sets TIKTOKEN_CACHE_DIR to this directory for the suite only; nothing under
+src/ reads it.
+
+If a tiktoken release pins a different hash for this URL, tiktoken deletes this file and fetches
+the vocabulary again, and the offline test fails. Replace the file with the new upstream bytes.
+
+LICENSE beside this file is tiktoken's license (MIT), copied from the tiktoken 0.14.0 wheel.
