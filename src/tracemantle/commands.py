@@ -408,37 +408,21 @@ def run_show_history(args: argparse.Namespace, paths: list[Path]) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _compute_exit_code(
-    results: list[ValidationResult],
-    *,
-    symbolic_errors_before_ingest: bool,
-    any_ingest_failed: bool,
-    strict_all: bool,
-) -> int:
+def _compute_exit_code(results: list[ValidationResult], *, strict_all: bool) -> int:
     """Return the process exit code from the merged results.
 
-    Priority: symbolic/ingest failure (1) beats a semantic-only contradiction (3);
-    a remaining error (e.g. an agent-graph contradiction) is 1; a warning-only run
-    is 0 unless ``--strict`` escalates it to 1; otherwise 0.
+    Any error outside the ``semantic.`` namespace, or a ``semantic.ingest.``
+    failure, is 1. A run whose only errors are semantic contradictions from a
+    critique ingest is 3. A warning-only run is 0 unless ``--strict`` escalates
+    it to 1. Exit 2 stays reserved for tool misuse and input errors.
     """
-    if symbolic_errors_before_ingest or any_ingest_failed or any(d.severity == Severity.ERROR and (not d.rule.startswith("semantic.") or d.rule.startswith("semantic.ingest.")) for r in results for d in r.diagnostics):
+    errors = [d.rule for r in results for d in r.diagnostics if d.severity == Severity.ERROR]
+    if any(not rule.startswith("semantic.") or rule.startswith("semantic.ingest.") for rule in errors):
         return 1
-    if any(
-        d.severity == Severity.ERROR
-        for r in results
-        for d in r.diagnostics
-        if d.rule.startswith("semantic.")
-    ):
-        # Symbolic passed, all parses succeeded, but a critique ingest added a
-        # semantic-namespace contradiction (semantic.*).
+    if errors:
         return 3
-    if any(not r.valid for r in results):
-        # Any remaining errors (e.g. graph.contradiction from agent ingest).
+    if strict_all and any(d.severity == Severity.WARNING for r in results for d in r.diagnostics):
         return 1
-    if any(d.severity == Severity.WARNING for r in results for d in r.diagnostics):
-        # Warning-only runs are a clean pass by default; --strict escalates
-        # them to exit 1. Exit 2 stays reserved for tool-misuse / input errors.
-        return 1 if strict_all else 0
     return 0
 
 
@@ -448,15 +432,14 @@ def _record_history(
     results: list[ValidationResult],
     agent_id: str,
     graph_agent_id: str,
-    final_exit_code: int,
     documents: dict[Path, ParsedSkill],
-) -> int:
+) -> None:
     """Append a ledger entry per target and merge any regression diagnostics.
 
     Mutates ``results`` in place (regression/write-failure diagnostics are
-    appended per target). Each SKILL.md has its own per-skill ledger next to it.
-    Returns the exit code, escalated to 1 the first time a target regresses when
-    ``--fail-on-regression`` is set.
+    appended per target, then ignore prefixes are reapplied). Each SKILL.md has
+    its own per-skill ledger next to it, and each entry records that file's own
+    exit code.
     """
     modes = ValidationModes(
         symbolic=True,
@@ -472,12 +455,14 @@ def _record_history(
         skill_for_history = documents.get(path)
         if skill_for_history is None:
             continue
+        # Regression detection compares validity and content only; the exit
+        # code recorded here is the file's own, before any regression.
         preliminary_entry = build_entry(
             skill_for_history,
             results[index],
             modes,
             run_agents,
-            final_exit_code,
+            _compute_exit_code([results[index]], strict_all=args.strict_all),
             __version__,
         )
         lp = ledger_path_for(path)
@@ -493,19 +478,13 @@ def _record_history(
                     message=f"Could not read history ledger: {exc}",
                 )
             ]
+        # A regression is a WARNING; --fail-on-regression escalates the
+        # file's recorded code below and the batch gate in run_validation.
         if regression_diags:
             results[index] = merge_diagnostics(results[index], regression_diags)
-            # Regression is WARNING by default; does not change the exit code.
-            # --fail-on-regression promotes it to exit 1 the first time any
-            # target regresses, and that escalated code is what subsequent
-            # ledger entries (and the global exit) record.
-            if args.fail_on_regression and any(
-                d.rule == "history.skill.regressed" for d in regression_diags
-            ):
-                final_exit_code = 1
 
         results[index] = _filter_results([results[index]], args.ignore_prefixes)[0]
-        file_exit_code = _compute_exit_code([results[index]], symbolic_errors_before_ingest=False, any_ingest_failed=False, strict_all=args.strict_all)
+        file_exit_code = _compute_exit_code([results[index]], strict_all=args.strict_all)
         if args.fail_on_regression and any(d.rule == 'history.skill.regressed' for d in results[index].diagnostics):
             file_exit_code = 1
         # Record this file's policy result, independently of the batch gate.
@@ -529,7 +508,6 @@ def _record_history(
                 )
             ])
             # Write failure is a warning; validation exit code stands.
-    return final_exit_code
 
 
 def _print_report(
@@ -716,15 +694,11 @@ def run_validation(
         graph_source_json = {"mode": "heuristic"}
 
     results = _filter_results(results, args.ignore_prefixes)
-    final_exit_code = _compute_exit_code(results, symbolic_errors_before_ingest=False,
-        any_ingest_failed=False, strict_all=args.strict_all)
     if args.history:
-        _record_history(args, paths, results, agent_id, graph_agent_id, final_exit_code, documents)
-        results = _filter_results(results, args.ignore_prefixes)
-        final_exit_code = _compute_exit_code(results, symbolic_errors_before_ingest=False,
-            any_ingest_failed=False, strict_all=args.strict_all)
-        if args.fail_on_regression and any(d.rule == 'history.skill.regressed' for r in results for d in r.diagnostics):
-            final_exit_code = 1
+        _record_history(args, paths, results, agent_id, graph_agent_id, documents)
+    final_exit_code = _compute_exit_code(results, strict_all=args.strict_all)
+    if args.fail_on_regression and any(d.rule == 'history.skill.regressed' for r in results for d in r.diagnostics):
+        final_exit_code = 1
 
     _print_report(
         args,
