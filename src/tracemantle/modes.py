@@ -173,6 +173,7 @@ def find_mode_conflict(args: argparse.Namespace) -> str | None:
     ledger flags, then the two ledger flags against each other.
     """
     active = active_flags(args)
+    given = {mode.flag: _is_set(args, mode) for mode in MODE_FLAGS}
 
     active_emits = [flag for flag in _flags_in_group(GROUP_EMIT) if active[flag]]
     if len(active_emits) > 1:
@@ -184,6 +185,14 @@ def find_mode_conflict(args: argparse.Namespace) -> str | None:
     for conflict in PAIRWISE_CONFLICTS:
         if active[conflict.flag_a] and active[conflict.flag_b]:
             return conflict.reason
+
+    if getattr(args, "changed_since", None) is not None:
+        for flag in ("--show-history", "--ingest-critique", "--ingest-graph"):
+            if given[flag]:
+                return (
+                    f"Cannot use --changed-since with {flag}. "
+                    f"{flag} reads or annotates one named skill; pass that skill's path instead."
+                )
 
     sarif_blocked = [*active_emits, *(["--show-history"] if active["--show-history"] else [])]
     if getattr(args, "format", None) == "sarif" and sarif_blocked:

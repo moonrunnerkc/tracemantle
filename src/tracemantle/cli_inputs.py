@@ -17,6 +17,7 @@ from tracemantle import __version__
 from tracemantle.agents._ingest import MAX_INGEST_BYTES
 from tracemantle.config_loader import ConfigError, project_configs
 from tracemantle.display import terminal
+from tracemantle.git_changes import ChangeDetectionError, changed_skills
 from tracemantle.io_limits import (
     MAX_SCAN_BYTES,
     MAX_SCAN_FILES,
@@ -79,6 +80,10 @@ def resolve_paths(args: argparse.Namespace) -> list[Path]:
         discovered: dict[Path, tuple[Path, ...]] = {}
         if not args.config and any(project_configs(p, cache=discovered) != args.config_paths for p in paths):
             raise UntrustedInputError("Mixed project roots are ambiguous. Validate each project separately or supply --config.")
+        if args.changed_since is not None:
+            paths = changed_skills(paths, args.changed_since)
+            if not paths:
+                print(terminal(f"No skills changed since {args.changed_since}."), file=sys.stderr)
         return paths
     except ConfigError as exc:
         # Same contract as an invocation-level config failure in cli._apply_config.
@@ -88,7 +93,7 @@ def resolve_paths(args: argparse.Namespace) -> list[Path]:
         else:
             print(terminal(f"Error: {exc}"), file=sys.stderr)
         sys.exit(2)
-    except (OSError, RuntimeError, UntrustedInputError) as exc:
+    except (ChangeDetectionError, OSError, RuntimeError, UntrustedInputError) as exc:
         print(terminal(f"Error: {exc}"), file=sys.stderr)
         sys.exit(2)
 

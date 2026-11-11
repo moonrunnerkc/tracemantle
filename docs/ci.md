@@ -32,6 +32,21 @@ python -m pip install tracemantle==1.7.0
 tracemantle skills/ --strict --format json
 ```
 
+## Changed skills only (unreleased)
+
+In a large skills repository, `--changed-since REV` validates only skills with
+a committed, staged, unstaged or untracked change anywhere under their
+directory since `REV`, helpers included. It exits 0 when nothing changed. Fetch
+enough history for the revision to resolve:
+
+```bash
+git fetch --no-tags origin main
+tracemantle skills/ --changed-since origin/main --strict
+```
+
+It requires a release after 1.7.0 and cannot be combined with
+`--show-history` or the ingest flags, which name a single skill.
+
 ## Code scanning (unreleased)
 
 `--format sarif` writes a SARIF 2.1.0 log, so diagnostics appear as GitHub

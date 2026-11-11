@@ -146,6 +146,13 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     basic.add_argument(
+        "--changed-since",
+        metavar="REV",
+        default=None,
+        help="Validate only skills with changes under their directory since Git revision REV "
+             "(committed, staged, unstaged or untracked). Exit 0 when none changed.",
+    )
+    basic.add_argument(
         "--version",
         action="version",
         version=f"%(prog)s {__version__}",
