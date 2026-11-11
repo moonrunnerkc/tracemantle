@@ -54,6 +54,11 @@ def _bloat_messages(tmp_path: Path, body: str) -> list[str]:
     return [d.message for d in check_body_bloat(parse(source))]
 
 
+def test_base64_after_a_hex_digest_is_still_reported(tmp_path: Path) -> None:
+    body = 'sha ' + 'a1' * 40 + '\n' + 'QUJjZGVm' * 12 + '\n'
+    assert any('Base64' in message for message in _bloat_messages(tmp_path, body))
+
+
 def test_code_block_size_is_reported_only_for_closed_blocks(tmp_path: Path) -> None:
     block = '```python\n' + 'x = 1\n' * 60 + '```\n'
     assert any('Code block with 60 lines' in m for m in _bloat_messages(tmp_path, block))
