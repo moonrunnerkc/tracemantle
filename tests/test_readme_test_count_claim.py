@@ -21,7 +21,9 @@ def _ledger_claimed_count() -> int:
 
 def _collected_test_count() -> int:
     result = subprocess.run(
-        [sys.executable, "-m", "pytest", "--collect-only", "-q"],
+        # --no-cov: a nested pytest-cov session erases the parent run's
+        # per-subprocess coverage data files when it starts.
+        [sys.executable, "-m", "pytest", "--collect-only", "-q", "--no-cov"],
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,

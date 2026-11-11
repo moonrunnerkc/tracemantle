@@ -37,11 +37,17 @@ def pytest_configure(config: pytest.Config) -> None:
     Coverage ships a .pth hook that calls ``coverage.process_startup()`` when
     COVERAGE_PROCESS_START is set, so pointing it at pyproject.toml is enough
     for the child to start measuring before it imports tracemantle. Combining the
-    per-process data files is pytest-cov's job, given ``parallel = true``.
+    per-process data files is pytest-cov's job, given ``parallel = true``;
+    COVERAGE_FILE keeps every child's data file at the repository root.
 
     Skipped when the run has no coverage active (``--no-cov``), where starting
     coverage in every subprocess would be pure overhead.
     """
     if not getattr(config.option, "cov_source", None):
         return
-    os.environ["COVERAGE_PROCESS_START"] = str(Path(__file__).parent.parent / "pyproject.toml")
+    root = Path(__file__).parent.parent
+    os.environ["COVERAGE_PROCESS_START"] = str(root / "pyproject.toml")
+    # The data file defaults to the process's working directory. A CLI test
+    # that runs in a temporary directory would otherwise write its data there,
+    # where pytest-cov never combines it.
+    os.environ.setdefault("COVERAGE_FILE", str(root / ".coverage"))
