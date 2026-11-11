@@ -210,7 +210,7 @@ def test_nonpublishing_workflow_preserves_real_release_dependency() -> None:
 def test_history_missing_after_discovery_escapes_path(tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch) -> None:
     import argparse
 
-    import tracemantle.commands as commands
+    import tracemantle.history_commands as commands
     source = tmp_path / 'café\x1b[2J.md'
     ledger = ledger_path_for(source)
     ledger.mkdir(parents=True)

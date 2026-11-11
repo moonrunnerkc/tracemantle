@@ -1,55 +1,32 @@
-"""Command execution for the tracemantle CLI.
+"""The default validation pipeline for the tracemantle CLI.
 
-`cli.py` owns argument wiring (parser construction, config application, dispatch).
-This module owns what each mode does: collecting paths, reading ingest payloads,
-emitting prompts and graphs, printing the history ledger, and running the default
-validation pipeline. The functions here carry their own exit codes via
-`sys.exit`, matching the behavior they had when they lived in `cli.py`.
+`cli.py` owns argument wiring and dispatch. Input resolution lives in
+`cli_inputs`, emit modes in `emit_modes` and history in `history_commands`.
+This module validates a batch, merges ingest and graph diagnostics, records
+history when requested, prints the report and exits with the gate's code.
 """
 
 from __future__ import annotations
 
 import argparse
-import json
-import os
 import sys
-from collections.abc import Iterator
-from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
 from tracemantle import __version__
-from tracemantle.agents import get_agent_prompt, get_graph_prompt
-from tracemantle.agents._ingest import MAX_INGEST_BYTES
 from tracemantle.agents.graph_parser import GraphParseError
 from tracemantle.agents.parser import CritiqueParseError
-from tracemantle.config_loader import ConfigError, project_configs
+from tracemantle.cli_inputs import parse_batch, read_ingest_raw
 from tracemantle.core import (
-    LedgerError,
-    RunAgents,
-    ValidationModes,
-    build_entry,
-    check_regression,
     extract_graph_agent,
     extract_graph_heuristic,
-    generate_activation_hypotheses,
     ingest_critique_response,
-    ledger_path_for,
-    load_ledger,
     merge_diagnostics,
-    render_activation_json,
-    render_activation_markdown,
-    render_activation_text,
-    render_graph_json,
-    render_graph_text,
-    render_ledger_json,
-    render_ledger_text,
     run_divergence_analyzers,
     run_graph_analyzers,
     validate,
 )
 from tracemantle.core.graph import GraphLimitError
-from tracemantle.display import terminal
 from tracemantle.formatters import (
     _format_agent,
     _format_github,
@@ -57,457 +34,11 @@ from tracemantle.formatters import (
     _format_markdown,
     _format_text,
 )
-from tracemantle.history_store import append_history, comparable_runs, history_identity
-from tracemantle.io_limits import (
-    MAX_SCAN_BYTES,
-    MAX_SCAN_FILES,
-    UntrustedInputError,
-    display_path,
-    read_guarded_text,
-    reject_control_characters,
-)
+from tracemantle.gate import compute_exit_code, filter_results
+from tracemantle.history_commands import record_history
 from tracemantle.parser import DocumentSettings, ParsedSkill, ParseError
-from tracemantle.parser import parse as _parse_skill
 from tracemantle.result import Diagnostic, Severity, ValidationResult
-from tracemantle.storage import EvidenceError
 from tracemantle.tokenizer import TokenizerError, tokenizer_provenance
-
-# ---------------------------------------------------------------------------
-# Path collection
-# ---------------------------------------------------------------------------
-
-
-def collect_paths(target: Path) -> list[Path]:
-    """Return a list of SKILL.md files to validate.
-
-    For a directory, recursively finds all files named exactly 'SKILL.md'.
-    For a file, returns it directly without name filtering.
-
-    Uses ``os.walk(followlinks=False)`` so directory symlinks are not traversed:
-    a symlink into another tree cannot pull in foreign files, and a symlink cycle
-    cannot hang the scan. ``Path.rglob`` follows directory symlinks on some Python
-    versions, which this avoids.
-    """
-    if not target.is_dir():
-        return [target]
-    found: list[Path] = []
-    def walk_error(exc: OSError) -> None:
-        raise UntrustedInputError(f"Cannot scan {target}: {exc}") from exc
-
-    for dirpath, dirnames, filenames in os.walk(target, followlinks=False, onerror=walk_error):
-        dirnames[:] = sorted(d for d in dirnames if d not in {'.git', '.venv', '__pycache__', '.tracemantle'})
-        if len(found) >= MAX_SCAN_FILES:
-            raise UntrustedInputError(f"Scan exceeds the {MAX_SCAN_FILES}-file limit; split the batch.")
-        if "SKILL.md" in filenames:
-            found.append(Path(dirpath) / "SKILL.md")
-    return sorted(found)
-
-
-def resolve_paths(args: argparse.Namespace) -> list[Path]:
-    """Resolve the target paths to a list of SKILL.md files, exiting on error."""
-    all_paths: list[Path] = []
-    for target in args.path:
-        if not target.exists():
-            print(terminal(f"Error: path not found: {target}"), file=sys.stderr)
-            sys.exit(2)
-        try:
-            paths = collect_paths(target)
-        except (OSError, RuntimeError, UntrustedInputError) as exc:
-            print(terminal(f"Error: {exc}"), file=sys.stderr)
-            sys.exit(2)
-        if not paths:
-            print(terminal(f"No SKILL.md files found under: {target}"), file=sys.stderr)
-            sys.exit(2)
-        all_paths.extend(paths)
-    try:
-        unique = {p.resolve(): p for p in sorted(all_paths)}
-        paths = [unique[key] for key in sorted(unique)]
-        if len(paths) > MAX_SCAN_FILES:
-            raise UntrustedInputError(f"Scan exceeds the {MAX_SCAN_FILES}-file limit.")
-        discovered: dict[Path, tuple[Path, ...]] = {}
-        if not args.config and any(project_configs(p, cache=discovered) != args.config_paths for p in paths):
-            raise UntrustedInputError("Mixed project roots are ambiguous. Validate each project separately or supply --config.")
-        return paths
-    except ConfigError as exc:
-        # Same contract as an invocation-level config failure in cli._apply_config.
-        if args.format == 'json':
-            print(json.dumps({'tool': 'TraceMantle', 'version': __version__, 'schema_version': 2,
-                              'gate': {'passed': False, 'exit_code': 2}, 'results': [], 'errors': [{'error': str(exc)}]}))
-        else:
-            print(terminal(f"Error: {exc}"), file=sys.stderr)
-        sys.exit(2)
-    except (OSError, RuntimeError, UntrustedInputError) as exc:
-        print(terminal(f"Error: {exc}"), file=sys.stderr)
-        sys.exit(2)
-
-
-def read_ingest_raw(ingest_path: str, what: str) -> str:
-    """Read a raw agent response from PATH or stdin, exiting on error.
-
-    ``what`` names the response kind in errors, e.g. ``"critique response"``.
-
-    Rejects payloads over ``MAX_INGEST_BYTES`` (exit 2). The stdin read is
-    bounded so a runaway pipe cannot exhaust memory before the check fires.
-    """
-    if ingest_path == "-":
-        payload = sys.stdin.buffer.read(MAX_INGEST_BYTES + 1)
-        # Size first: truncation at the cap can split a code point, which would
-        # otherwise be misreported as non-UTF-8 input.
-        if len(payload) > MAX_INGEST_BYTES:
-            print(
-                f"Error: ingest payload from stdin exceeds the {MAX_INGEST_BYTES}-byte cap. "
-                f"Trim the response or split the run into smaller batches.",
-                file=sys.stderr,
-            )
-            sys.exit(2)
-        try:
-            raw = payload.decode('utf-8')
-        except UnicodeDecodeError:
-            print('Error: ingest stdin must contain UTF-8 text.', file=sys.stderr)
-            sys.exit(2)
-        # stdin arrives already decoded, so only the control-character half of
-        # the policy applies. A pipe carrying NULs is a binary stream, not JSON.
-        try:
-            reject_control_characters(raw, what="Ingest payload", source="stdin")
-        except UntrustedInputError as exc:
-            print(terminal(f"Error: {exc}"), file=sys.stderr)
-            sys.exit(2)
-        return raw
-    p = Path(ingest_path)
-    if not p.exists():
-        # Echoed verbatim, not through display_path. This is the string the user
-        # typed on the command line, so shortening it hides which path they got
-        # wrong. display_path exists to keep discovered content from publishing
-        # the host layout, which does not apply to the user's own argument.
-        print(terminal(f"Error: {what} file not found: {p}"), file=sys.stderr)
-        sys.exit(2)
-    try:
-        return read_guarded_text(p, max_bytes=MAX_INGEST_BYTES, what="Ingest response")
-    except UntrustedInputError as exc:
-        print(terminal(f"Error: {exc}"), file=sys.stderr)
-        sys.exit(2)
-    except OSError as exc:
-        print(terminal(f"Error: cannot read {display_path(p)}: {exc}"), file=sys.stderr)
-        sys.exit(2)
-
-
-def parse_batch(paths: list[Path], settings: DocumentSettings | None = None) -> Iterator[tuple[Path, ParsedSkill | ParseError]]:
-    """Parse each path in order under the shared batch byte budget.
-
-    Every mode reads through here, so a batch is capped at ``MAX_SCAN_BYTES``
-    of source in total, not only per file. A file that cannot be parsed, or
-    that would exceed the remaining budget, yields its ``ParseError`` so the
-    caller can report it and continue with independent files.
-    """
-    scanned = 0
-    for path in paths:
-        try:
-            if scanned >= MAX_SCAN_BYTES:
-                raise ParseError(f"Scan exceeds the {MAX_SCAN_BYTES}-byte budget. Split the batch.")
-            skill = _parse_skill(path, settings=settings, max_bytes=MAX_SCAN_BYTES - scanned)
-        except ParseError as exc:
-            yield path, exc
-            continue
-        scanned += len(skill.raw_text.encode('utf-8'))
-        yield path, skill
-
-
-# ---------------------------------------------------------------------------
-# Emit modes
-# ---------------------------------------------------------------------------
-
-
-def _emit_documents(paths: list[Path], fmt: str, mode: str, agent_id: str = "claude") -> None:
-    items: list[dict[str, Any]] = []
-    errors: list[dict[str, str]] = []
-    for path, skill in parse_batch(paths):
-        if isinstance(skill, ParseError):
-            errors.append({"path": str(path), "error": str(skill)})
-            continue
-        if mode == 'graph':
-            try:
-                graph = extract_graph_heuristic(skill)
-            except GraphLimitError as exc:
-                errors.append({"path": str(path), "error": str(exc)})
-                continue
-            item = json.loads(render_graph_json(graph))
-            rendered = render_graph_text(graph)
-        else:
-            prompt = (get_agent_prompt(agent_id) if mode == 'critique' else get_graph_prompt(agent_id)).render(skill)
-            item = {"prompt": prompt}
-            rendered = prompt
-        items.append({"path": str(path), **item})
-        if fmt != 'json':
-            if len(paths) > 1:
-                print(terminal(f"# === tracemantle:{'critique-prompt' if mode == 'critique' else mode}:{path} ==="))
-            # Preserve generated layout while making all other controls inert.
-            print("\n".join(terminal(line) for line in rendered.split('\n')))
-    if fmt == 'json':
-        payload: dict[str, Any] = {"tool": "TraceMantle", "version": __version__, "schema_version": 2, "mode": mode}
-        if len(items) == 1 and len(paths) == 1:
-            payload.update(items[0])
-        else:
-            payload['results'] = items
-        if errors:
-            payload['errors'] = errors
-        print(json.dumps(payload, indent=2))
-    else:
-        for error in errors:
-            print(terminal(f"Error: {error['path']}: {error['error']}"), file=sys.stderr)
-    if errors:
-        sys.exit(1)
-
-
-def emit_graph(paths: list[Path], fmt: str) -> None:
-    _emit_documents(paths, fmt, 'graph')
-
-
-def emit_critique_prompts(paths: list[Path], fmt: str, agent_id: str = 'claude') -> None:
-    _emit_documents(paths, fmt, 'critique', agent_id)
-
-
-def emit_graph_prompts(paths: list[Path], fmt: str, agent_id: str = 'claude') -> None:
-    _emit_documents(paths, fmt, 'graph-prompt', agent_id)
-
-
-def emit_agent_reason_packet(paths: list[Path], fmt: str, critique_agent: str, graph_agent: str) -> None:
-    """Print a combined critique and graph prompt packet for in-agent execution."""
-    packets: list[dict[str, str]] = []
-    errors = []
-    for path, skill in parse_batch(paths):
-        if isinstance(skill, ParseError):
-            errors.append({'path': str(path), 'error': str(skill)})
-            continue
-        packets.append({
-            "path": str(path),
-            "critique_prompt": get_agent_prompt(critique_agent).render(skill),
-            "graph_prompt": get_graph_prompt(graph_agent).render(skill),
-        })
-
-    if fmt == "json":
-        print(json.dumps({'tool': 'TraceMantle', 'version': __version__, 'schema_version': 2, "agent_reason": packets, 'errors': errors}, indent=2))
-        if errors:
-            sys.exit(1)
-        return
-
-    for error in errors:
-        print(terminal(f"Error: {error['path']}: {error['error']}"), file=sys.stderr)
-    for index, raw_packet in enumerate(packets, start=1):
-        packet = {key: '\n'.join(terminal(line) for line in value.split('\n')) if key.endswith('_prompt') else terminal(value) for key, value in raw_packet.items()}
-        if len(packets) > 1:
-            print(f"# === tracemantle:agent-reason:{packet['path']} ===")
-        if fmt == "md":
-            print(f"# Agent Reason Packet {index}\n")
-            print(f"Path: `{packet['path']}`\n")
-            print("## Critique prompt\n")
-            print(f"```text\n{packet['critique_prompt']}\n```\n")
-            print("## Graph prompt\n")
-            print(f"```text\n{packet['graph_prompt']}\n```")
-        elif fmt == "agent":
-            print("tracemantle agent-reason packet")
-            print(f"path: {packet['path']}")
-            print("task: run both prompts, save each JSON response, then invoke tracemantle with --ingest-critique and --ingest-graph")
-            print("critique_prompt:")
-            print(packet["critique_prompt"])
-            print("graph_prompt:")
-            print(packet["graph_prompt"])
-        else:
-            print("Critique prompt:")
-            print(packet["critique_prompt"])
-            print("\nGraph prompt:")
-            print(packet["graph_prompt"])
-
-    if errors:
-        sys.exit(1)
-
-
-def emit_activation(paths: list[Path], fmt: str) -> None:
-    """Print activation hypotheses for each path and exit 0."""
-    multiple = len(paths) > 1
-    reports = []
-    errors = []
-    for path, skill in parse_batch(paths):
-        if isinstance(skill, ParseError):
-            errors.append({'path': str(path), 'error': str(skill)})
-        else:
-            reports.append((path, generate_activation_hypotheses(skill)))
-    if fmt == 'json':
-        payload: dict[str, Any] = {'tool': 'TraceMantle', 'version': __version__, 'schema_version': 2}
-        if multiple or not reports:
-            payload['activation_reports'] = [json.loads(render_activation_json(report)) for _, report in reports]
-        else:
-            payload.update(json.loads(render_activation_json(reports[0][1])))
-        if errors:
-            payload['errors'] = errors
-        print(json.dumps(payload, indent=2))
-    else:
-        for path, report in reports:
-            if multiple:
-                print(terminal(f'# === tracemantle:activation:{path} ==='))
-            print(render_activation_markdown(report) if fmt == 'md' else render_activation_text(report))
-        for error in errors:
-            print(terminal(f"Error: {error['path']}: {error['error']}"), file=sys.stderr)
-    if errors:
-        sys.exit(1)
-
-
-# ---------------------------------------------------------------------------
-# History
-# ---------------------------------------------------------------------------
-
-
-def run_show_history(args: argparse.Namespace, paths: list[Path]) -> None:
-    """Print the validation history ledger for the first path and exit.
-
-    Each skill has its own per-skill ledger, so multi-target invocations cannot
-    map onto a single ledger render; the additional paths are ignored with a
-    stderr warning so the silent skip is visible.
-    """
-    if len(paths) > 1:
-        print(
-            terminal(f"warning: --show-history reads one ledger; ignoring extra paths: "
-            f"{', '.join(str(p) for p in paths[1:])}. "
-            f"Run --show-history once per skill to read its ledger."),
-            file=sys.stderr,
-        )
-    target_path = paths[0]
-    lp = ledger_path_for(target_path)
-    if not lp.exists():
-        legacy = target_path.parent / '.skillcheck-history.json'
-        if legacy.exists():
-            lp = legacy
-            print('Reading legacy history; use tracemantle migrate-history to copy it explicitly.', file=sys.stderr)
-    if not lp.exists():
-        print(
-            terminal(f"No history ledger found for {target_path}. "
-            f"Run 'tracemantle {target_path} --history' to start tracking."),
-            file=sys.stderr,
-        )
-        sys.exit(2)
-    try:
-        ledger = load_ledger(lp)
-    except (LedgerError, EvidenceError, OSError) as exc:
-        # Exit 2: README documents it as the code for malformed input, and an
-        # unreadable ledger is exactly that. This path returned 1 before, which
-        # contradicted the documented contract.
-        print(terminal(f"Error: {exc}"), file=sys.stderr)
-        sys.exit(2)
-    if ledger is None:
-        print(terminal(f"No history ledger found for {target_path}."), file=sys.stderr)
-        sys.exit(2)
-    if not args.quiet:
-        if args.format == "json":
-            print(render_ledger_json(ledger))
-        else:
-            print(render_ledger_text(ledger))
-    sys.exit(0)
-
-
-# ---------------------------------------------------------------------------
-# Default validation pipeline
-# ---------------------------------------------------------------------------
-
-
-def _compute_exit_code(results: list[ValidationResult], *, strict_all: bool) -> int:
-    """Return the process exit code from the merged results.
-
-    Any error outside the ``semantic.`` namespace, or a ``semantic.ingest.``
-    failure, is 1. A run whose only errors are semantic contradictions from a
-    critique ingest is 3. A warning-only run is 0 unless ``--strict`` escalates
-    it to 1. Exit 2 stays reserved for tool misuse and input errors.
-    """
-    errors = [d.rule for r in results for d in r.diagnostics if d.severity == Severity.ERROR]
-    if any(not rule.startswith("semantic.") or rule.startswith("semantic.ingest.") for rule in errors):
-        return 1
-    if errors:
-        return 3
-    if strict_all and any(d.severity == Severity.WARNING for r in results for d in r.diagnostics):
-        return 1
-    return 0
-
-
-def _record_history(
-    args: argparse.Namespace,
-    paths: list[Path],
-    results: list[ValidationResult],
-    agent_id: str,
-    graph_agent_id: str,
-    documents: dict[Path, ParsedSkill],
-) -> None:
-    """Append a ledger entry per target and merge any regression diagnostics.
-
-    Mutates ``results`` in place (regression/write-failure diagnostics are
-    appended per target, then ignore prefixes are reapplied). Each SKILL.md has
-    its own per-skill ledger next to it, and each entry records that file's own
-    exit code.
-    """
-    modes = ValidationModes(
-        symbolic=True,
-        critique=args.ingest_critique is not None,
-        graph=args.ingest_graph is not None or args.analyze_graph,
-    )
-    run_agents = RunAgents(
-        critique_agent=agent_id if args.ingest_critique is not None else None,
-        graph_agent=graph_agent_id if args.ingest_graph is not None else None,
-    )
-    for index, path in enumerate(paths):
-        identity: tuple[str, str] | None = None
-        skill_for_history = documents.get(path)
-        if skill_for_history is None:
-            continue
-        # Regression detection compares validity and content only; the exit
-        # code recorded here is the file's own, before any regression.
-        preliminary_entry = build_entry(
-            skill_for_history,
-            results[index],
-            modes,
-            run_agents,
-            _compute_exit_code([results[index]], strict_all=args.strict_all),
-            __version__,
-        )
-        lp = ledger_path_for(path)
-        try:
-            identity = history_identity(skill_for_history, {name: getattr(args, name) for name in ('max_lines', 'max_tokens', 'min_desc_score', 'ignore_prefixes', 'skip_ref_check', 'skip_dirname_check', 'strict_all', 'strict_vscode', 'strict_cursor', 'target_agent', 'analyze_graph', 'semantic', 'critique_agent', 'graph_agent')})
-            prior_runs = comparable_runs(lp, identity)
-            regression_diags = check_regression(prior_runs, preliminary_entry)
-        except (LedgerError, EvidenceError, OSError) as exc:
-            regression_diags = [
-                Diagnostic(
-                    rule="history.read.failed",
-                    severity=Severity.ERROR,
-                    message=f"Could not read history ledger: {exc}",
-                )
-            ]
-        # A regression is a WARNING; --fail-on-regression escalates the
-        # file's recorded code below and the batch gate in run_validation.
-        if regression_diags:
-            results[index] = merge_diagnostics(results[index], regression_diags)
-
-        results[index] = _filter_results([results[index]], args.ignore_prefixes)[0]
-        file_exit_code = _compute_exit_code([results[index]], strict_all=args.strict_all)
-        if args.fail_on_regression and any(d.rule == 'history.skill.regressed' for d in results[index].diagnostics):
-            file_exit_code = 1
-        # Record this file's policy result, independently of the batch gate.
-        final_entry = build_entry(
-            skill_for_history,
-            results[index],
-            modes,
-            run_agents,
-            file_exit_code,
-            __version__,
-        )
-        try:
-            if identity is not None:
-                append_history(lp, skill_for_history, final_entry, identity)
-        except (LedgerError, EvidenceError, OSError) as exc:
-            results[index] = merge_diagnostics(results[index], [
-                Diagnostic(
-                    rule="history.write.failed",
-                    severity=Severity.WARNING,
-                    message=f"Could not write history ledger to {lp}: {exc}",
-                )
-            ])
-            # Write failure is a warning; validation exit code stands.
 
 
 def _print_report(
@@ -685,10 +216,10 @@ def run_validation(
         graph_source_text = "heuristic"
         graph_source_json = {"mode": "heuristic"}
 
-    results = _filter_results(results, args.ignore_prefixes)
+    results = filter_results(results, args.ignore_prefixes)
     if args.history:
-        _record_history(args, paths, results, agent_id, graph_agent_id, documents)
-    final_exit_code = _compute_exit_code(results, strict_all=args.strict_all)
+        record_history(args, paths, results, agent_id, graph_agent_id, documents)
+    final_exit_code = compute_exit_code(results, strict_all=args.strict_all)
     if args.fail_on_regression and any(d.rule == 'history.skill.regressed' for r in results for d in r.diagnostics):
         final_exit_code = 1
 
@@ -703,7 +234,3 @@ def run_validation(
     )
 
     sys.exit(final_exit_code)
-
-
-def _filter_results(results: list[ValidationResult], prefixes: list[str]) -> list[ValidationResult]:
-    return [replace(r, diagnostics=[d for d in r.diagnostics if not any(d.rule.startswith(prefix) for prefix in prefixes)]) for r in results]

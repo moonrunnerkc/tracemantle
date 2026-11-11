@@ -413,7 +413,7 @@ def test_ingest_response_over_size_cap_exits_two(tmp_path):
 @pytest.mark.skipif(sys.platform == "win32", reason="symlink creation needs privileges on Windows")
 def test_collect_paths_does_not_follow_directory_symlinks(tmp_path):
     """A directory symlink into another tree must not pull in foreign SKILL.md files."""
-    from tracemantle.commands import collect_paths
+    from tracemantle.cli_inputs import collect_paths
 
     scanned = tmp_path / "project"
     (scanned / "real").mkdir(parents=True)

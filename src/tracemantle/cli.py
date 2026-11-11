@@ -7,19 +7,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from tracemantle import __version__
-from tracemantle.commands import (
+from tracemantle.cli_inputs import resolve_paths
+from tracemantle.commands import run_validation
+from tracemantle.config import DEFAULT_RESERVED_WORDS
+from tracemantle.config_loader import ConfigError, load_project_config
+from tracemantle.display import terminal
+from tracemantle.emit_modes import (
     emit_activation,
     emit_agent_reason_packet,
     emit_critique_prompts,
     emit_graph,
     emit_graph_prompts,
-    resolve_paths,
-    run_show_history,
-    run_validation,
 )
-from tracemantle.config import DEFAULT_RESERVED_WORDS
-from tracemantle.config_loader import ConfigError, load_project_config
-from tracemantle.display import terminal
+from tracemantle.history_commands import run_show_history
 from tracemantle.modes import find_mode_conflict
 from tracemantle.parser import DocumentSettings
 from tracemantle.profile_freshness import DEFAULT_MAX_AGE_DAYS, SHIPPED_REGISTRY, freshness_warnings, load_verified_profiles

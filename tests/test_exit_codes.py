@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from tracemantle.commands import _compute_exit_code
+from tracemantle.gate import compute_exit_code
 from tracemantle.result import Diagnostic, Severity, ValidationResult
 
 
@@ -25,4 +25,4 @@ def _result(*diagnostics: tuple[str, Severity]) -> ValidationResult:
 ], ids=['clean', 'warning', 'strict-warning', 'semantic-only', 'symbolic-beats-semantic', 'ingest-failure',
         'graph-contradiction', 'info-only'])
 def test_exit_code_precedence(diagnostics: tuple[tuple[str, Severity], ...], strict: bool, expected: int) -> None:
-    assert _compute_exit_code([_result(*diagnostics)], strict_all=strict) == expected
+    assert compute_exit_code([_result(*diagnostics)], strict_all=strict) == expected
