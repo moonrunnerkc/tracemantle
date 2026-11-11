@@ -1,8 +1,7 @@
-"""Capability graph data model and heuristic extractor for tracemantle.
+"""Capability graph extraction from a parsed skill, heuristic or agent-supplied.
 
-IMPERATIVE_VERBS, INPUT_SECTION_ALIASES, and OUTPUT_SECTION_ALIASES are
-conservative by design. The agent-mode extractor (Phase 2C) handles the long
-tail via semantic matching; the heuristic here errs toward precision over recall.
+The heading and list vocabularies the heuristic relies on live in
+graph_markdown; the data model lives in graph_model.
 """
 
 from __future__ import annotations
@@ -12,6 +11,20 @@ import re
 from dataclasses import replace
 from typing import Literal
 
+from tracemantle.core.graph_markdown import (
+    IMPERATIVE_VERBS,
+    INPUT_SECTION_ALIASES,
+    OUTPUT_SECTION_ALIASES,
+    _infer_input_kind,
+    _infer_output_kind,
+    _is_imperative_heading,
+    _is_input_section_heading,
+    _is_output_section_heading,
+    _named_list_items,
+    _sectionize,
+    _strip_section_prefix,
+    extract_backtick_refs,
+)
 from tracemantle.core.graph_model import (
     Capability,
     CapabilityGraph,
@@ -22,8 +35,8 @@ from tracemantle.core.graph_model import (
 from tracemantle.io_limits import MAX_GRAPH_NODES
 from tracemantle.parser import ParsedSkill
 
-# Re-exported so ``from tracemantle.core.graph import CapabilityGraph`` (and the
-# other model names) keeps working now that the model lives in graph_model.py.
+# Re-exported so ``from tracemantle.core.graph import CapabilityGraph`` and the
+# vocabulary names keep working after the model and vocabularies moved out.
 __all__ = [
     "Capability",
     "CapabilityGraph",
@@ -37,82 +50,6 @@ __all__ = [
     "extract_graph_agent",
     "extract_graph_heuristic",
 ]
-
-# ---------------------------------------------------------------------------
-# Classification constants (module-level, frozen tuples, sorted alphabetically)
-# ---------------------------------------------------------------------------
-
-IMPERATIVE_VERBS: tuple[str, ...] = (
-    "analyze",
-    "build",
-    "check",
-    "compile",
-    "configure",
-    "convert",
-    "create",
-    "define",
-    "describe",
-    "design",
-    "document",
-    "evaluate",
-    "explain",
-    "extract",
-    "find",
-    "format",
-    "generate",
-    "identify",
-    "implement",
-    "install",
-    "list",
-    "parse",
-    "plan",
-    "render",
-    "review",
-    "run",
-    "set",
-    "setup",
-    "study",
-    "summarize",
-    "test",
-    "transform",
-    "understand",
-    "validate",
-    "write",
-)
-
-# Section prefixes stripped from headings before imperative-verb classification.
-# Matches "Phase 1:", "Phase 1 -", "Step 2.", "Section 3:", "1.", "2)",
-# "1.1", "1.1.1 ", "1.2)" etc. Real-world skills use both flat and nested
-# numbering (mcp-builder uses "#### 1.1 Understand...").  Conservative:
-# strips a single leading section/numeric token plus its trailing delimiter
-# or whitespace, leaving the rest of the heading intact for verb detection.
-_SECTION_PREFIX_RE = re.compile(
-    r"""
-    ^\s*
-    (?:
-        (?:phase|step|section|part|chapter)\s+[\w\.]+\s*[:.\-]?\s+  # named section
-        | \d+(?:\.\d+)*\s*[:.)\-]?\s+                               # numeric (incl. 1.1)
-    )
-    """,
-    re.IGNORECASE | re.VERBOSE,
-)
-
-INPUT_SECTION_ALIASES: tuple[str, ...] = (
-    "before you start",
-    "inputs",
-    "prerequisites",
-    "requirements",
-    "setup",
-)
-
-OUTPUT_SECTION_ALIASES: tuple[str, ...] = (
-    "output",
-    "outputs",
-    "produces",
-    "result",
-    "results",
-    "returns",
-)
 
 # ---------------------------------------------------------------------------
 # ID generation: content-derived, deterministic, stable across runs
@@ -133,180 +70,9 @@ def _make_id(node_type: str, name: str, line: int | None) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()[:8]
 
 
-# ---------------------------------------------------------------------------
-# Private section-classification helpers (Phase 2C imports these by name)
-# ---------------------------------------------------------------------------
-
-
-def _normalize_heading(text: str) -> str:
-    """Lower-case and strip non-alpha characters for alias matching."""
-    return re.sub(r"[^a-z\s]", "", text.lower()).strip()
-
-
-def _is_input_section_heading(text: str) -> bool:
-    """Return True if heading text matches an input-section alias."""
-    return _normalize_heading(text) in INPUT_SECTION_ALIASES
-
-
-def _is_output_section_heading(text: str) -> bool:
-    """Return True if heading text matches an output-section alias."""
-    return _normalize_heading(text) in OUTPUT_SECTION_ALIASES
-
-
-def _strip_section_prefix(text: str) -> str:
-    """Strip a single leading section or numeric prefix.
-
-    Real-world skills frequently nest imperative verbs inside section labels
-    like "Phase 1: Implement Tools" or "2. Build the index". The verb-classifier
-    needs the prefix removed so the first word seen is the actual verb.
-    Returns the text unchanged when no recognized prefix is present.
-    """
-    return _SECTION_PREFIX_RE.sub("", text, count=1)
-
-
-def _is_imperative_heading(text: str) -> bool:
-    """Return True if the heading's first word is a known imperative verb.
-
-    Section/numeric prefixes ("Phase 1:", "Step 2.", "1.") are stripped first
-    so that headings like "Phase 1: Implement Tools" classify on "Implement".
-    """
-    stripped = _strip_section_prefix(text)
-    first_word = stripped.lower().split()[0] if stripped.split() else ""
-    return first_word in IMPERATIVE_VERBS
-
-
-def _infer_input_kind(
-    item_text: str,
-) -> Literal["file", "tool", "env", "context", "prerequisite"]:
-    """Infer Input.kind from a list-item text string.
-
-    Checks in order: env (ALL_CAPS), file (extension or path), tool (backtick
-    single-token), prerequisite (fallback).
-
-    Args:
-        item_text: Text of the list item after stripping the list marker.
-
-    Returns:
-        The inferred input kind.
-    """
-    name_raw = re.split(r"\s+[-:]\s+", item_text, maxsplit=1)[0].strip()
-    name = name_raw.strip("`").strip()
-
-    # env: ALL_CAPS with underscores/digits, at least 2 characters, no extension.
-    if re.fullmatch(r"[A-Z][A-Z0-9_]{1,}", name) and "." not in name:
-        return "env"
-
-    # file: has a path separator or a recognizable file extension.
-    if "/" in name or "\\" in name or re.search(r"\.\w{1,6}$", name):
-        return "file"
-
-    # tool: originally backtick-quoted and single-token (no spaces in name).
-    if name_raw.startswith("`") and " " not in name:
-        return "tool"
-
-    return "prerequisite"
-
-
-def _infer_output_kind(
-    item_text: str,
-) -> Literal["file", "artifact", "side_effect", "return"]:
-    """Infer Output.kind from a list-item text string.
-
-    Checks in order: file (extension or path), side_effect (mutating verb),
-    return (short single-token), artifact (fallback).
-
-    Args:
-        item_text: Text of the list item after stripping the list marker.
-
-    Returns:
-        The inferred output kind.
-    """
-    name_raw = re.split(r"\s+[-:]\s+", item_text, maxsplit=1)[0].strip()
-    name = name_raw.strip("`").strip()
-    full = item_text.lower()
-
-    # file: has a path separator or recognizable file extension.
-    if "/" in name or "\\" in name or re.search(r"\.\w{1,6}$", name):
-        return "file"
-
-    # side_effect: description mentions a mutating verb.
-    if re.search(r"\b(modif|updat|delet|overwrit|sends?\b|emit|writes?\b)", full):
-        return "side_effect"
-
-    # return: short single-token name (no spaces), value-shaped.
-    if " " not in name and len(name) <= 30:
-        return "return"
-
-    return "artifact"
-
-
-def extract_backtick_refs(text: str) -> list[str]:
-    """Return all backtick-quoted strings found in text, in order.
-
-    Args:
-        text: Arbitrary markdown body text.
-
-    Returns:
-        Contents of each backtick span.
-    """
-    return re.findall(r"`([^`]+)`", text)
-
-
-def _extract_list_item_name(item_text: str) -> str:
-    """Return the canonical node name from a list item (description stripped)."""
-    name_raw = re.split(r"\s+[-:]\s+", item_text, maxsplit=1)[0].strip()
-    return name_raw.strip("`").strip()
-
-
-def _get_list_item(line: str) -> str | None:
-    """Return item text if the line is a list item, else None."""
-    m = re.match(r"^\s*(?:-|\*|\d+\.)\s+(.*)", line)
-    return m.group(1).strip() if m else None
-
-
-# ---------------------------------------------------------------------------
-# Body section parser
-# ---------------------------------------------------------------------------
-
-
-def _sectionize(
-    body_lines: list[str],
-) -> list[tuple[int, int, str, list[tuple[int, str]]]]:
-    """Split body into sections.
-
-    Each section is (start_line_1indexed, level, heading_text, content_lines).
-    content_lines is [(line_num, text)] for every line between this heading
-    and the next heading at the same or shallower level. Sub-headings are
-    included in content so that nested list items are still harvested.
-
-    Args:
-        body_lines: Body of the skill as a list of line strings (no trailing newlines).
-
-    Returns:
-        List of section tuples in document order.
-    """
-    headings: list[tuple[int, int, str]] = []
-    for i, line in enumerate(body_lines, 1):
-        m = re.match(r"^(#+)\s+(.*)", line)
-        if m:
-            headings.append((i, len(m.group(1)), m.group(2).strip()))
-
-    sections = []
-    for idx, (line_num, level, text) in enumerate(headings):
-        content_end = len(body_lines) + 1
-        for j in range(idx + 1, len(headings)):
-            if headings[j][1] <= level:
-                content_end = headings[j][0]
-                break
-        content = [(i, body_lines[i - 1]) for i in range(line_num + 1, content_end)]
-        sections.append((line_num, level, text, content))
-
-    return sections
-
-
-# ---------------------------------------------------------------------------
-# Public extractor
-# ---------------------------------------------------------------------------
+def _document_order(node: Capability | Input | Output) -> tuple[int, str]:
+    """Sort key: source line, with line-less frontmatter tools first, then name."""
+    return (node.line if node.line is not None else -1, node.name)
 
 
 def extract_graph_heuristic(skill: ParsedSkill) -> CapabilityGraph:
@@ -359,29 +125,17 @@ def extract_graph_heuristic(skill: ParsedSkill) -> CapabilityGraph:
         line_num = body_line + skill.body_start_line - 1
         content = [(n + skill.body_start_line - 1, text) for n, text in body_content]
         if _is_input_section_heading(heading_text):
-            for content_line_num, content_line in content:
-                item = _get_list_item(content_line)
-                if item is None:
-                    continue
-                name = _extract_list_item_name(item)
-                if not name:
-                    continue
+            for item_line, name, item in _named_list_items(content):
                 input_kind = _infer_input_kind(item)
-                iid = _make_id(input_kind, name, content_line_num)
-                inputs.append(Input(id=iid, name=name, kind=input_kind, line=content_line_num))
+                iid = _make_id(input_kind, name, item_line)
+                inputs.append(Input(id=iid, name=name, kind=input_kind, line=item_line))
                 input_name_map[name] = iid
 
         elif _is_output_section_heading(heading_text):
-            for content_line_num, content_line in content:
-                item = _get_list_item(content_line)
-                if item is None:
-                    continue
-                name = _extract_list_item_name(item)
-                if not name:
-                    continue
+            for item_line, name, item in _named_list_items(content):
                 output_kind = _infer_output_kind(item)
-                oid = _make_id(output_kind, name, content_line_num)
-                outputs.append(Output(id=oid, name=name, kind=output_kind, line=content_line_num))
+                oid = _make_id(output_kind, name, item_line)
+                outputs.append(Output(id=oid, name=name, kind=output_kind, line=item_line))
                 output_name_map[name] = oid
 
         elif _is_imperative_heading(heading_text):
@@ -407,51 +161,25 @@ def extract_graph_heuristic(skill: ParsedSkill) -> CapabilityGraph:
         raise GraphLimitError("Graph exceeds the 10000-node traversal budget.")
     # Step 4: edges from backtick references in capability section bodies.
     edges: list[Edge] = []
+    targets: tuple[tuple[dict[str, str], Literal["requires", "produces"]], ...] = (
+        (input_name_map, "requires"),
+        (output_name_map, "produces"),
+    )
     for cap, content in capability_sections:
-        content_text = "\n".join(line for _, line in content)
         seen_edge_keys: set[tuple[str, str]] = set()
-        for ref in extract_backtick_refs(content_text):
-            if ref in input_name_map:
-                key = (cap.id, input_name_map[ref])
-                if key not in seen_edge_keys:
-                    edges.append(
-                        Edge(source_id=cap.id, target_id=input_name_map[ref], kind="requires")
-                    )
-                    seen_edge_keys.add(key)
-            if ref in output_name_map:
-                key = (cap.id, output_name_map[ref])
-                if key not in seen_edge_keys:
-                    edges.append(
-                        Edge(source_id=cap.id, target_id=output_name_map[ref], kind="produces")
-                    )
-                    seen_edge_keys.add(key)
+        for ref in extract_backtick_refs("\n".join(line for _, line in content)):
+            for name_map, edge_kind in targets:
+                target_id = name_map.get(ref)
+                if target_id is not None and (cap.id, target_id) not in seen_edge_keys:
+                    edges.append(Edge(source_id=cap.id, target_id=target_id, kind=edge_kind))
+                    seen_edge_keys.add((cap.id, target_id))
 
     # Step 5: sort for determinism.
-    sorted_caps = tuple(
-        sorted(
-            capabilities,
-            key=lambda c: (c.line if c.line is not None else -1, c.name),
-        )
-    )
-    sorted_inputs = tuple(
-        sorted(
-            inputs,
-            key=lambda i: (i.line if i.line is not None else -1, i.name),
-        )
-    )
-    sorted_outputs = tuple(
-        sorted(
-            outputs,
-            key=lambda o: (o.line if o.line is not None else -1, o.name),
-        )
-    )
-    sorted_edges = tuple(sorted(edges, key=lambda e: (e.source_id, e.target_id)))
-
     return CapabilityGraph(
-        capabilities=sorted_caps,
-        inputs=sorted_inputs,
-        outputs=sorted_outputs,
-        edges=sorted_edges,
+        capabilities=tuple(sorted(capabilities, key=_document_order)),
+        inputs=tuple(sorted(inputs, key=_document_order)),
+        outputs=tuple(sorted(outputs, key=_document_order)),
+        edges=tuple(sorted(edges, key=lambda e: (e.source_id, e.target_id))),
         source="heuristic",
     )
 
