@@ -20,8 +20,6 @@ def _source_for_rule(rule: str) -> str:
         return "spec"
     if rule.startswith("sizing.") or rule.startswith("disclosure."):
         return "spec"
-    if rule.startswith("compat.claude-only") or rule.startswith("compat.vscode-dirname"):
-        return "spec"
     if rule.startswith("graph.contradiction.") or rule.startswith("semantic."):
         return "agent"
     if rule.startswith("graph."):

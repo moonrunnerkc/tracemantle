@@ -144,10 +144,6 @@ _CONTEXTUAL_TRIGGER_PATTERNS = [
     re.compile(r"\bafter\s+\w+ing\b", re.IGNORECASE),
 ]
 
-# Retained as the union for callers that only ask whether any trigger form is
-# present, and so the two tiers cannot drift apart silently.
-_TRIGGER_PATTERNS = _STRONG_TRIGGER_PATTERNS + _CONTEXTUAL_TRIGGER_PATTERNS
-
 # Generic filler words that reduce specificity.
 #
 # Rubric for inclusion: a word qualifies as vague filler only if it adds

@@ -17,6 +17,7 @@ from tracemantle.commands import (
     run_show_history,
     run_validation,
 )
+from tracemantle.config import DEFAULT_RESERVED_WORDS
 from tracemantle.config_loader import ConfigError, load_project_config
 from tracemantle.display import terminal
 from tracemantle.modes import find_mode_conflict
@@ -375,7 +376,7 @@ def _apply_config(args: argparse.Namespace, parser: argparse.ArgumentParser) -> 
         dest = "ignore_prefixes" if name == "ignore" else name
         if dest not in explicit:
             setattr(args, dest, getattr(loaded, name))
-    args.document_settings = DocumentSettings(loaded.extension_fields, loaded.reserved_words or ('anthropic', 'claude'), args.tokenizer)
+    args.document_settings = DocumentSettings(loaded.extension_fields, loaded.reserved_words or DEFAULT_RESERVED_WORDS, args.tokenizer)
 
 
 # ---------------------------------------------------------------------------

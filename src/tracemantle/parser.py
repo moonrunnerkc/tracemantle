@@ -8,6 +8,7 @@ from typing import Any, Literal
 
 import yaml
 
+from tracemantle.config import DEFAULT_RESERVED_WORDS
 from tracemantle.io_limits import (
     MAX_SKILL_BYTES,
     MAX_YAML_ALIASES,
@@ -29,7 +30,7 @@ class ParseError(Exception):
 @dataclass(frozen=True, slots=True)
 class DocumentSettings:
     extension_fields: frozenset[str] = frozenset()
-    reserved_words: tuple[str, ...] = ('anthropic', 'claude')
+    reserved_words: tuple[str, ...] = DEFAULT_RESERVED_WORDS
     tokenizer: str = 'heuristic'
     reference_format: Literal['relative', 'skill-base-dir'] = 'relative'
 

@@ -88,9 +88,6 @@ MODE_FLAGS: tuple[ModeFlag, ...] = (
     ModeFlag("--show-history", "show_history", GROUP_LEDGER),
 )
 
-_BY_FLAG: dict[str, ModeFlag] = {mode.flag: mode for mode in MODE_FLAGS}
-
-
 # Emit/augment pairs that are disallowed. Order within a pair does not matter to
 # detection; it only decides which flag the wording leads with.
 PAIRWISE_CONFLICTS: tuple[Conflict, ...] = (

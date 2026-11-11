@@ -73,16 +73,6 @@ from tracemantle.result import Diagnostic, Severity, ValidationResult
 from tracemantle.storage import EvidenceError
 from tracemantle.tokenizer import TokenizerError, tokenizer_provenance
 
-# Delimiter used between prompts when emitting for multiple skills.
-_PROMPT_DELIMITER = "# === tracemantle:critique-prompt:{path} ==="
-
-# Delimiter used between graph renders when emitting for multiple skills.
-_GRAPH_DELIMITER = "# === tracemantle:graph:{path} ==="
-
-# Delimiter used between graph-extraction prompts when emitting for multiple skills.
-_GRAPH_PROMPT_DELIMITER = "# === tracemantle:graph-prompt:{path} ==="
-
-
 # ---------------------------------------------------------------------------
 # Path collection
 # ---------------------------------------------------------------------------
@@ -199,21 +189,6 @@ def read_ingest_raw(ingest_path: str, what: str) -> str:
     except OSError as exc:
         print(terminal(f"Error: cannot read {display_path(p)}: {exc}"), file=sys.stderr)
         sys.exit(2)
-
-
-def _parse_or_exit(path: Path) -> ParsedSkill:
-    """Parse a skill for an emit or history mode, or exit cleanly on failure.
-
-    Plain validation renders an unparseable file (non-UTF-8, non-mapping
-    frontmatter) as a clean ``parse.error`` diagnostic. The emit and history
-    modes bypass that pipeline, so they mirror the behavior here: print the
-    ParseError message to stderr and exit 1 instead of surfacing a traceback.
-    """
-    try:
-        return _parse_skill(path)
-    except ParseError as exc:
-        print(terminal(f"Error: {exc}"), file=sys.stderr)
-        sys.exit(1)
 
 
 def parse_batch(paths: list[Path], settings: DocumentSettings | None = None) -> Iterator[tuple[Path, ParsedSkill | ParseError]]:
@@ -596,9 +571,6 @@ def _print_report(
                     except KeyError:
                         continue
                     break  # one description per file
-
-    if args.quiet:
-        return
 
     if args.format == "json":
         try:

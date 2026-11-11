@@ -11,9 +11,6 @@ DESCRIPTION_MAX_LENGTH: int = 1024
 METADATA_TOKEN_BUDGET: int = 100
 BODY_TOKEN_BUDGET: int = 5000
 
-# Description quality scoring
-DEFAULT_MIN_DESC_SCORE: int = 0  # no enforcement by default
-
 # Bloat detection thresholds
 BLOAT_CODE_BLOCK_LINES: int = 50
 BLOAT_TABLE_ROWS: int = 20
