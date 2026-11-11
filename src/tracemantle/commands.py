@@ -13,6 +13,7 @@ import argparse
 import json
 import os
 import sys
+from collections.abc import Iterator
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
@@ -212,6 +213,27 @@ def _parse_or_exit(path: Path) -> ParsedSkill:
         sys.exit(1)
 
 
+def parse_batch(paths: list[Path], settings: DocumentSettings | None = None) -> Iterator[tuple[Path, ParsedSkill | ParseError]]:
+    """Parse each path in order under the shared batch byte budget.
+
+    Every mode reads through here, so a batch is capped at ``MAX_SCAN_BYTES``
+    of source in total, not only per file. A file that cannot be parsed, or
+    that would exceed the remaining budget, yields its ``ParseError`` so the
+    caller can report it and continue with independent files.
+    """
+    scanned = 0
+    for path in paths:
+        try:
+            if scanned >= MAX_SCAN_BYTES:
+                raise ParseError(f"Scan exceeds the {MAX_SCAN_BYTES}-byte budget. Split the batch.")
+            skill = _parse_skill(path, settings=settings, max_bytes=MAX_SCAN_BYTES - scanned)
+        except ParseError as exc:
+            yield path, exc
+            continue
+        scanned += len(skill.raw_text.encode('utf-8'))
+        yield path, skill
+
+
 # ---------------------------------------------------------------------------
 # Emit modes
 # ---------------------------------------------------------------------------
@@ -220,11 +242,9 @@ def _parse_or_exit(path: Path) -> ParsedSkill:
 def _emit_documents(paths: list[Path], fmt: str, mode: str, agent_id: str = "claude") -> None:
     items: list[dict[str, Any]] = []
     errors: list[dict[str, str]] = []
-    for path in paths:
-        try:
-            skill = _parse_skill(path)
-        except ParseError as exc:
-            errors.append({"path": str(path), "error": str(exc)})
+    for path, skill in parse_batch(paths):
+        if isinstance(skill, ParseError):
+            errors.append({"path": str(path), "error": str(skill)})
             continue
         if mode == 'graph':
             try:
@@ -276,11 +296,9 @@ def emit_agent_reason_packet(paths: list[Path], fmt: str, critique_agent: str, g
     """Print a combined critique and graph prompt packet for in-agent execution."""
     packets: list[dict[str, str]] = []
     errors = []
-    for path in paths:
-        try:
-            skill = _parse_skill(path)
-        except ParseError as exc:
-            errors.append({'path': str(path), 'error': str(exc)})
+    for path, skill in parse_batch(paths):
+        if isinstance(skill, ParseError):
+            errors.append({'path': str(path), 'error': str(skill)})
             continue
         packets.append({
             "path": str(path),
@@ -330,11 +348,11 @@ def emit_activation(paths: list[Path], fmt: str) -> None:
     multiple = len(paths) > 1
     reports = []
     errors = []
-    for path in paths:
-        try:
-            reports.append((path, generate_activation_hypotheses(_parse_skill(path))))
-        except ParseError as exc:
-            errors.append({'path': str(path), 'error': str(exc)})
+    for path, skill in parse_batch(paths):
+        if isinstance(skill, ParseError):
+            errors.append({'path': str(path), 'error': str(skill)})
+        else:
+            reports.append((path, generate_activation_hypotheses(skill)))
     if fmt == 'json':
         payload: dict[str, Any] = {'tool': 'TraceMantle', 'version': __version__, 'schema_version': 2}
         if multiple or not reports:
@@ -652,20 +670,15 @@ def run_validation(
 
     documents: dict[Path, ParsedSkill] = {}
     results: list[ValidationResult] = []
-    scanned = 0
-    for path in paths:
-        try:
-            if scanned >= MAX_SCAN_BYTES:
-                raise ParseError(f"Scan exceeds the {MAX_SCAN_BYTES}-byte budget. Split the batch.")
-            skill = _parse_skill(path, settings=getattr(args, 'document_settings', DocumentSettings()), max_bytes=MAX_SCAN_BYTES - scanned)
-            scanned += len(skill.raw_text.encode('utf-8'))
-            documents[path] = skill
-            results.append(validate(skill, max_lines=args.max_lines, max_tokens=args.max_tokens,
-                skip_dirname_check=args.skip_dirname_check, skip_ref_check=args.skip_ref_check,
-                min_desc_score=args.min_desc_score, strict_vscode=args.strict_vscode,
-                strict_cursor=args.strict_cursor, strict_all=args.strict_all, target_agent=args.target_agent))
-        except ParseError as exc:
-            results.append(ValidationResult(path, [Diagnostic('parse.error', Severity.ERROR, str(exc), line=exc.line)]))
+    for path, skill in parse_batch(paths, getattr(args, 'document_settings', DocumentSettings())):
+        if isinstance(skill, ParseError):
+            results.append(ValidationResult(path, [Diagnostic('parse.error', Severity.ERROR, str(skill), line=skill.line)]))
+            continue
+        documents[path] = skill
+        results.append(validate(skill, max_lines=args.max_lines, max_tokens=args.max_tokens,
+            skip_dirname_check=args.skip_dirname_check, skip_ref_check=args.skip_ref_check,
+            min_desc_score=args.min_desc_score, strict_vscode=args.strict_vscode,
+            strict_cursor=args.strict_cursor, strict_all=args.strict_all, target_agent=args.target_agent))
 
     critique_source: str | None = None
     graph_source_text: str | None = None
