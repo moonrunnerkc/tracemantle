@@ -94,3 +94,15 @@ def test_output_file_accepts_identical_rewrites_and_refuses_different_content(tm
     assert 'already exists with different contents' in changed.stdout
     assert output.read_bytes() == original
     assert not list(tmp_path.glob('.pending-*'))
+
+
+def test_explained_score_reasons_escape_description_controls(tmp_path: Path) -> None:
+    directory = tmp_path / 'demo-skill'
+    directory.mkdir()
+    (directory / 'SKILL.md').write_text('---\nname: demo-skill\ndescription: "Use\\u0085when reviewing demo files for teams."\n---\n\nBody.\n',
+                                        encoding='utf-8')
+    result = subprocess.run([sys.executable, '-m', 'tracemantle', 'demo-skill/SKILL.md', '--explain-score', '--no-color'],
+                            cwd=tmp_path, capture_output=True, timeout=60)
+    assert result.returncode == 0, result.stderr
+    assert b'\xc2\x85' not in result.stdout
+    assert b'\\x85' in result.stdout

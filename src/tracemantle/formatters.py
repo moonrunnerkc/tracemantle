@@ -92,7 +92,7 @@ def _format_text(
                     reasons = (score_reasons or {}).get(str(result.path)) or {}
                     for name in DESCRIPTION_SCORE_WEIGHTS:
                         if name in reasons:
-                            detail = _style(reasons[name], _DIM, color=color)
+                            detail = _style(terminal(reasons[name]), _DIM, color=color)
                             lines.append(f"{'':>14}{name}: {detail}")
 
     # summary
