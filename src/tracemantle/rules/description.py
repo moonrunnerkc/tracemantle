@@ -367,14 +367,23 @@ def _first_match_text(patterns: list[re.Pattern[str]], desc: str) -> str:
     return ""
 
 
+def scorable_description(skill: ParsedSkill) -> str | None:
+    """Return the description when quality scoring applies, else None.
+
+    Templates are skipped because placeholder files are not meant to deploy;
+    missing, empty and non-string descriptions belong to the frontmatter rules.
+    """
+    desc = skill.frontmatter.get("description")
+    if not isinstance(desc, str) or not desc.strip() or is_template(skill):
+        return None
+    return desc
+
+
 def check_description_quality(skill: ParsedSkill) -> list[Diagnostic]:
     """Score description quality and return an INFO diagnostic with the result."""
-    # Skip on templates: placeholder files are not meant to deploy.
-    if is_template(skill):
+    desc = scorable_description(skill)
+    if desc is None:
         return []
-    desc = skill.frontmatter.get("description")
-    if not desc or not isinstance(desc, str) or not desc.strip():
-        return []   # Missing/empty descriptions are handled by frontmatter rules.
 
     score, suggestions, _breakdown = score_description(desc)
 
@@ -395,11 +404,8 @@ def make_min_score_rule(
     """Return a rule that errors/warns when description score falls below threshold."""
 
     def check_description_min_score(skill: ParsedSkill) -> list[Diagnostic]:
-        # Skip on templates: placeholder files are not meant to deploy.
-        if is_template(skill):
-            return []
-        desc = skill.frontmatter.get("description")
-        if not desc or not isinstance(desc, str) or not desc.strip():
+        desc = scorable_description(skill)
+        if desc is None:
             return []
 
         score, suggestions, _breakdown = score_description(desc)

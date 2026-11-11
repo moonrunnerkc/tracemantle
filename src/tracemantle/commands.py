@@ -533,23 +533,15 @@ def _print_report(
         for d in r.diagnostics
     )
     if has_quality_diag:
-        from tracemantle.rules.description import explain_components as _explain
-        from tracemantle.rules.description import score_description as _score
-        from tracemantle.template_detection import is_template
+        from tracemantle.rules.description import explain_components, scorable_description, score_description
         for r in results:
-            for d in r.diagnostics:
-                if d.rule == "description.quality-score":
-                    try:
-                        skill = documents[r.path]
-                        desc = skill.frontmatter.get("description")
-                        if desc and isinstance(desc, str) and desc.strip() and not is_template(skill):
-                            _, _, bd = _score(desc)
-                            score_breakdowns[str(r.path)] = bd
-                            if args.explain_score:
-                                score_reasons[str(r.path)] = _explain(desc)
-                    except KeyError:
-                        continue
-                    break  # one description per file
+            if r.path not in documents or not any(d.rule == "description.quality-score" for d in r.diagnostics):
+                continue
+            desc = scorable_description(documents[r.path])
+            if desc is not None:
+                score_breakdowns[str(r.path)] = score_description(desc)[2]
+                if args.explain_score:
+                    score_reasons[str(r.path)] = explain_components(desc)
 
     if args.format == "json":
         try:
