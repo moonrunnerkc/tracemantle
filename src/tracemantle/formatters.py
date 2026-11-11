@@ -210,10 +210,9 @@ def _format_markdown(
         ])
         for diagnostic in result.diagnostics:
             line = "" if diagnostic.line is None else str(diagnostic.line)
-            message = diagnostic.message.replace("|", "\\|")
             lines.append(
                 f"| {line} | {diagnostic.severity.value} | `{diagnostic.rule}` | "
-                f"{diagnostic.source} | {diagnostic.confidence} | {message} |"
+                f"{diagnostic.source} | {diagnostic.confidence} | {diagnostic.message} |"
             )
         lines.append("")
     return "\n".join(lines).rstrip()
@@ -326,5 +325,8 @@ __all__ = [
 
 
 def _display_results(results: list[ValidationResult], *, md: bool = False) -> list[ValidationResult]:
+    """Escape untrusted text for display. Markdown escaping already covers ``|``
+    in table cells; rule IDs render inside code spans, where backslashes are
+    literal, so they get terminal escaping only."""
     escape = markdown if md else terminal
-    return [replace(r, path=Path(escape(r.path)), diagnostics=[replace(d, rule=escape(d.rule), message=escape(d.message), context=escape(d.context) if d.context else None) for d in r.diagnostics]) for r in results]
+    return [replace(r, path=Path(escape(r.path)), diagnostics=[replace(d, rule=terminal(d.rule), message=escape(d.message), context=escape(d.context) if d.context else None) for d in r.diagnostics]) for r in results]
