@@ -200,3 +200,26 @@ def test_directory_link_cannot_authorize_reuse_after_helper_change(tmp_path: Pat
     result = compare(baseline, create_manifest(candidate), (record,), TrustedPolicy('1' * 40, (check,), frozenset({record.sha256}), IDENTITY), now=NOW)
     assert result.changed_inputs == ('scripts/helper.py',)
     assert result.state == 'unknown'
+
+
+@pytest.mark.parametrize('artifact', ['scripts/__pycache__/helper.cpython-312.pyc', 'scripts/.git'])
+def test_unhashed_runtime_content_keeps_identity_incomplete(tmp_path: Path, artifact: str) -> None:
+    bundle = _bundle(tmp_path / 'bundle')
+    (bundle / 'scripts').mkdir()
+    clean = create_manifest(bundle)
+    target = bundle / artifact
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(b'cached bytecode or nested repository content')
+    polluted = create_manifest(bundle)
+    # The hash still excludes these names; completeness is what changes.
+    assert polluted.sha256 == clean.sha256
+    assert clean.complete is True
+    assert polluted.complete is False
+    assert any('Unhashed runtime content' in issue for issue in polluted.issues)
+
+
+def test_bundle_root_repository_metadata_does_not_affect_completeness(tmp_path: Path) -> None:
+    bundle = _bundle(tmp_path / 'bundle')
+    (bundle / '.git').mkdir()
+    (bundle / '.git' / 'HEAD').write_text('ref: refs/heads/main\n')
+    assert create_manifest(bundle).complete is True

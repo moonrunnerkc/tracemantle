@@ -16,6 +16,10 @@ from tracemantle.parser import ParsedSkill, ParseError, parse
 from tracemantle.storage import EvidenceError, digest
 
 EXCLUDED = frozenset({'.git', '__pycache__', '.DS_Store', '.skillcheck-history.json'})
+# Excluded from the hash, but able to change what runs: Python can load a
+# cached .pyc without its source, and a nested .git can carry hooks or content.
+# Their presence keeps identity incomplete instead of being silently ignored.
+_UNHASHED_RUNTIME = frozenset({'__pycache__', '.git'})
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,6 +88,11 @@ def create_manifest(root: Path, *, document: ParsedSkill | None = None) -> Bundl
     def walk_error(exc: OSError) -> None:
         raise EvidenceError(f'Cannot scan bundle: {exc}') from exc
     for directory, dirs, names in os.walk(root, followlinks=False, onerror=walk_error):
+        for name in sorted(_UNHASHED_RUNTIME.intersection([*dirs, *names])):
+            if name == '.git' and Path(directory) == root:
+                continue  # The bundle's own repository metadata is not bundle content.
+            relative = normalized_path((Path(directory) / name).relative_to(root).as_posix())
+            issues.append(f'Unhashed runtime content: {relative}. Remove it so bundle identity covers everything that can run.')
         dirs[:] = sorted(d for d in dirs if d not in EXCLUDED)
         for name in sorted([*dirs, *names]):
             if name in EXCLUDED:
