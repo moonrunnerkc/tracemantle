@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from tests.test_build_plan_product import FIXTURES, _bundle
+
 SKILL = '---\nname: demo-skill\ndescription: Use when checking command line regressions in a demo skill.\n---\n\nBody text.\n'
 
 
@@ -59,3 +61,36 @@ def test_configured_agent_selects_the_emitted_prompt(tmp_path: Path) -> None:
     explicit = _cli('demo-skill/SKILL.md', '--emit-critique-prompt', '--critique-agent', 'codex', cwd=tmp_path)
     assert configured.returncode == explicit.returncode == 0
     assert configured.stdout == explicit.stdout
+
+
+def test_lone_surrogate_in_imported_export_is_escaped_in_text_output(tmp_path: Path) -> None:
+    export = json.loads((FIXTURES / 'upstream/promptfoo-0.124.1/export.json').read_text(encoding='utf-8'))
+    export['results']['results'][0]['id'] = '\ud800\x1b]0;x\x07'
+    source = tmp_path / 'export.json'
+    source.write_text(json.dumps(export), encoding='utf-8')
+    bundle = _bundle(tmp_path / 'bundle')
+    output = tmp_path / 'report.txt'
+    result = _cli('import-evidence', str(source), '--bundle', str(bundle), '--store', str(tmp_path / 'store'),
+                  '--output', str(output), cwd=tmp_path)
+    assert result.returncode == 4, result.stderr
+    assert 'Traceback' not in result.stderr
+    report = output.read_text(encoding='utf-8')
+    assert '\\ud800\\x1b]0;x\\x07' in report
+    assert '\x1b' not in report
+    assert not list(tmp_path.glob('.pending-*'))
+
+
+def test_output_file_accepts_identical_rewrites_and_refuses_different_content(tmp_path: Path) -> None:
+    bundle = _bundle(tmp_path / 'bundle')
+    output = tmp_path / 'manifest.json'
+    first = _cli('manifest', str(bundle), '--format', 'json', '--output', str(output), cwd=tmp_path)
+    again = _cli('manifest', str(bundle), '--format', 'json', '--output', str(output), cwd=tmp_path)
+    assert first.returncode == again.returncode == 0
+    original = output.read_bytes()
+    assert json.loads(original)['command'] == 'manifest'
+    (bundle / 'helper.py').write_text('print("changed")\n')
+    changed = _cli('manifest', str(bundle), '--format', 'json', '--output', str(output), cwd=tmp_path)
+    assert changed.returncode == 2
+    assert 'already exists with different contents' in changed.stdout
+    assert output.read_bytes() == original
+    assert not list(tmp_path.glob('.pending-*'))

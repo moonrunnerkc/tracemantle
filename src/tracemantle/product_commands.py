@@ -24,7 +24,16 @@ from tracemantle.history_store import migrate_legacy
 from tracemantle.io_limits import MAX_INGEST_BYTES, MAX_SCAN_BYTES, read_bounded_bytes
 from tracemantle.policy import load_trusted_policy
 from tracemantle.signatures import has_required_signature
-from tracemantle.storage import EvidenceError, canonical, decode_json, outside_bundle, put_bytes, put_record, read_json
+from tracemantle.storage import (
+    EvidenceError,
+    canonical,
+    decode_json,
+    outside_bundle,
+    publish_bytes,
+    put_bytes,
+    put_record,
+    read_json,
+)
 
 COMMANDS = frozenset({'manifest', 'import-evidence', 'compare', 'migrate-history'})
 
@@ -157,12 +166,7 @@ def main(argv: list[str]) -> None:
                 outside_bundle(args.output, bundle)
             if args.command == "compare":
                 outside_bundle(args.output, args.baseline)
-            if args.output.exists():
-                if read_bounded_bytes(args.output, max_bytes=len(output.encode()) + 1, what='Output', error_cls=EvidenceError) != (output + '\n').encode():
-                    raise EvidenceError(f'Output {args.output} already exists with different contents. Choose another destination.')
-            else:
-                with args.output.open('x', encoding='utf-8') as stream:
-                    stream.write(output + '\n')
+            publish_bytes(args.output, (output + '\n').encode('utf-8'), what='Output')
         else:
             print(output)
     except (EvidenceError, LedgerError, OSError, RuntimeError) as exc:

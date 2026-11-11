@@ -73,11 +73,17 @@ def outside_bundle(destination: Path, bundle: Path) -> None:
         raise EvidenceError(f'Evidence destination {destination} is inside the evaluated bundle. Select a directory outside {bundle}.')
 
 
-def put_bytes(root: Path, raw: bytes, *, suffix: str = '.json') -> Path:
-    """Publish a complete immutable object without replacing another writer's file."""
-    root.mkdir(parents=True, exist_ok=True)
-    target = root / (hashlib.sha256(raw).hexdigest() + suffix)
-    fd, temp = tempfile.mkstemp(prefix='.pending-', dir=root)
+def publish_bytes(target: Path, raw: bytes, *, what: str) -> None:
+    """Create ``target`` with exactly ``raw``, or accept an existing identical file.
+
+    The bytes are fsynced in a sibling temporary file and hard-linked into
+    place, so a reader never sees a partial file and a concurrent or earlier
+    writer's file is never replaced.
+
+    Raises:
+        EvidenceError: ``target`` already exists with different contents.
+    """
+    fd, temp = tempfile.mkstemp(prefix='.pending-', dir=target.parent)
     try:
         with os.fdopen(fd, 'wb') as stream:
             stream.write(raw)
@@ -86,11 +92,18 @@ def put_bytes(root: Path, raw: bytes, *, suffix: str = '.json') -> Path:
         try:
             os.link(temp, target)
         except FileExistsError:
-            existing = read_bounded_bytes(target, max_bytes=len(raw), what='Stored evidence', error_cls=EvidenceError)
+            existing = read_bounded_bytes(target, max_bytes=len(raw) + 1, what=what, error_cls=EvidenceError)
             if existing != raw:
-                raise EvidenceError(f'Existing immutable object at {target} has unexpected content. Preserve it and select a clean store.') from None
+                raise EvidenceError(f'{what} at {target} already exists with different contents. Preserve it and choose another destination.') from None
     finally:
         Path(temp).unlink(missing_ok=True)
+
+
+def put_bytes(root: Path, raw: bytes, *, suffix: str = '.json') -> Path:
+    """Publish a complete immutable object without replacing another writer's file."""
+    root.mkdir(parents=True, exist_ok=True)
+    target = root / (hashlib.sha256(raw).hexdigest() + suffix)
+    publish_bytes(target, raw, what='Stored evidence')
     return target
 
 
