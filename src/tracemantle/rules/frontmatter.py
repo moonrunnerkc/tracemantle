@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from tracemantle.rules.frontmatter_common import _field_line
 from tracemantle.rules.frontmatter_description import (
     check_description_max_length,
     check_description_no_xml_tags,
@@ -25,7 +24,6 @@ from tracemantle.rules.frontmatter_name import (
 )
 
 __all__ = [
-    "_field_line",
     "check_description_max_length",
     "check_description_no_xml_tags",
     "check_description_non_empty",

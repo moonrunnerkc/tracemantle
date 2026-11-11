@@ -44,7 +44,7 @@ def check_description_type(skill: ParsedSkill) -> list[Diagnostic]:
 def check_description_required(skill: ParsedSkill) -> list[Diagnostic]:
     if "description" not in skill.frontmatter:
         message = "Required field 'description' is missing from frontmatter."
-        if _heading_for_field(skill.raw_text, "description"):
+        if _heading_for_field(skill.yaml_text, "description"):
             message += _markdown_heading_hint("description")
         return [Diagnostic(
             rule="frontmatter.description.required",

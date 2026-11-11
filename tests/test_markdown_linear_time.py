@@ -63,3 +63,22 @@ def test_code_block_size_is_reported_only_for_closed_blocks(tmp_path: Path) -> N
     block = '```python\n' + 'x = 1\n' * 60 + '```\n'
     assert any('Code block with 60 lines' in m for m in _bloat_messages(tmp_path, block))
     assert not any('Code block' in m for m in _bloat_messages(tmp_path, '```python\n' + 'x = 1\n' * 60))
+
+
+def test_blank_frontmatter_lines_check_in_linear_time(tmp_path: Path) -> None:
+    from tracemantle.rules.frontmatter_name import check_name_required
+
+    source = tmp_path / 'SKILL.md'
+    source.write_text('---\ndescription: Use when testing heading hints.' + '\n' * REPEATS + '---\nBody.\n')
+    started = time.perf_counter()
+    assert check_name_required(parse(source))
+    assert time.perf_counter() - started < 5
+
+
+def test_heading_hint_ignores_indented_delimiters_inside_block_scalars(tmp_path: Path) -> None:
+    from tracemantle.rules.frontmatter_name import check_name_required
+
+    source = tmp_path / 'SKILL.md'
+    source.write_text('---\ndescription: |\n  Intro\n  ---\n## name: demo\n---\nBody.\n')
+    [diagnostic] = check_name_required(parse(source))
+    assert "found '## name:'" in diagnostic.message

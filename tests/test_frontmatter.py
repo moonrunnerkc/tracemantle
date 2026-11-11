@@ -312,7 +312,7 @@ def test_known_fields_produce_no_warning():
 
 
 # ---------------------------------------------------------------------------
-# Regression: _field_line must not match body content
+# Regression: field line lookup must not match body content
 # ---------------------------------------------------------------------------
 
 def test_field_line_does_not_match_body_content(tmp_path):
@@ -334,8 +334,7 @@ def test_field_line_reports_correct_frontmatter_line(tmp_path):
     f.write_text(content)
     skill = parse(f)
     # name is on line 2; body 'name:' on line 5 must NOT be reported.
-    from tracemantle.rules.frontmatter import _field_line
-    assert _field_line(skill.raw_text, "name") == 2
+    assert skill.field_lines["name"] == 2
 
 
 # ---------------------------------------------------------------------------
