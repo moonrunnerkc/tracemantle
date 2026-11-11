@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from tracemantle import __version__
-from tracemantle.agents import get_graph_prompt
+from tracemantle.agents import get_agent_prompt, get_graph_prompt
 from tracemantle.agents._ingest import MAX_INGEST_BYTES
 from tracemantle.agents.graph_parser import GraphParseError
 from tracemantle.agents.parser import CritiqueParseError
@@ -40,7 +40,6 @@ from tracemantle.core import (
     render_activation_json,
     render_activation_markdown,
     render_activation_text,
-    render_critique_prompt,
     render_graph_json,
     render_graph_text,
     render_ledger_json,
@@ -234,7 +233,7 @@ def _emit_documents(paths: list[Path], fmt: str, mode: str, agent_id: str = "cla
             item = json.loads(render_graph_json(graph))
             rendered = render_graph_text(graph)
         else:
-            prompt = render_critique_prompt(skill, agent_id=agent_id) if mode == 'critique' else get_graph_prompt(agent_id).render(skill)
+            prompt = (get_agent_prompt(agent_id) if mode == 'critique' else get_graph_prompt(agent_id)).render(skill)
             item = {"prompt": prompt}
             rendered = prompt
         items.append({"path": str(path), **item})
@@ -281,7 +280,7 @@ def emit_agent_reason_packet(paths: list[Path], fmt: str, critique_agent: str, g
             continue
         packets.append({
             "path": str(path),
-            "critique_prompt": render_critique_prompt(skill, agent_id=critique_agent),
+            "critique_prompt": get_agent_prompt(critique_agent).render(skill),
             "graph_prompt": get_graph_prompt(graph_agent).render(skill),
         })
 
