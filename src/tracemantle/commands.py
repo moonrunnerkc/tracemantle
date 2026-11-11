@@ -22,7 +22,7 @@ from tracemantle.agents import get_graph_prompt
 from tracemantle.agents._ingest import MAX_INGEST_BYTES
 from tracemantle.agents.graph_parser import GraphParseError
 from tracemantle.agents.parser import CritiqueParseError
-from tracemantle.config_loader import project_configs
+from tracemantle.config_loader import ConfigError, project_configs
 from tracemantle.core import (
     LedgerError,
     RunAgents,
@@ -137,6 +137,14 @@ def resolve_paths(args: argparse.Namespace) -> list[Path]:
         if not args.config and any(project_configs(p) != args.config_paths for p in paths):
             raise UntrustedInputError("Mixed project roots are ambiguous. Validate each project separately or supply --config.")
         return paths
+    except ConfigError as exc:
+        # Same contract as an invocation-level config failure in cli._apply_config.
+        if args.format == 'json':
+            print(json.dumps({'tool': 'TraceMantle', 'version': __version__, 'schema_version': 2,
+                              'gate': {'passed': False, 'exit_code': 2}, 'results': [], 'errors': [{'error': str(exc)}]}))
+        else:
+            print(terminal(f"Error: {exc}"), file=sys.stderr)
+        sys.exit(2)
     except (OSError, RuntimeError, UntrustedInputError) as exc:
         print(terminal(f"Error: {exc}"), file=sys.stderr)
         sys.exit(2)
