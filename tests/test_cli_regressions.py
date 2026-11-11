@@ -31,12 +31,12 @@ def test_malformed_nested_pyproject_is_a_clean_configuration_error(tmp_path: Pat
     text = _cli('.', cwd=tmp_path)
     assert text.returncode == 2
     assert 'Traceback' not in text.stderr
-    assert 'Invalid project TOML' in text.stderr
+    assert 'Cannot parse' in text.stderr and 'pyproject.toml' in text.stderr
     envelope = _cli('.', '--format', 'json', cwd=tmp_path)
     assert envelope.returncode == 2
     report = json.loads(envelope.stdout)
     assert report['gate'] == {'passed': False, 'exit_code': 2}
-    assert 'Invalid project TOML' in report['errors'][0]['error']
+    assert 'Cannot parse' in report['errors'][0]['error']
 
 
 def test_configured_agents_do_not_break_plain_validation(tmp_path: Path) -> None:

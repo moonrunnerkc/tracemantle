@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from tracemantle.config_loader import ConfigError, find_config, load_config
+from tracemantle.config_loader import ConfigError, load_config, project_configs
 
 
 def _config(tmp_path: Path, body: str) -> Path:
@@ -165,17 +165,17 @@ def test_discovery_returns_none_when_nothing_is_found(tmp_path: Path) -> None:
     (tmp_path / ".git").mkdir()
     skill_dir = tmp_path / "skills" / "demo"
     skill_dir.mkdir(parents=True)
-    assert find_config(skill_dir) is None
+    assert project_configs(skill_dir) == ()
 
 
 def test_discovery_accepts_a_file_anchor(tmp_path: Path) -> None:
-    """find_config takes the scanned path, which is usually a file."""
+    """Discovery takes the scanned path, which is usually a file."""
     (tmp_path / ".git").mkdir()
     config = tmp_path / "skillcheck.toml"
     config.write_text("strict_all = true\n", encoding="utf-8")
     skill = tmp_path / "SKILL.md"
     skill.write_text("---\nname: demo\n---\n", encoding="utf-8")
-    assert find_config(skill) == config
+    assert project_configs(skill) == (config.resolve(),)
 
 
 def test_discovery_prefers_the_nearest_config(tmp_path: Path) -> None:
@@ -186,5 +186,5 @@ def test_discovery_prefers_the_nearest_config(tmp_path: Path) -> None:
     inner.mkdir(parents=True)
     nearest = inner / "skillcheck.toml"
     nearest.write_text("max_lines = 200\n", encoding="utf-8")
-    assert find_config(inner) == nearest
-    assert load_config(find_config(inner)).max_lines == 200
+    assert project_configs(inner) == (nearest.resolve(),)
+    assert load_config(nearest).max_lines == 200

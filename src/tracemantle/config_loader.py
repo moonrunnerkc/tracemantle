@@ -84,41 +84,21 @@ _BOOL_FIELDS = {"strict_vscode", "strict_cursor", "strict_all", "skip_dirname_ch
 _STR_FIELDS = {"tokenizer","format", "target_agent", "critique_agent", "graph_agent"}
 
 
-def find_config(start: Path) -> Path | None:
-    """Find skillcheck.toml from a path or one of its parents.
+def _read_toml(path: Path) -> dict[str, Any]:
+    """Read and parse one bounded TOML file.
 
-    The upward walk stops at a repository root (a directory containing ``.git``)
-    or the user's home directory, whichever is reached first. This keeps the
-    search from escaping the project into a parent or a system directory and
-    picking up an unrelated config.
-
-    Args:
-        start: File or directory path used as the search anchor.
-
-    Returns:
-        Path to skillcheck.toml, or None when not found.
+    Raises:
+        ConfigError: the file is unreadable, oversized, not UTF-8 or not TOML.
     """
     try:
-        home = Path.home()
-    except RuntimeError:
-        home = None
-    current = start if start.is_dir() else start.parent
-    for directory in (current, *current.parents):
-        candidate = directory / "skillcheck.toml"
-        if candidate.exists():
-            return candidate
-        # Do not ascend past a repo root or the user's home directory.
-        if (directory / ".git").exists() or directory == home:
-            break
-    return None
-
-
-def _parse_without_tomllib(raw: str) -> dict[str, Any]:
-    """Compatibility helper; all supported interpreters use a real TOML parser."""
+        raw = read_guarded_text(path, max_bytes=MAX_CONFIG_BYTES, what="Config", error_cls=ConfigError)
+    except OSError as exc:
+        raise ConfigError(f"Cannot read {path}: {exc}. Check file permissions and retry.") from exc
     try:
+        # tomllib resolves to Any under the 3.10 type target (no stubs there).
         return cast(dict[str, Any], tomllib.loads(raw))
     except tomllib.TOMLDecodeError as exc:
-        raise ConfigError(f"Invalid TOML: {exc}") from exc
+        raise ConfigError(f"Cannot parse {path}: {exc}. Fix the TOML syntax and retry.") from exc
 
 
 def _normalize_keys(data: dict[str, Any]) -> dict[str, Any]:
@@ -148,18 +128,10 @@ def load_config(path: Path | None) -> TraceMantleConfig:
     """
     if path is None:
         return TraceMantleConfig()
-    try:
-        raw = read_guarded_text(path, max_bytes=MAX_CONFIG_BYTES, what="Config", error_cls=ConfigError)
-    except OSError as exc:
-        raise ConfigError(f"Cannot read {path}: {exc}. Check file permissions and retry.") from exc
+    return _config_from_data(_read_toml(path), path)
 
-    try:
-        data = tomllib.loads(raw)
-    except ConfigError:
-        raise
-    except tomllib.TOMLDecodeError as exc:
-        raise ConfigError(f"Cannot parse {path}: {exc}. Fix the TOML syntax and retry.") from exc
 
+def _config_from_data(data: dict[str, Any], path: Path) -> TraceMantleConfig:
     if "tool" in data or path.name == "pyproject.toml":
         tool = data.get("tool", {})
         if not isinstance(tool, dict):
@@ -212,46 +184,69 @@ def load_config(path: Path | None) -> TraceMantleConfig:
     return TraceMantleConfig(**values, supplied=frozenset(values))
 
 
-def project_configs(start: Path) -> tuple[Path, ...]:
-    """Choose one project root; combine namespaces only within that root."""
+def _configs_in(directory: Path) -> tuple[Path, ...]:
+    """Return the config files that select ``directory`` as a project root."""
+    found = []
+    for name in ("skillcheck.toml", "pyproject.toml", "tracemantle.toml"):
+        path = directory / name
+        if not path.is_file():
+            continue
+        if name == "pyproject.toml":
+            namespaces = _read_toml(path).get("tool", {})
+            if not isinstance(namespaces, dict):
+                raise ConfigError(f"Config section 'tool' in {path} must be a table.")
+            if not any(namespace in namespaces for namespace in ("tracemantle", "skillcheck")):
+                continue
+        found.append(path)
+    return tuple(found)
+
+
+def project_configs(start: Path, *, cache: dict[Path, tuple[Path, ...]] | None = None) -> tuple[Path, ...]:
+    """Choose one project root; combine namespaces only within that root.
+
+    The upward walk stops at the first directory holding a config, a
+    repository root (``.git``) or the home directory. A directory's answer
+    depends only on it and its ancestors, so a batch passes one ``cache`` to
+    resolve shared ancestors, and their ``pyproject.toml`` files, once.
+
+    Raises:
+        ConfigError: a candidate ``pyproject.toml`` cannot be read or parsed.
+    """
     current = start.resolve()
     if not current.is_dir():
         current = current.parent
+    visited = []
+    result: tuple[Path, ...] = ()
     for directory in (current, *current.parents):
-        paths = [directory / name for name in ("skillcheck.toml", "pyproject.toml", "tracemantle.toml")]
-        found_list = []
-        for path in paths:
-            if not path.is_file():
-                continue
-            if path.name == "pyproject.toml":
-                raw = read_guarded_text(path, max_bytes=MAX_CONFIG_BYTES, what="Config", error_cls=ConfigError)
-                try:
-                    namespaces = tomllib.loads(raw).get("tool", {})
-                except tomllib.TOMLDecodeError as exc:
-                    raise ConfigError(f"Invalid project TOML at {path}: {exc}") from exc
-                if not isinstance(namespaces, dict):
-                    raise ConfigError("Config section 'tool' must be a table.")
-                if not any(name in namespaces for name in ("tracemantle", "skillcheck")):
-                    continue
-            found_list.append(path)
-        found = tuple(found_list)
-        if found:
-            return found
-        if (directory / ".git").exists() or directory == Path.home():
+        if cache is not None and directory in cache:
+            result = cache[directory]
             break
-    return ()
+        visited.append(directory)
+        result = _configs_in(directory)
+        if result or (directory / ".git").exists() or directory == Path.home():
+            break
+    if cache is not None:
+        cache.update(dict.fromkeys(visited, result))
+    return result
 
 
 def load_project_config(start: Path, explicit: Path | None = None) -> tuple[TraceMantleConfig, tuple[Path, ...], bool]:
+    """Load the merged project configuration for ``start``.
+
+    Returns the merged config, the files it came from, and whether any
+    deprecated SkillCheck configuration contributed.
+
+    Raises:
+        ConfigError: a selected file cannot be read, parsed or validated.
+    """
     paths = (explicit,) if explicit else project_configs(start)
     values: dict[str, Any] = {}
     legacy_used = False
     for path in paths:
-        loaded = load_config(path)
+        data = _read_toml(path)
+        loaded = _config_from_data(data, path)
         for name in loaded.supplied:
             values[name] = getattr(loaded, name)
-        legacy_used |= path.name == "skillcheck.toml"
-        if path.name == "pyproject.toml":
-            raw = read_guarded_text(path, max_bytes=MAX_CONFIG_BYTES, what="Config", error_cls=ConfigError)
-            legacy_used |= "skillcheck" in tomllib.loads(raw).get("tool", {})
+        tool = data.get("tool", {})
+        legacy_used |= path.name == "skillcheck.toml" or (isinstance(tool, dict) and "skillcheck" in tool)
     return TraceMantleConfig(**values, supplied=frozenset(values)), paths, legacy_used

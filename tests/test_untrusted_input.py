@@ -3,7 +3,7 @@
 The audit that prompted this found two uncaught crashes. A ledger or a
 skillcheck.toml containing non-UTF-8 bytes raised UnicodeDecodeError straight
 out of `path.read_text`, printing a traceback and exiting 1. The config case is
-the worse of the two: `find_config` discovers skillcheck.toml by walking up from
+the worse of the two: config discovery finds skillcheck.toml by walking up from
 the scanned path, so a poisoned file sitting next to a skill crashed tracemantle
 for anyone who scanned that tree, with no flag involved.
 
@@ -263,7 +263,7 @@ def _run(*args: str) -> subprocess.CompletedProcess[str]:
 def test_poisoned_discovered_config_exits_two_without_a_traceback(tmp_path: Path) -> None:
     """The worst case from the audit: no flag, just a bad file next to the skill.
 
-    find_config walks up from the scanned path, so this used to crash any scan
+    Config discovery walks up from the scanned path, so this used to crash any scan
     of a tree containing a binary skillcheck.toml.
     """
     skill = _skill(tmp_path / "proj", name="proj")

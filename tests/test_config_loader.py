@@ -10,9 +10,9 @@ import pytest
 from tests.conftest import CLI_AVAILABLE, TRACEMANTLE_CMD
 from tracemantle.config_loader import (
     ConfigError,
-    _parse_without_tomllib,
-    find_config,
     load_config,
+    load_project_config,
+    project_configs,
 )
 
 
@@ -39,35 +39,65 @@ def test_str_type_error_includes_offending_value(tmp_path: Path) -> None:
         load_config(cfg)
 
 
-def test_toml_parser_respects_literal_strings_and_comments() -> None:
-    assert _parse_without_tomllib("format = 'a#b' # comment\n# whole line\n") == {'format': 'a#b'}
-    with pytest.raises(ConfigError):
-        _parse_without_tomllib('bare = value')
+def test_toml_parser_respects_literal_strings_and_comments(tmp_path: Path) -> None:
+    assert load_config(_write(tmp_path / "skillcheck.toml", "format = 'a#b' # comment\n# whole line\n")).format == 'a#b'
+    with pytest.raises(ConfigError, match="Fix the TOML syntax"):
+        load_config(_write(tmp_path / "skillcheck.toml", 'bare = value'))
 
 
-def test_fallback_parser_keeps_hash_inside_quotes() -> None:
-    parsed = _parse_without_tomllib('format = "a#b"  # comment\n')
-    assert parsed == {"format": "a#b"}
+def test_hash_inside_quotes_is_part_of_the_value(tmp_path: Path) -> None:
+    assert load_config(_write(tmp_path / "skillcheck.toml", 'format = "a#b"  # comment\n')).format == "a#b"
 
 
-def test_find_config_stops_at_git_root(tmp_path: Path) -> None:
+def test_discovery_stops_at_git_root(tmp_path: Path) -> None:
     # A config above the repo root must not be discovered from inside the repo.
     _write(tmp_path / "skillcheck.toml", "max-lines = 10\n")
     repo = tmp_path / "repo"
     (repo / ".git").mkdir(parents=True)
     nested = repo / "a" / "b"
     nested.mkdir(parents=True)
-    assert find_config(nested / "SKILL.md") is None
+    assert project_configs(nested / "SKILL.md") == ()
 
 
-def test_find_config_finds_config_at_git_root(tmp_path: Path) -> None:
+def test_discovery_finds_config_at_git_root(tmp_path: Path) -> None:
     # A config at the repo root (alongside .git) is still found.
     repo = tmp_path / "repo"
     (repo / ".git").mkdir(parents=True)
     cfg = _write(repo / "skillcheck.toml", "max-lines = 10\n")
     nested = repo / "a"
     nested.mkdir()
-    assert find_config(nested / "SKILL.md") == cfg
+    assert project_configs(nested / "SKILL.md") == (cfg.resolve(),)
+
+
+def test_discovery_cache_matches_uncached_walks(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".git").mkdir(parents=True)
+    pyproject = _write(repo / "pyproject.toml", "[tool.tracemantle]\nmax_lines = 10\n")
+    inner = repo / "skills" / "inner"
+    inner.mkdir(parents=True)
+    own = _write(inner / "tracemantle.toml", "max_lines = 20\n")
+    plain = repo / "skills" / "plain"
+    plain.mkdir()
+    cache: dict[Path, tuple[Path, ...]] = {}
+    for start in (plain, inner, repo / "skills", plain):
+        assert project_configs(start, cache=cache) == project_configs(start)
+    assert cache[plain.resolve()] == (pyproject.resolve(),)
+    assert cache[inner.resolve()] == (own.resolve(),)
+
+
+def test_pyproject_without_a_tool_namespace_is_not_a_project_config(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+    _write(tmp_path / "pyproject.toml", "[project]\nname = 'other'\n")
+    assert project_configs(tmp_path) == ()
+
+
+def test_legacy_namespace_in_pyproject_is_reported(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+    _write(tmp_path / "pyproject.toml", "[tool.skillcheck]\nmax_lines = 30\n")
+    config, paths, legacy = load_project_config(tmp_path)
+    assert config.max_lines == 30
+    assert paths == ((tmp_path / "pyproject.toml").resolve(),)
+    assert legacy is True
 
 
 @pytest.mark.skipif(not CLI_AVAILABLE, reason="tracemantle not installed")

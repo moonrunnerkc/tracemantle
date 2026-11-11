@@ -125,7 +125,8 @@ def resolve_paths(args: argparse.Namespace) -> list[Path]:
         paths = [unique[key] for key in sorted(unique)]
         if len(paths) > MAX_SCAN_FILES:
             raise UntrustedInputError(f"Scan exceeds the {MAX_SCAN_FILES}-file limit.")
-        if not args.config and any(project_configs(p) != args.config_paths for p in paths):
+        discovered: dict[Path, tuple[Path, ...]] = {}
+        if not args.config and any(project_configs(p, cache=discovered) != args.config_paths for p in paths):
             raise UntrustedInputError("Mixed project roots are ambiguous. Validate each project separately or supply --config.")
         return paths
     except ConfigError as exc:
