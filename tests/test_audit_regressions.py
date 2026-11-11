@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
+import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
@@ -308,3 +310,46 @@ def test_yaml_scalar_conversion_errors_are_bounded_and_batch_continues(tmp_path:
     manifest = _cli('manifest', str(bad), '--format', 'json', env=environment)
     assert manifest.returncode == 2 and 'Traceback' not in manifest.stderr
     assert json.loads(manifest.stdout)['result']['state'] == 'infrastructure-error'
+
+
+def _compare_step(tmp_path: Path, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
+    """Run the comparison workflow's shell step with a stub tracemantle that echoes its argv."""
+    import yaml
+    if shutil.which('bash') is None or os.name == 'nt':
+        pytest.skip('the workflow step is a bash script')
+    workflow = yaml.safe_load((Path(__file__).resolve().parents[1] / '.github/workflows/compare.yml').read_text())
+    step = next(s for s in workflow['jobs']['compare']['steps'] if s.get('name') == 'Compare against immutable trusted policy')
+    records = tmp_path / 'candidate/evidence/records'
+    records.mkdir(parents=True)
+    for name in ('a.json', 'a.json.approval.json', 'a.json.approval.json.sig', 'b.json'):
+        (records / name).write_text('{}')
+    stub = tmp_path / 'bin/tracemantle'
+    stub.parent.mkdir()
+    stub.write_text('#!/bin/sh\nprintf "%s\\n" "$@"\n')
+    stub.chmod(0o755)
+    environment = {'PATH': f'{stub.parent}{os.pathsep}{os.environ["PATH"]}', 'BASE_REVISION': 'a' * 40, 'BUNDLE_PATH': 'skill',
+                   'POLICY_RELATIVE': 'pyproject.toml', 'EVIDENCE_DIRECTORY': 'evidence/records', 'APPROVAL_RUN_ID': '',
+                   'APPROVAL_RUN_STARTED_AT': '', **env}
+    return subprocess.run(['bash', '-c', step['run']], cwd=tmp_path, env=environment, capture_output=True, text=True, timeout=30)
+
+
+def test_compare_workflow_passes_records_but_not_approval_sidecars(tmp_path: Path) -> None:
+    result = _compare_step(tmp_path, {})
+    assert result.returncode == 0, result.stderr
+    argv = result.stdout.splitlines()
+    evidence = sorted(argv[i + 1].rsplit('/', 1)[1] for i, token in enumerate(argv) if token == '--evidence')
+    assert evidence == ['a.json', 'b.json']
+    assert '--approval-run-id' not in argv
+
+
+def test_compare_workflow_forwards_dispatcher_run_context(tmp_path: Path) -> None:
+    result = _compare_step(tmp_path, {'APPROVAL_RUN_ID': 'run-7', 'APPROVAL_RUN_STARTED_AT': '2026-11-11T12:00:00Z'})
+    argv = result.stdout.splitlines()
+    assert argv[argv.index('--approval-run-id') + 1] == 'run-7'
+    assert argv[argv.index('--approval-run-started-at') + 1] == '2026-11-11T12:00:00Z'
+
+
+def test_compare_workflow_rejects_half_a_run_context(tmp_path: Path) -> None:
+    result = _compare_step(tmp_path, {'APPROVAL_RUN_ID': 'run-7'})
+    assert result.returncode == 2
+    assert 'must be supplied together' in result.stdout

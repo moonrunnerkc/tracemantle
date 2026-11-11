@@ -20,6 +20,14 @@ on:
         description: Candidate directory containing approved records
         required: true
         default: evidence/records
+      approval_run_id:
+        description: Protected producer run ID for automation approvals (leave empty for digest-only policies)
+        required: false
+        default: ""
+      approval_run_started_at:
+        description: Protected producer run start, timezone-qualified (required with approval_run_id)
+        required: false
+        default: ""
 permissions:
   contents: read
 jobs:
@@ -47,14 +55,26 @@ jobs:
           BUNDLE_PATH: ${{ inputs.bundle_path }}
           POLICY_RELATIVE: ${{ inputs.policy_relative }}
           EVIDENCE_DIRECTORY: ${{ inputs.evidence_directory }}
+          APPROVAL_RUN_ID: ${{ inputs.approval_run_id }}
+          APPROVAL_RUN_STARTED_AT: ${{ inputs.approval_run_started_at }}
         shell: bash
         run: |
           set -euo pipefail
           args=()
           if [ -d "candidate/$EVIDENCE_DIRECTORY" ]; then
+            # RECORD.json.approval.json sidecars are read beside their record,
+            # never passed as evidence themselves.
             while IFS= read -r -d '' record; do
               args+=(--evidence "$record")
-            done < <(find "candidate/$EVIDENCE_DIRECTORY" -maxdepth 1 -type f -name '*.json' -print0)
+            done < <(find "candidate/$EVIDENCE_DIRECTORY" -maxdepth 1 -type f -name '*.json' ! -name '*.approval.json' -print0)
+          fi
+          # The run context comes from the dispatcher, never from the candidate.
+          if [ -n "$APPROVAL_RUN_ID" ] || [ -n "$APPROVAL_RUN_STARTED_AT" ]; then
+            if [ -z "$APPROVAL_RUN_ID" ] || [ -z "$APPROVAL_RUN_STARTED_AT" ]; then
+              echo "::error::approval_run_id and approval_run_started_at must be supplied together; set both or neither."
+              exit 2
+            fi
+            args+=(--approval-run-id "$APPROVAL_RUN_ID" --approval-run-started-at "$APPROVAL_RUN_STARTED_AT")
           fi
           tracemantle compare "trusted/$BUNDLE_PATH" "candidate/$BUNDLE_PATH" \
             --trusted-root trusted --base-revision "$BASE_REVISION" --policy-relative "$POLICY_RELATIVE" \
