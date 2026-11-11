@@ -22,7 +22,7 @@ from collections.abc import Callable
 from tracemantle import config
 from tracemantle.parser import ParsedSkill
 from tracemantle.result import Diagnostic, Severity
-from tracemantle.template_detection import is_template
+from tracemantle.rules.frontmatter_common import name_directory_mismatch
 
 # ---------------------------------------------------------------------------
 # Provenance dates for compatibility data
@@ -60,43 +60,33 @@ def check_claude_only_fields(skill: ParsedSkill) -> list[Diagnostic]:
     return diagnostics
 
 
-def _dirname_mismatch(skill: ParsedSkill) -> tuple[str, str] | None:
-    """Return ``(name, parent_dir)`` if they differ, else *None*."""
-    name = skill.frontmatter.get("name")
-    if name is None:
-        return None
-    name = str(name)
-    if not name:
-        return None
-    parent_dir = skill.path.parent.name
-    if parent_dir and parent_dir != name:
-        return name, parent_dir
-    return None
+def _vscode_dirname_rule(severity: Severity) -> Callable[[ParsedSkill], list[Diagnostic]]:
+    """Build the VS Code name/directory rule at ``severity``. The ERROR variant
+    (--strict-vscode) states the consequence as certain rather than likely."""
+    outcome = "will not" if severity == Severity.ERROR else "would not"
+
+    def check(skill: ParsedSkill) -> list[Diagnostic]:
+        pair = name_directory_mismatch(skill)
+        if pair is None:
+            return []
+        name, parent_dir = pair
+        return [Diagnostic(
+            rule="compat.vscode-dirname",
+            severity=severity,
+            message=(
+                f"VS Code requires the name field ('{name}') to match the "
+                f"parent directory ('{parent_dir}'). This skill {outcome} "
+                f"conform to the standard naming contract; loader behavior is unverified (historical profile {_VSCODE_DATA_DATE})."
+            ),
+        )]
+
+    return check
 
 
-def check_vscode_dirname(skill: ParsedSkill) -> list[Diagnostic]:
-    """Info-level note when name does not match the parent directory.
-
-    This complements the ERROR-level check in frontmatter.py (which can be
-    skipped via --skip-dirname-check). This compat rule always runs as INFO
-    unless --strict-vscode promotes it.
-    """
-    # Skip on templates: placeholder files are not meant to deploy.
-    if is_template(skill):
-        return []
-    pair = _dirname_mismatch(skill)
-    if pair is None:
-        return []
-    name, parent_dir = pair
-    return [Diagnostic(
-        rule="compat.vscode-dirname",
-        severity=Severity.INFO,
-        message=(
-            f"VS Code requires the name field ('{name}') to match the "
-            f"parent directory ('{parent_dir}'). This skill would not "
-            f"conform to the standard naming contract; loader behavior is unverified (historical profile {_VSCODE_DATA_DATE})."
-        ),
-    )]
+# INFO note that complements the ERROR-level frontmatter.name.directory-mismatch
+# check, which --skip-dirname-check can disable. --strict-vscode promotes it.
+check_vscode_dirname = _vscode_dirname_rule(Severity.INFO)
+check_vscode_dirname.__name__ = "check_vscode_dirname"
 
 
 def check_unverified_fields(skill: ParsedSkill) -> list[Diagnostic]:
@@ -133,27 +123,9 @@ def check_unverified_fields(skill: ParsedSkill) -> list[Diagnostic]:
 
 def make_strict_vscode_rule() -> Callable[[ParsedSkill], list[Diagnostic]]:
     """Return a rule that promotes VS Code compat issues to ERROR severity."""
-
-    def check_strict_vscode(skill: ParsedSkill) -> list[Diagnostic]:
-        # Skip on templates: placeholder files are not meant to deploy.
-        if is_template(skill):
-            return []
-        pair = _dirname_mismatch(skill)
-        if pair is None:
-            return []
-        name, parent_dir = pair
-        return [Diagnostic(
-            rule="compat.vscode-dirname",
-            severity=Severity.ERROR,
-            message=(
-                f"VS Code requires the name field ('{name}') to match the "
-                f"parent directory ('{parent_dir}'). This skill will not "
-                f"conform to the standard naming contract; loader behavior is unverified (historical profile {_VSCODE_DATA_DATE})."
-            ),
-        )]
-
-    check_strict_vscode.__name__ = "check_strict_vscode"
-    return check_strict_vscode
+    rule = _vscode_dirname_rule(Severity.ERROR)
+    rule.__name__ = "check_strict_vscode"
+    return rule
 
 
 def _detect_cursor_unsafe_block_scalar(skill: ParsedSkill) -> str | None:
@@ -180,42 +152,31 @@ def _cursor_block_scalar_message(marker: str) -> str:
     )
 
 
-def check_cursor_description_block_scalar(skill: ParsedSkill) -> list[Diagnostic]:
-    """Flag Cursor-unsafe block scalars on the description field at INFO."""
-    marker = _detect_cursor_unsafe_block_scalar(skill)
-    if marker is None:
-        return []
-    return [Diagnostic(
-        rule="compat.cursor-description-block-scalar",
-        severity=Severity.INFO,
-        message=_cursor_block_scalar_message(marker),
-    )]
+def _cursor_block_scalar_rule(severity: Severity) -> Callable[[ParsedSkill], list[Diagnostic]]:
+    """Build the Cursor block-scalar rule at ``severity``: INFO by default,
+    WARNING for --target-agent cursor, ERROR for --strict-cursor."""
 
-
-def check_cursor_description_block_scalar_warning(skill: ParsedSkill) -> list[Diagnostic]:
-    """WARNING-severity variant for --target-agent cursor."""
-    marker = _detect_cursor_unsafe_block_scalar(skill)
-    if marker is None:
-        return []
-    return [Diagnostic(
-        rule="compat.cursor-description-block-scalar",
-        severity=Severity.WARNING,
-        message=_cursor_block_scalar_message(marker),
-    )]
-
-
-def make_strict_cursor_rule() -> Callable[[ParsedSkill], list[Diagnostic]]:
-    """Return a rule that promotes Cursor block-scalar issues to ERROR."""
-
-    def check_strict_cursor(skill: ParsedSkill) -> list[Diagnostic]:
+    def check(skill: ParsedSkill) -> list[Diagnostic]:
         marker = _detect_cursor_unsafe_block_scalar(skill)
         if marker is None:
             return []
         return [Diagnostic(
             rule="compat.cursor-description-block-scalar",
-            severity=Severity.ERROR,
+            severity=severity,
             message=_cursor_block_scalar_message(marker),
         )]
 
-    check_strict_cursor.__name__ = "check_strict_cursor"
-    return check_strict_cursor
+    return check
+
+
+check_cursor_description_block_scalar = _cursor_block_scalar_rule(Severity.INFO)
+check_cursor_description_block_scalar.__name__ = "check_cursor_description_block_scalar"
+check_cursor_description_block_scalar_warning = _cursor_block_scalar_rule(Severity.WARNING)
+check_cursor_description_block_scalar_warning.__name__ = "check_cursor_description_block_scalar_warning"
+
+
+def make_strict_cursor_rule() -> Callable[[ParsedSkill], list[Diagnostic]]:
+    """Return a rule that promotes Cursor block-scalar issues to ERROR."""
+    rule = _cursor_block_scalar_rule(Severity.ERROR)
+    rule.__name__ = "check_strict_cursor"
+    return rule

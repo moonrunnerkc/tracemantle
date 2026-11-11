@@ -8,8 +8,8 @@ from tracemantle.result import Diagnostic, Severity
 from tracemantle.rules.frontmatter_common import (
     _heading_for_field,
     _markdown_heading_hint,
+    name_directory_mismatch,
 )
-from tracemantle.template_detection import is_template
 
 _NAME_VALID_CHARS_RE = re.compile(r"^[a-z0-9-]+$")
 
@@ -138,28 +138,20 @@ def check_name_consecutive_hyphens(skill: ParsedSkill) -> list[Diagnostic]:
 
 
 def check_name_directory_match(skill: ParsedSkill) -> list[Diagnostic]:
-    # Skip on templates: placeholder files are not meant to deploy.
-    if is_template(skill):
+    pair = name_directory_mismatch(skill)
+    if pair is None:
         return []
-    name = skill.frontmatter.get("name")
-    if name is None:
-        return []
-    name = str(name)
-    if not name:
-        return []
-    parent_dir = skill.path.parent.name
-    if parent_dir and parent_dir != name:
-        return [Diagnostic(
-            rule="frontmatter.name.directory-mismatch",
-            severity=Severity.ERROR,
-            message=(
-                f"Name '{name}' does not match parent directory '{parent_dir}'. "
-                f"The Agent Skills standard requires these to match."
-            ),
-            line=skill.field_lines.get("name"),
-            context=f"name: {name} | directory: {parent_dir}",
-        )]
-    return []
+    name, parent_dir = pair
+    return [Diagnostic(
+        rule="frontmatter.name.directory-mismatch",
+        severity=Severity.ERROR,
+        message=(
+            f"Name '{name}' does not match parent directory '{parent_dir}'. "
+            f"The Agent Skills standard requires these to match."
+        ),
+        line=skill.field_lines.get("name"),
+        context=f"name: {name} | directory: {parent_dir}",
+    )]
 
 
 def check_name_reserved_words(skill: ParsedSkill) -> list[Diagnostic]:
