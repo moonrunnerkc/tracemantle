@@ -83,7 +83,7 @@ def test_cli_validates_only_changed_skills_and_passes_when_none_changed(tmp_path
     skills['gamma-skill'].write_text('---\nname: Wrong_Name\ndescription: Use when testing.\n---\n')
     changed = _cli(root, '.', '--changed-since', 'HEAD', '--format', 'json')
     assert changed.returncode == 1
-    assert [r['path'] for r in json.loads(changed.stdout)['results']] == ['gamma-skill/SKILL.md']
+    assert [Path(r['path']) for r in json.loads(changed.stdout)['results']] == [Path('gamma-skill/SKILL.md')]
 
 
 def test_cli_rejects_changed_since_with_single_skill_modes(tmp_path: Path) -> None:

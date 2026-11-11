@@ -165,5 +165,5 @@ def parse_batch(paths: list[Path], settings: DocumentSettings | None = None) -> 
         except ParseError as exc:
             yield path, exc
             continue
-        scanned += len(skill.raw_text.encode('utf-8'))
+        scanned += len(skill.raw_bytes)
         yield path, skill

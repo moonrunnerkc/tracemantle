@@ -18,7 +18,9 @@ def _skills(root: Path, count: int) -> list[Path]:
     for index in range(count):
         directory = root / f'skill-{index}'
         directory.mkdir(parents=True)
-        (directory / 'SKILL.md').write_text(SKILL.format(name=f'skill-{index}'))
+        # Bytes, not text: the budget counts source bytes, which newline
+        # translation on Windows would otherwise change.
+        (directory / 'SKILL.md').write_bytes(SKILL.format(name=f'skill-{index}').encode())
         paths.append(directory / 'SKILL.md')
     return paths
 
@@ -49,3 +51,14 @@ def test_emit_modes_report_files_past_the_budget(tmp_path: Path, monkeypatch: py
     errors = json.loads(capsys.readouterr().out)['errors']
     assert [error['path'] for error in errors] == [str(paths[1])]
     assert 'byte budget' in errors[0]['error']
+
+
+def test_budget_counts_source_bytes_including_crlf(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    paths = _skills(tmp_path, 2)
+    for path in paths:
+        path.write_bytes(path.read_bytes().replace(b'\n', b'\r\n'))
+    monkeypatch.setattr(cli_inputs, 'MAX_SCAN_BYTES', len(paths[0].read_bytes()))
+    parsed = list(cli_inputs.parse_batch(paths))
+    assert not isinstance(parsed[0][1], ParseError)
+    assert isinstance(parsed[1][1], ParseError)
+    assert 'byte budget' in str(parsed[1][1])

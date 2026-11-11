@@ -25,7 +25,7 @@ def _skill(root: Path, name: str, directive: str = '') -> Path:
 def _report(root: Path, *args: str) -> dict[str, list[str]]:
     result = subprocess.run([sys.executable, '-m', 'tracemantle', '.', '--format', 'json', *args], cwd=root,
                             capture_output=True, text=True, timeout=60)
-    return {r['path']: [d['rule'] for d in r['diagnostics']] for r in json.loads(result.stdout)['results']}
+    return {Path(r['path']).as_posix(): [d['rule'] for d in r['diagnostics']] for r in json.loads(result.stdout)['results']}
 
 
 def test_directive_suppresses_only_its_own_file_and_is_reported(tmp_path: Path) -> None:
