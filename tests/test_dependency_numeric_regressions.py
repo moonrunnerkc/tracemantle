@@ -13,9 +13,12 @@ from pathlib import Path
 import pytest
 
 from tests.test_build_plan_acceptance import _cli
-from tests.test_build_plan_product import UPSTREAM, _bundle, _record, _trusted_repository
+from tests.test_build_plan_product import IDENTITY, NOW, UPSTREAM, _bundle, _record, _trusted_repository
+from tracemantle.bundle import create_manifest
+from tracemantle.comparison import compare
+from tracemantle.evidence import Evidence
 from tracemantle.markdown import tokenize
-from tracemantle.policy import load_trusted_policy
+from tracemantle.policy import RequiredCheck, TrustedPolicy, load_trusted_policy
 from tracemantle.storage import EvidenceError, canonical, decode_json, digest
 
 
@@ -177,3 +180,23 @@ def test_authentic_promptfoo_overflow_is_atomic_cli_error(tmp_path: Path, litera
             report = json.loads(result.stdout)
             assert report['exit_code'] == 2 and report['result']['state'] == 'infrastructure-error'
         assert not store.exists()
+
+
+@pytest.mark.parametrize('link', ['[helpers](scripts/)', '[helpers](scripts)'])
+def test_directory_link_cannot_authorize_reuse_after_helper_change(tmp_path: Path, link: str) -> None:
+    base = tmp_path / 'base'
+    (base / 'scripts').mkdir(parents=True)
+    (base / 'SKILL.md').write_text(f'---\nname: base\ndescription: Use when checking directory links.\n---\n\nRun the {link} first.\n')
+    (base / 'scripts' / 'helper.py').write_text('print("safe")\n')
+    candidate = tmp_path / 'candidate'
+    shutil.copytree(base, candidate)
+    (candidate / 'scripts' / 'helper.py').write_text('print("changed helper")\n')
+    baseline = create_manifest(base)
+    assert baseline.complete is False
+    record = Evidence('validate', 'pass', baseline.sha256, IDENTITY, IDENTITY, IDENTITY, IDENTITY, IDENTITY,
+                      tuple((f.path, f.sha256) for f in baseline.files if f.path == 'SKILL.md'), NOW.isoformat(),
+                      'static-analysis', 'synthetic-test', 'test/v1', 'none', 'none', True, (), (), (), 'Synthetic control.')
+    check = RequiredCheck('validate', 'static', ('SKILL.md',), True, IDENTITY, IDENTITY, IDENTITY, IDENTITY, 3600, True, (), ())
+    result = compare(baseline, create_manifest(candidate), (record,), TrustedPolicy('1' * 40, (check,), frozenset({record.sha256}), IDENTITY), now=NOW)
+    assert result.changed_inputs == ('scripts/helper.py',)
+    assert result.state == 'unknown'

@@ -99,7 +99,14 @@ def analyze_dependencies(path: Path, markdown: Markdown, *,
                     continue
                 if len(ancestors) > 1:
                     diagnostics.append(Diagnostic('references.depth-exceeded', Severity.WARNING, f"Reference '{relative}' has chain depth {len(ancestors)} from SKILL.md (recommended maximum 1).", line=line))
-                if target in expanded or target.suffix.lower() not in {'.md', '.markdown'} or not target.is_file():
+                if not target.is_file():
+                    # A directory edge names no file a change could match, so a
+                    # changed helper beneath it would otherwise reuse evidence.
+                    diagnostics.append(Diagnostic('references.uncertain', Severity.WARNING,
+                        f"Reference '{ref.target}' is not a regular file; dependency coverage is incomplete. Link each required file explicitly.", line=line))
+                    complete = False
+                    continue
+                if target in expanded or target.suffix.lower() not in {'.md', '.markdown'}:
                     continue
                 if len(ancestors) >= 32 or len(expanded) >= MAX_SCAN_FILES:
                     raise UntrustedInputError('Reference traversal exceeds its depth/file limit; simplify dependencies.')
