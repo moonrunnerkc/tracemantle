@@ -189,6 +189,11 @@ def find_mode_conflict(args: argparse.Namespace) -> str | None:
             return conflict.reason
 
     for emit_flag in active_emits:
+        if getattr(args, "quiet", False):
+            return (
+                f"Cannot use --quiet with {emit_flag}. "
+                f"Emit modes exist to print their output; drop --quiet."
+            )
         if active["--history"]:
             return (
                 f"Cannot use --history with {emit_flag}. "

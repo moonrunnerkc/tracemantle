@@ -106,3 +106,12 @@ def test_explained_score_reasons_escape_description_controls(tmp_path: Path) -> 
     assert result.returncode == 0, result.stderr
     assert b'\xc2\x85' not in result.stdout
     assert b'\\x85' in result.stdout
+
+
+def test_quiet_cannot_silence_an_emit_mode(tmp_path: Path) -> None:
+    _skill(tmp_path)
+    for mode in ('--emit-graph', '--emit-critique-prompt', '--activation-hypotheses', '--agent-reason'):
+        result = _cli('demo-skill/SKILL.md', mode, '--quiet', cwd=tmp_path)
+        assert result.returncode == 2, mode
+        assert result.stdout == ''
+        assert f'Cannot use --quiet with {mode}' in result.stderr
