@@ -151,26 +151,29 @@ def resolve_paths(args: argparse.Namespace) -> list[Path]:
         sys.exit(2)
 
 
-def read_ingest_raw(ingest_path: str) -> str:
-    """Read the raw critique response from PATH or stdin, exiting on error.
+def read_ingest_raw(ingest_path: str, what: str) -> str:
+    """Read a raw agent response from PATH or stdin, exiting on error.
+
+    ``what`` names the response kind in errors, e.g. ``"critique response"``.
 
     Rejects payloads over ``MAX_INGEST_BYTES`` (exit 2). The stdin read is
     bounded so a runaway pipe cannot exhaust memory before the check fires.
     """
     if ingest_path == "-":
         payload = sys.stdin.buffer.read(MAX_INGEST_BYTES + 1)
-        size = len(payload)
-        try:
-            raw = payload.decode('utf-8')
-        except UnicodeDecodeError:
-            print('Error: ingest stdin must contain UTF-8 text.', file=sys.stderr)
-            sys.exit(2)
-        if size > MAX_INGEST_BYTES:
+        # Size first: truncation at the cap can split a code point, which would
+        # otherwise be misreported as non-UTF-8 input.
+        if len(payload) > MAX_INGEST_BYTES:
             print(
                 f"Error: ingest payload from stdin exceeds the {MAX_INGEST_BYTES}-byte cap. "
                 f"Trim the response or split the run into smaller batches.",
                 file=sys.stderr,
             )
+            sys.exit(2)
+        try:
+            raw = payload.decode('utf-8')
+        except UnicodeDecodeError:
+            print('Error: ingest stdin must contain UTF-8 text.', file=sys.stderr)
             sys.exit(2)
         # stdin arrives already decoded, so only the control-character half of
         # the policy applies. A pipe carrying NULs is a binary stream, not JSON.
@@ -186,7 +189,7 @@ def read_ingest_raw(ingest_path: str) -> str:
         # typed on the command line, so shortening it hides which path they got
         # wrong. display_path exists to keep discovered content from publishing
         # the host layout, which does not apply to the user's own argument.
-        print(terminal(f"Error: critique response file not found: {p}"), file=sys.stderr)
+        print(terminal(f"Error: {what} file not found: {p}"), file=sys.stderr)
         sys.exit(2)
     try:
         return read_guarded_text(p, max_bytes=MAX_INGEST_BYTES, what="Ingest response")
@@ -685,7 +688,7 @@ def run_validation(
     graph_source_json: dict[str, Any] | None = None
 
     if args.ingest_critique is not None:
-        raw = read_ingest_raw(args.ingest_critique)
+        raw = read_ingest_raw(args.ingest_critique, 'critique response')
 
         try:
             first_skill = documents[paths[0]]
@@ -703,7 +706,7 @@ def run_validation(
         critique_source = agent_id
 
     if args.ingest_graph is not None:
-        raw_graph = read_ingest_raw(args.ingest_graph)
+        raw_graph = read_ingest_raw(args.ingest_graph, 'graph response')
 
         try:
             first_skill = documents[paths[0]]

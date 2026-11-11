@@ -108,6 +108,22 @@ def test_explained_score_reasons_escape_description_controls(tmp_path: Path) -> 
     assert b'\\x85' in result.stdout
 
 
+def test_oversized_stdin_is_reported_as_too_large_not_as_bad_utf8(tmp_path: Path) -> None:
+    _skill(tmp_path)
+    payload = 'é'.encode() * (3 * 1024 * 1024)
+    result = _cli('demo-skill/SKILL.md', '--ingest-critique', '-', cwd=tmp_path, stdin=payload)
+    assert result.returncode == 2
+    assert 'exceeds' in result.stderr
+    assert 'UTF-8' not in result.stderr
+
+
+def test_missing_graph_response_names_the_graph_file(tmp_path: Path) -> None:
+    _skill(tmp_path)
+    result = _cli('demo-skill/SKILL.md', '--ingest-graph', 'missing.json', cwd=tmp_path)
+    assert result.returncode == 2
+    assert 'graph response file not found: missing.json' in result.stderr
+
+
 def test_quiet_cannot_silence_an_emit_mode(tmp_path: Path) -> None:
     _skill(tmp_path)
     for mode in ('--emit-graph', '--emit-critique-prompt', '--activation-hypotheses', '--agent-reason'):
