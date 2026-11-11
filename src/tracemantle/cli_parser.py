@@ -52,9 +52,9 @@ def build_parser() -> argparse.ArgumentParser:
     settings.add_argument("--tokenizer", choices=["heuristic", "tiktoken"], default="heuristic", help="Token backend (default: heuristic; tiktoken may download on a cold cache).")
     basic.add_argument(
         "--format",
-        choices=["text", "json", "md", "agent", "github"],
+        choices=["text", "json", "md", "agent", "github", "sarif"],
         default="text",
-        help="Output format (default: text).",
+        help="Output format (default: text). sarif writes a SARIF 2.1.0 log for code-scanning upload.",
     )
     settings.add_argument(
         "--max-lines",

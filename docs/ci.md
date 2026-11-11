@@ -32,6 +32,29 @@ python -m pip install tracemantle==1.7.0
 tracemantle skills/ --strict --format json
 ```
 
+## Code scanning (unreleased)
+
+`--format sarif` writes a SARIF 2.1.0 log, so diagnostics appear as GitHub
+code-scanning alerts that persist across pull requests. It requires a release
+after 1.7.0. The validation step still fails on errors; the upload runs anyway:
+
+```yaml
+permissions:
+  contents: read
+  security-events: write
+steps:
+  - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+  - run: python -m pip install tracemantle
+  - run: tracemantle skills/ --format sarif > tracemantle.sarif
+  - uses: github/codeql-action/upload-sarif@v3  # pin a full commit SHA if your policy requires it
+    if: always()
+    with:
+      sarif_file: tracemantle.sarif
+```
+
+Errors map to `error`, warnings to `warning` and informational advice to
+`note`. The log records the gate's exit code in its invocation.
+
 Configuration precedence remains defaults, legacy config, canonical pyproject
 config, canonical standalone config, then explicit CLI flags. See
 [migration](migration.md) for existing installations and the

@@ -38,6 +38,7 @@ from tracemantle.gate import compute_exit_code, filter_results
 from tracemantle.history_commands import record_history
 from tracemantle.parser import DocumentSettings, ParsedSkill, ParseError
 from tracemantle.result import Diagnostic, Severity, ValidationResult
+from tracemantle.sarif import format_sarif
 from tracemantle.tokenizer import TokenizerError, tokenizer_provenance
 
 
@@ -101,6 +102,8 @@ def _print_report(
         ))
     elif args.format == "github":
         print(_format_github(results))
+    elif args.format == "sarif":
+        print(format_sarif(results, __version__, gate_exit_code=exit_code))
     else:
         use_color = not args.no_color and sys.stdout.isatty()
         print(_format_text(

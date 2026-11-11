@@ -185,6 +185,13 @@ def find_mode_conflict(args: argparse.Namespace) -> str | None:
         if active[conflict.flag_a] and active[conflict.flag_b]:
             return conflict.reason
 
+    sarif_blocked = [*active_emits, *(["--show-history"] if active["--show-history"] else [])]
+    if getattr(args, "format", None) == "sarif" and sarif_blocked:
+        return (
+            f"Cannot use --format sarif with {sarif_blocked[0]}. "
+            f"SARIF describes validation diagnostics; that mode prints no validation report."
+        )
+
     for emit_flag in active_emits:
         if getattr(args, "quiet", False):
             return (

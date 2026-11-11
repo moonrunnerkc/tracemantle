@@ -138,3 +138,49 @@ def test_terminal_escaping_neutralizes_bidi_and_line_separators() -> None:
 
     assert terminal('ok‮gnp.exe⁦x⁩ y') == 'ok\\u202egnp.exe\\u2066x\\u2069\\u2028y'
     assert terminal('family \U0001f468‍\U0001f469 and ن‌ا') == 'family \U0001f468‍\U0001f469 and ن‌ا'
+
+
+def test_sarif_report_carries_every_diagnostic_with_its_location(tmp_path: Path) -> None:
+    directory = tmp_path / 'skills' / 'demo-skill'
+    directory.mkdir(parents=True)
+    (directory / 'SKILL.md').write_text('---\nname: Demo_Skill\ndescription: Use when checking SARIF output.\n---\n\nSee [missing](missing.md).\n')
+    result = _cli('skills', '--format', 'sarif', cwd=tmp_path)
+    assert result.returncode == 1
+    log = json.loads(result.stdout)
+    assert log['version'] == '2.1.0'
+    [run] = log['runs']
+    assert run['tool']['driver']['name'] == 'TraceMantle'
+    assert run['invocations'] == [{'executionSuccessful': True, 'exitCode': 1}]
+    by_rule = {r['ruleId']: r for r in run['results']}
+    assert by_rule['references.broken-link']['level'] == 'error'
+    location = by_rule['references.broken-link']['locations'][0]['physicalLocation']
+    assert location['artifactLocation']['uri'] == 'skills/demo-skill/SKILL.md'
+    assert location['region']['startLine'] == 6
+    assert {rule['id'] for rule in run['tool']['driver']['rules']} == set(by_rule)
+    json_report = json.loads(_cli('skills', '--format', 'json', cwd=tmp_path).stdout)
+    assert len(run['results']) == sum(len(r['diagnostics']) for r in json_report['results'])
+
+
+def test_sarif_levels_and_lineless_diagnostics(tmp_path: Path) -> None:
+    from tracemantle.result import Diagnostic, Severity, ValidationResult
+    from tracemantle.sarif import format_sarif
+
+    source = tmp_path / 'dir with space' / 'SKILL.md'
+    results = [ValidationResult(source, [
+        Diagnostic('description.quality-score', Severity.INFO, 'Score 90/100.'),
+        Diagnostic('sizing.lines', Severity.WARNING, 'Too long.', line=3),
+    ])]
+    [run] = json.loads(format_sarif(results, '9.9.9', gate_exit_code=0))['runs']
+    note, warning = run['results']
+    assert (note['level'], warning['level']) == ('note', 'warning')
+    assert 'region' not in note['locations'][0]['physicalLocation']
+    assert note['locations'][0]['physicalLocation']['artifactLocation']['uri'] == source.as_uri()
+    assert '%20' in source.as_uri()
+
+
+def test_sarif_is_refused_for_modes_without_a_validation_report(tmp_path: Path) -> None:
+    _skill(tmp_path)
+    for mode in ('--emit-graph', '--show-history'):
+        result = _cli('demo-skill/SKILL.md', mode, '--format', 'sarif', cwd=tmp_path)
+        assert result.returncode == 2, mode
+        assert f'Cannot use --format sarif with {mode}' in result.stderr
