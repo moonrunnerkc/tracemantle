@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import replace
+from pathlib import Path
 
 from tracemantle.result import Severity, ValidationResult
 
@@ -25,6 +27,16 @@ def compute_exit_code(results: list[ValidationResult], *, strict_all: bool) -> i
     return 0
 
 
-def filter_results(results: list[ValidationResult], prefixes: list[str]) -> list[ValidationResult]:
-    """Drop diagnostics whose rule starts with any ignore prefix."""
-    return [replace(r, diagnostics=[d for d in r.diagnostics if not any(d.rule.startswith(prefix) for prefix in prefixes)]) for r in results]
+def filter_results(results: list[ValidationResult], prefixes: list[str],
+                   inline: Mapping[Path, tuple[str, ...]] | None = None) -> list[ValidationResult]:
+    """Drop diagnostics whose rule starts with any ``--ignore`` prefix, or with
+    one of the file's own inline ignore prefixes from ``inline``. Inline
+    prefixes never drop ``ignore.`` diagnostics, which report the suppression."""
+    inline = inline or {}
+
+    def kept(rule: str, file_prefixes: tuple[str, ...]) -> bool:
+        if any(rule.startswith(prefix) for prefix in prefixes):
+            return False
+        return rule.startswith("ignore.") or not any(rule.startswith(prefix) for prefix in file_prefixes)
+
+    return [replace(r, diagnostics=[d for d in r.diagnostics if kept(d.rule, inline.get(r.path, ()))]) for r in results]

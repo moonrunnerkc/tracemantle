@@ -176,6 +176,8 @@ Under `[tool.tracemantle]` in pyproject.toml, or directly in tracemantle.toml.
 - `history.read.failed`
 - `history.skill.regressed`
 - `history.write.failed`
+- `ignore.inline`
+- `ignore.inline-invalid`
 - `parse.error`
 - `references.broken-link`
 - `references.cycle`

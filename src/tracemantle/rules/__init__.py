@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from tracemantle import config
+from tracemantle.inline_ignores import check_inline_ignores
 from tracemantle.parser import ParsedSkill
 from tracemantle.result import Diagnostic
 from tracemantle.rules.compat import (
@@ -66,6 +67,7 @@ _FRONTMATTER_RULES: list[Callable[[ParsedSkill], list[Diagnostic]]] = [
     check_description_person_voice,
     check_unknown_fields,
     check_yaml_anchors,
+    check_inline_ignores,
 ]
 
 _DESCRIPTION_RULES: list[Callable[[ParsedSkill], list[Diagnostic]]] = [

@@ -24,6 +24,7 @@ from tracemantle.core import (
 from tracemantle.display import terminal
 from tracemantle.gate import compute_exit_code, filter_results
 from tracemantle.history_store import append_history, comparable_runs, history_identity
+from tracemantle.inline_ignores import inline_ignore_prefixes
 from tracemantle.parser import ParsedSkill
 from tracemantle.result import Diagnostic, Severity, ValidationResult
 from tracemantle.storage import EvidenceError
@@ -133,7 +134,8 @@ def record_history(
         if regression_diags:
             results[index] = merge_diagnostics(results[index], regression_diags)
 
-        results[index] = filter_results([results[index]], args.ignore_prefixes)[0]
+        results[index] = filter_results([results[index]], args.ignore_prefixes,
+                                          {results[index].path: inline_ignore_prefixes(skill_for_history)})[0]
         file_exit_code = compute_exit_code([results[index]], strict_all=args.strict_all)
         if args.fail_on_regression and any(d.rule == 'history.skill.regressed' for d in results[index].diagnostics):
             file_exit_code = 1
