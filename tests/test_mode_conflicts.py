@@ -23,7 +23,7 @@ from pathlib import Path
 import pytest
 
 from tests.conftest import TRACEMANTLE_CMD
-from tracemantle.cli import _build_parser
+from tracemantle.cli_parser import build_parser
 from tracemantle.modes import (
     GROUP_AUGMENT,
     GROUP_EMIT,
@@ -60,7 +60,7 @@ def _args(*flags: str):
     argv = [MISSING_PATH]
     for flag in flags:
         argv += _ARGV[flag]
-    return _build_parser().parse_args(argv)
+    return build_parser().parse_args(argv)
 
 
 def _row_id(row: dict) -> str:
@@ -149,7 +149,7 @@ def test_every_conflict_reason_names_both_flags() -> None:
 
 def test_every_mode_flag_resolves_on_the_parser() -> None:
     """The dest names are the coupling to argparse; a typo would read as False."""
-    parsed = _build_parser().parse_args([MISSING_PATH])
+    parsed = build_parser().parse_args([MISSING_PATH])
     for mode in MODE_FLAGS:
         assert hasattr(parsed, mode.dest), f"{mode.flag} has no dest {mode.dest!r}"
 
