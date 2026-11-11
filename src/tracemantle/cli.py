@@ -439,10 +439,12 @@ def main() -> None:
     agent_id = args.critique_agent or "claude"
     graph_agent_id = args.graph_agent or "claude"
 
-    if args.critique_agent is not None and not args.emit_critique_prompt and not args.agent_reason and args.ingest_critique is None:
+    # A project config may name an agent as a default for the modes that use
+    # one; only an explicit flag without such a mode is a usage error.
+    if "critique_agent" in args.explicit_fields and not args.emit_critique_prompt and not args.agent_reason and args.ingest_critique is None:
         parser.error("--critique-agent requires --emit-critique-prompt or --ingest-critique")
 
-    if args.graph_agent is not None and not args.emit_graph_prompt and not args.agent_reason and args.ingest_graph is None:
+    if "graph_agent" in args.explicit_fields and not args.emit_graph_prompt and not args.agent_reason and args.ingest_graph is None:
         parser.error("--graph-agent requires --emit-graph-prompt or --ingest-graph")
 
     paths = resolve_paths(args)

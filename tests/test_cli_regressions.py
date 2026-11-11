@@ -36,3 +36,26 @@ def test_malformed_nested_pyproject_is_a_clean_configuration_error(tmp_path: Pat
     assert report['gate'] == {'passed': False, 'exit_code': 2}
     assert 'Invalid project TOML' in report['errors'][0]['error']
 
+
+def test_configured_agents_do_not_break_plain_validation(tmp_path: Path) -> None:
+    (tmp_path / 'tracemantle.toml').write_text('critique_agent = "codex"\ngraph_agent = "cursor"\n')
+    _skill(tmp_path)
+    result = _cli('demo-skill/SKILL.md', cwd=tmp_path)
+    assert result.returncode == 0, result.stderr
+    assert 'PASS' in result.stdout
+
+
+def test_explicit_agent_without_its_mode_is_still_a_usage_error(tmp_path: Path) -> None:
+    _skill(tmp_path)
+    result = _cli('demo-skill/SKILL.md', '--critique-agent', 'codex', cwd=tmp_path)
+    assert result.returncode == 2
+    assert '--critique-agent requires' in result.stderr
+
+
+def test_configured_agent_selects_the_emitted_prompt(tmp_path: Path) -> None:
+    (tmp_path / 'tracemantle.toml').write_text('critique_agent = "codex"\n')
+    _skill(tmp_path)
+    configured = _cli('demo-skill/SKILL.md', '--emit-critique-prompt', cwd=tmp_path)
+    explicit = _cli('demo-skill/SKILL.md', '--emit-critique-prompt', '--critique-agent', 'codex', cwd=tmp_path)
+    assert configured.returncode == explicit.returncode == 0
+    assert configured.stdout == explicit.stdout
