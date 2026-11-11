@@ -12,17 +12,12 @@ bloat patterns that belong in referenced files, not the main body.
 from __future__ import annotations
 
 import re
+from bisect import bisect_right
 
 from tracemantle import config
 from tracemantle.parser import ParsedSkill
 from tracemantle.result import Diagnostic, Severity
 from tracemantle.tokenizer import estimate_tokens
-
-# Matches fenced code blocks (``` or ~~~) and captures their content lines.
-_CODE_BLOCK_RE = re.compile(
-    r"^(?:```|~~~)[^\n]*\n(.*?)^(?:```|~~~)\s*$",
-    re.MULTILINE | re.DOTALL,
-)
 
 # Matches markdown table rows (lines starting with |).
 _TABLE_ROW_RE = re.compile(r"^\|.*\|$", re.MULTILINE)
@@ -41,6 +36,28 @@ def _is_real_base64(text: str) -> bool:
     has_upper = any(c.isupper() for c in text)
     has_lower = any(c.islower() for c in text)
     return has_upper and has_lower
+
+
+def _code_block_line_counts(body: str) -> list[int]:
+    """Count content lines in each column-zero ``` or ~~~ fenced block.
+
+    A closer is a bare fence of either kind. An unclosed opener ends the scan,
+    since no later line can close any block. One pass keeps the scan linear on
+    bodies with many unclosed openers.
+    """
+    lines = body.split("\n")
+    closers = [i for i, line in enumerate(lines) if line.rstrip() in ("```", "~~~")]
+    counts: list[int] = []
+    index = 0
+    while index < len(lines):
+        if lines[index].startswith(("```", "~~~")):
+            position = bisect_right(closers, index)
+            if position == len(closers):
+                break
+            counts.append(closers[position] - index - 1)
+            index = closers[position]
+        index += 1
+    return counts
 
 
 def _contiguous_table_runs(body: str) -> list[list[str]]:
@@ -110,9 +127,7 @@ def check_body_bloat(skill: ParsedSkill) -> list[Diagnostic]:
     diagnostics: list[Diagnostic] = []
 
     # Check for large code blocks
-    for match in _CODE_BLOCK_RE.finditer(skill.body):
-        block_content = match.group(1)
-        line_count = len(block_content.splitlines())
+    for line_count in _code_block_line_counts(skill.body):
         if line_count > config.BLOAT_CODE_BLOCK_LINES:
             diagnostics.append(Diagnostic(
                 rule="disclosure.body-bloat",

@@ -11,13 +11,14 @@ from dataclasses import dataclass
 from urllib.parse import unquote, urlsplit
 
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
-_LINK = re.compile(r'!?\[[^\]\n]*\]\(\s*(<[^>\n]+>|(?:[^\s()\\]|\\.|\([^()\n]*\))+)\s*(?:[\"\x27][^\n]*?[\"\x27]\s*)?\)')
+# Labels, titles and HTML attributes exclude their own opening delimiter so each
+# candidate scan stops at the next one; untrusted lines stay linear to match.
+_LINK = re.compile(r'!?\[[^\[\]\n]*\]\(\s*(<[^>\n]+>|(?:[^\s()\\]|\\.|\([^()\n]*\))+)(?:\s+(?:"[^"\n]*"|\x27[^\x27\n]*\x27))?\s*\)')
 _DEFINITION = re.compile(r'^ {0,3}\[([^\]]+)\]:\s*(<[^>]+>|\S+)')
-_REFERENCE = re.compile(r'\[([^\]\n]+)\](?:\[([^\]\n]*)\])?')
-_HTML = re.compile(r'<(?:a|img)\s+[^>]*?(?:href|src)\s*=\s*[\"\x27]([^\"\x27]+)[\"\x27]', re.I)
+_REFERENCE = re.compile(r'\[([^\[\]\n]+)\](?:\[([^\[\]\n]*)\])?')
+_HTML = re.compile(r'<(?:a|img)\s+[^<>]*?(?:href|src)\s*=\s*[\"\x27]([^\"\x27]+)[\"\x27]', re.I)
 _CODE_BOUNDARY = re.compile(r'`+|\n[ \t]*\n')
-_RESOURCE_PATH = re.compile(r'[^\s`]+/[^\s`]+')
-_DIRECTIVE = re.compile(r'(?:source|file|include):\s*([^\s]+\.[a-zA-Z0-9]+)', re.I)
+_DIRECTIVE = re.compile(r'(?<![\w:/.-])(?:source|file|include):\s*([^\s]+\.[a-zA-Z0-9]+)', re.I)
 _LIST = re.compile(r'^ {0,3}([-+*]|[0-9]{1,9}[.)])( +|$)')
 _PREFIX = re.compile(r'^[ \t]*(?:(?:[-+*]|[0-9]{1,9}[.)])[ \t]+)?')
 _BLOCK_END = re.compile(r'^ {0,3}(?:#{1,6}(?:[ \t]|$)|(?:\*[ \t]*){3,}$|(?:_[ \t]*){3,}$|(?:-[ \t]*){3,}$)')
@@ -81,7 +82,9 @@ def _inline_code(lines: list[str], blocks: list[int]) -> tuple[list[str], dict[i
             continue
         opener, closer = runs[index], runs[end]
         target = text[opener.end():closer.start()].strip()
-        path_like = _RESOURCE_PATH.fullmatch(target) and not any(
+        # An interior separator in one whitespace-free token, tested without
+        # a backtracking pattern over the untrusted span.
+        path_like = re.fullmatch(r'[^\s`]+', target) and '/' in target[1:-1] and not any(
             pattern.fullmatch(target) for pattern in (_LINK, _REFERENCE, _DIRECTIVE)
         )
         if path_like or re.fullmatch(r'[\w.-]+\.[a-zA-Z0-9]+', target):
