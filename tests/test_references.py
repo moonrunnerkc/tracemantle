@@ -6,14 +6,22 @@ from pathlib import Path
 
 import pytest
 
+from tracemantle.markdown import tokenize
 from tracemantle.parser import parse
 from tracemantle.result import Severity
-from tracemantle.rules.references import (
-    _extract_references,
-    _reference_depth,
-    check_broken_references,
-    check_reference_depth,
-)
+from tracemantle.rules.references import check_dependencies
+
+
+def _extract_references(body):
+    return [r.target for r in tokenize(body).resources if r.kind in {"link", "resource", "mention"}]
+
+
+def check_broken_references(skill):
+    return [d for d in check_dependencies(skill) if d.rule != "references.depth-exceeded"]
+
+
+def check_reference_depth(skill):
+    return [d for d in check_dependencies(skill) if d.rule == "references.depth-exceeded"]
 
 _WINDOWS = sys.platform == "win32"
 _skip_symlink = pytest.mark.skipif(
@@ -97,26 +105,6 @@ def test_extracts_html_anchor_hrefs():
 
 def test_empty_body_returns_no_refs():
     assert _extract_references("") == []
-
-
-# ---------------------------------------------------------------------------
-# _reference_depth
-# ---------------------------------------------------------------------------
-
-def test_depth_same_directory():
-    assert _reference_depth("file.txt") == 0
-
-
-def test_depth_one_level():
-    assert _reference_depth("sub/file.txt") == 1
-
-
-def test_depth_two_levels():
-    assert _reference_depth("sub/deep/file.txt") == 2
-
-
-def test_depth_parent_traversal():
-    assert _reference_depth("../other/file.txt") == 2
 
 
 # ---------------------------------------------------------------------------

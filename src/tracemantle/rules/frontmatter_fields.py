@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-import yaml
-
 from tracemantle import config
 from tracemantle.parser import ParsedSkill
 from tracemantle.result import Diagnostic, Severity
@@ -41,23 +39,6 @@ def check_unknown_fields(skill: ParsedSkill) -> list[Diagnostic]:
             context=f"{field_name}: ...",
         ))
     return diagnostics
-
-
-def _collect_anchor_names(fm_raw: str) -> list[str]:
-    """Return the anchor names declared or referenced in the frontmatter.
-
-    Uses the YAML event stream so only real anchors/aliases are seen. A ``&`` or
-    ``*`` inside a quoted scalar (e.g. ``"Reviews R&D notes and *only* flags..."``)
-    is part of the value, not an anchor, so it is not reported. Scalar and
-    collection-start events carry ``.anchor`` for a declaration; alias events
-    carry ``.anchor`` for a reference; both are collected.
-    """
-    try:
-        events = yaml.parse(fm_raw, Loader=yaml.SafeLoader)
-        anchors = [anchor for event in events if (anchor := getattr(event, "anchor", None))]
-    except yaml.YAMLError:
-        return []
-    return sorted(set(anchors))
 
 
 def check_yaml_anchors(skill: ParsedSkill) -> list[Diagnostic]:
