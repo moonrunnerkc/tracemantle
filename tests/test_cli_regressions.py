@@ -131,3 +131,10 @@ def test_quiet_cannot_silence_an_emit_mode(tmp_path: Path) -> None:
         assert result.returncode == 2, mode
         assert result.stdout == ''
         assert f'Cannot use --quiet with {mode}' in result.stderr
+
+
+def test_terminal_escaping_neutralizes_bidi_and_line_separators() -> None:
+    from tracemantle.display import terminal
+
+    assert terminal('ok‮gnp.exe⁦x⁩ y') == 'ok\\u202egnp.exe\\u2066x\\u2069\\u2028y'
+    assert terminal('family \U0001f468‍\U0001f469 and ن‌ا') == 'family \U0001f468‍\U0001f469 and ن‌ا'
