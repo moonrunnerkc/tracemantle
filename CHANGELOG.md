@@ -11,6 +11,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The maintainer SARIF workflow always generates fresh scans/reports and separately registers maintenance checks. A prospective comparison includes a simple cache with the same reviewed inputs and execution context.
 - The tiktoken tests no longer fetch the cl100k_base vocabulary. The suite reads a vendored copy from `tests/fixtures/tiktoken` (tiktoken's cache layout, upstream SHA-256 checked by tiktoken, MIT notice beside it), so they pass with the network closed. The cold-offline tokenizer test still runs against an empty cache.
 
+### Security
+
+- A link to a directory (`[helpers](scripts/)`) recorded an edge to the directory and kept dependency coverage complete, so a changed helper under it could reuse approved evidence. Nonregular link targets now emit `references.uncertain` and mark coverage incomplete.
+- `__pycache__` entries anywhere, and `.git` entries below the bundle root, remain excluded from the bundle hash but are reported as `Unhashed runtime content` and make the manifest incomplete, because cached bytecode can change what runs without changing the hash.
+- Markdown resource tokenizing, fenced-block bloat detection and the frontmatter heading hint no longer backtrack quadratically on crafted lines; a 90 KB line that took about 30 s now parses in milliseconds.
+- Human output also escapes lone surrogates (previously a traceback and exit 1), bidirectional formatting controls and Unicode line/paragraph separators.
+
+### Added
+
+- `--format sarif` writes a SARIF 2.1.0 log for code-scanning upload.
+- `--changed-since REV` validates only skills with changes under their directory since a Git revision.
+- `# tracemantle: ignore=PREFIX, ...` frontmatter comments suppress rules for one file, always reported as an `ignore.inline` note.
+- The comparison workflow accepts `approval_run_id` and `approval_run_started_at` dispatch inputs and no longer passes approval sidecars as evidence.
+
+### Fixed
+
+- A malformed `pyproject.toml` beside any discovered skill exits 2 with the configuration error (and the JSON error envelope) instead of a traceback.
+- `critique_agent` and `graph_agent` configuration keys no longer break plain validation runs.
+- Emit modes enforce the 128 MiB batch byte budget, and reject `--quiet`.
+- Markdown reports escape table pipes once; rule IDs in code spans show no backslashes. `--explain-score` reasons are terminal-escaped.
+- `--output` is published atomically and never leaves a partial file. Oversized stdin is reported as too large, not as invalid UTF-8. A missing `--ingest-graph` file is named as a graph response.
+- Base64 bloat detection checks every candidate, not only the first. The frontmatter heading hint reads the parsed frontmatter, so an indented `---` in a block scalar no longer hides it.
+
+### Changed
+
+- Config discovery parses each file once and is cached per batch: 2,000 skills under a large `pyproject.toml` validate in about 1 s instead of 18 s. A malformed `pyproject.toml` is reported as "Cannot parse ... Fix the TOML syntax".
+- Internal reorganization without behavior change: the CLI parser, input resolution, emit modes, history commands and exit-code gate moved out of `cli.py` and `commands.py`; heuristic graph vocabularies moved to `core/graph_markdown.py`; compat severity variants share one rule each. Unused helpers with no callers were removed.
+
 ## [1.7.0] - 2026-10-15
 
 ### Added
