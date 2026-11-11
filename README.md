@@ -9,7 +9,7 @@ Requires Python 3.10 or later. Create an isolated environment and install the pu
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install tracemantle==1.7.0
+python -m pip install tracemantle==1.8.0
 tracemantle hello/SKILL.md
 ```
 

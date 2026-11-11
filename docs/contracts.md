@@ -12,7 +12,7 @@ Only standalone path-like span contents are resource candidates. Anchors and ext
 
 Standard API validation returns `ValidationResult`; its `valid` describes that file's errors, independent of strict policy. CLI validation JSON envelope schema 2 adds `tool`, `version`, `schema_version`, `gate` and `tokenizer` to the file summaries/results. Graph and prompt emit modes also emit one JSON object for single or multiple inputs. Single-graph fields and prompt fields are retained; multiple inputs appear under `results`. Historical ledger JSON keeps its v1 content fields. Product commands use envelope schema 1, with `command`, `exit_code` and `result`; manifest, check-evidence and imported history each have explicit content-schema versions.
 
-Ignore prefixes are applied after merging symbolic, graph, model-judgment and history diagnostics. A skill may also declare file-scoped prefixes in a frontmatter comment, `# tracemantle: ignore=sizing, compat.unverified` (unreleased). They apply at the same point, to that file only, and never to `ignore.` diagnostics: each directive is reported as an `ignore.inline` note, and unusable tokens as `ignore.inline-invalid` warnings. The library `validate()` reports the directive; suppression, like `--ignore`, is applied by the CLI. Final exit calculation runs after history diagnostics. Human output escapes untrusted C0/C1 controls, lone surrogates, bidirectional formatting controls and Unicode line/paragraph separators; Markdown also escapes syntax delimiters. JSON preserves source values reversibly and uses JSON escaping. Quiet validation skips score explanations and report rendering. Prompt variants contain untrusted skill instructions as quoted task material, not instructions executed by TraceMantle.
+Ignore prefixes are applied after merging symbolic, graph, model-judgment and history diagnostics. A skill may also declare file-scoped prefixes in a frontmatter comment, `# tracemantle: ignore=sizing, compat.unverified` (since 1.8.0). They apply at the same point, to that file only, and never to `ignore.` diagnostics: each directive is reported as an `ignore.inline` note, and unusable tokens as `ignore.inline-invalid` warnings. The library `validate()` reports the directive; suppression, like `--ignore`, is applied by the CLI. Final exit calculation runs after history diagnostics. Human output escapes untrusted C0/C1 controls, lone surrogates, bidirectional formatting controls and Unicode line/paragraph separators; Markdown also escapes syntax delimiters. JSON preserves source values reversibly and uses JSON escaping. Quiet validation skips score explanations and report rendering. Prompt variants contain untrusted skill instructions as quoted task material, not instructions executed by TraceMantle.
 
 The 1.6.1 fixes enforce these code-context and description-type boundaries. They also return a schema-2 validation error envelope for configuration load/discovery failures requested with `--format json`: `gate` contains `passed: false` and `exit_code: 2`, `results` is empty, and `errors` contains objects with an `error` message. Product input errors retain schema 1 with `exit_code: 2` and `result.state: infrastructure-error`. A malformed project configuration prevents selecting settings for the invocation; malformed source files still continue as independent batch results where documented. Human history warnings and missing-ledger paths use the same control escaping as successful reports, independent of color settings.
 
@@ -36,13 +36,13 @@ In this dialect, exactly the leading `{baseDir}/` in a reference denotes the sel
 
 This dialect does not disambiguate inline prose. No ignore declarations or natural-language intent heuristics are supplied. If actual coverage remains incomplete, the release comparison remains unknown even for an unchanged candidate. Use the full relevant suite, and do not treat a per-check historical pass as permission to bypass an unknown overall gate.
 
-## Experimental per-check scope interpretation (unreleased)
+## Experimental per-check scope interpretation
 
 The preceding unchanged-candidate restriction remains the default for legacy
 policies. Policy schema 3 can explicitly select a reviewed closed input scope for
 a static or deterministic maintenance check. It does not change Markdown parsing,
 classify author intent, clear warnings or set the bundle complete flag. See the
-[evidence contract](evidence-workflow.md#experimental-closed-check-scopes-unreleased).
+[evidence contract](evidence-workflow.md#experimental-closed-check-scopes).
 
 New manifests emit content schema 2 with `resource_errors`: the subset of issues
 that are explicit resource failures rather than inferred-coverage uncertainty.

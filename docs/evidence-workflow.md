@@ -367,7 +367,7 @@ records depend on the trusted observer and its environment. None individually
 establishes universal safety or correctness, and this deterministic example
 establishes workflow mechanics only.
 
-## Experimental closed check scopes (unreleased)
+## Experimental closed check scopes
 
 Schema 3 retains schema-2 approval controls and permits `input_scope_path` on a
 `static` check or the new `deterministic` kind. The latter requires real

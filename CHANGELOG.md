@@ -7,9 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Experimental policy schema 3 binds reviewed per-check input scopes through trusted Git and evidence profile identity. Deterministic helper tests can reuse approved results despite unrelated documentation uncertainty; explicit resource errors still prevent reuse. Manifest schema 2 preserves the resource-error distinction; legacy policies and evidence retain their behavior.
-- The maintainer SARIF workflow always generates fresh scans/reports and separately registers maintenance checks. A prospective comparison includes a simple cache with the same reviewed inputs and execution context.
-- The tiktoken tests no longer fetch the cl100k_base vocabulary. The suite reads a vendored copy from `tests/fixtures/tiktoken` (tiktoken's cache layout, upstream SHA-256 checked by tiktoken, MIT notice beside it), so they pass with the network closed. The cold-offline tokenizer test still runs against an empty cache.
+## [1.8.0] - 2026-11-11
 
 ### Security
 
@@ -20,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Experimental: policy schema 3 binds reviewed per-check input scopes through trusted Git and evidence profile identity. Deterministic helper tests can reuse approved results despite unrelated documentation uncertainty; explicit resource errors still prevent reuse. Manifest schema 2 preserves the resource-error distinction; legacy policies and evidence retain their behavior.
 - `--format sarif` writes a SARIF 2.1.0 log for code-scanning upload.
 - `--changed-since REV` validates only skills with changes under their directory since a Git revision.
 - `# tracemantle: ignore=PREFIX, ...` frontmatter comments suppress rules for one file, always reported as an `ignore.inline` note.
@@ -36,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The maintainer SARIF workflow always generates fresh scans/reports and separately registers maintenance checks. A prospective comparison includes a simple cache with the same reviewed inputs and execution context.
+- The tiktoken tests no longer fetch the cl100k_base vocabulary. The suite reads a vendored copy from `tests/fixtures/tiktoken` (tiktoken's cache layout, upstream SHA-256 checked by tiktoken, MIT notice beside it), so they pass with the network closed. The cold-offline tokenizer test still runs against an empty cache.
 - Config discovery parses each file once and is cached per batch: 2,000 skills under a large `pyproject.toml` validate in about 1 s instead of 18 s. A malformed `pyproject.toml` is reported as "Cannot parse ... Fix the TOML syntax".
 - Internal reorganization without behavior change: the CLI parser, input resolution, emit modes, history commands and exit-code gate moved out of `cli.py` and `commands.py`; heuristic graph vocabularies moved to `core/graph_markdown.py`; compat severity variants share one rule each. Unused helpers with no callers were removed.
 

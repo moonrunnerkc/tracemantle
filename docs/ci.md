@@ -13,13 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-      - uses: moonrunnerkc/tracemantle@v1.7.0
+      - uses: moonrunnerkc/tracemantle@v1.8.0
         with:
           path: skills/
           strict: 'true'
 ```
 
-This uses published 1.7.0. Review the [Action inputs](../action.yml) to select
+This uses published 1.8.0. Review the [Action inputs](../action.yml) to select
 report format or change thresholds. Pin the Action's full release commit if
 required by your repository policy. Remove `strict` to allow warnings while
 still rejecting errors. Directory discovery is recursive and does not follow
@@ -28,15 +28,15 @@ directory symlinks.
 For any CI system, install Python 3.10+ and run:
 
 ```bash
-python -m pip install tracemantle==1.7.0
+python -m pip install tracemantle==1.8.0
 tracemantle skills/ --strict --format json
 ```
 
-## Changed skills only (unreleased)
+## Changed skills only
 
 In a large skills repository, `--changed-since REV` validates only skills with
 a committed, staged, unstaged or untracked change anywhere under their
-directory since `REV`, helpers included. It exits 0 when nothing changed. Fetch
+directory since `REV`, helpers included (since 1.8.0). It exits 0 when nothing changed. Fetch
 enough history for the revision to resolve:
 
 ```bash
@@ -44,14 +44,14 @@ git fetch --no-tags origin main
 tracemantle skills/ --changed-since origin/main --strict
 ```
 
-It requires a release after 1.7.0 and cannot be combined with
-`--show-history` or the ingest flags, which name a single skill.
+It cannot be combined with `--show-history` or the ingest flags, which name a
+single skill.
 
-## Code scanning (unreleased)
+## Code scanning
 
 `--format sarif` writes a SARIF 2.1.0 log, so diagnostics appear as GitHub
-code-scanning alerts that persist across pull requests. It requires a release
-after 1.7.0. The validation step still fails on errors; the upload runs anyway:
+code-scanning alerts that persist across pull requests (since 1.8.0). The
+validation step still fails on errors; the upload runs anyway:
 
 ```yaml
 permissions:
@@ -59,7 +59,7 @@ permissions:
   security-events: write
 steps:
   - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-  - run: python -m pip install tracemantle
+  - run: python -m pip install tracemantle==1.8.0
   - run: tracemantle skills/ --format sarif > tracemantle.sarif
   - uses: github/codeql-action/upload-sarif@v3  # pin a full commit SHA if your policy requires it
     if: always()

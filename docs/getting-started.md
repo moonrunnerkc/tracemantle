@@ -7,11 +7,11 @@ Python 3.10 or later is required. In a clean working directory:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install tracemantle==1.7.0
+python -m pip install tracemantle==1.8.0
 ```
 
 On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1` instead.
-This installs 1.7.0. No account, evaluator or evidence policy is needed.
+This installs 1.8.0. No account, evaluator or evidence policy is needed.
 Default validation makes no network calls; package installation downloads packages.
 
 ## Validate your first skill
@@ -170,7 +170,7 @@ Passing file validation does not prove a skill behaves correctly in a live agent
 
 ## Import and approve evidence
 
-The 1.7.0 installation above includes neutral JSON imports and schema-2 automation
+Since 1.7.0, the installation includes neutral JSON imports and schema-2 automation
 approvals. Follow the [evidence workflow](evidence-workflow.md) for manual approval,
 protected automation, and the runnable helper-change example. Run example scripts
 only from owner-reviewed tooling outside candidate bundles.

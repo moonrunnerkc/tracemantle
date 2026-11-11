@@ -2,13 +2,13 @@
 
 TraceMantle is a different distribution. Installing it is not an automatic upgrade of `skillcheck`. Before uninstalling anything, verify that the installed `skillcheck` distribution is this project's old analyzer, not an unrelated package or executable with the same name. Prefer a clean virtual environment.
 
-Use this replacement sequence. The uninstall migration was verified with the published 1.6.1 artifacts; 1.7.0 retains the same package and compatibility surface:
+Use this replacement sequence. The uninstall migration was verified with the published 1.6.1 artifacts; 1.8.0 retains the same package and compatibility surface:
 
 ```bash
 python -m pip show skillcheck
 # Only after identifying this project's old distribution:
 python -m pip uninstall skillcheck
-python -m pip install tracemantle==1.7.0
+python -m pip install tracemantle==1.8.0
 tracemantle --version
 python -m tracemantle --version
 ```
@@ -48,14 +48,14 @@ git remote set-url origin git@github.com:moonrunnerkc/tracemantle.git
 
 If you also rename the local checkout directory, recreate its virtual environment: installed console scripts can retain absolute paths to the old directory.
 
-The installed skill now lives at `skills/tracemantle/SKILL.md`. Version tags before 1.6.0 still identify SkillCheck source. Use `moonrunnerkc/tracemantle@v1.7.0` for TraceMantle, or pin a full CI-verified commit SHA. Renaming the repository does not publish the distribution or update downstream repositories automatically.
+The installed skill now lives at `skills/tracemantle/SKILL.md`. Version tags before 1.6.0 still identify SkillCheck source. Use `moonrunnerkc/tracemantle@v1.8.0` for TraceMantle, or pin a full CI-verified commit SHA. Renaming the repository does not publish the distribution or update downstream repositories automatically.
 
 For pre-commit, pin the TraceMantle release:
 
 ```yaml
 repos:
   - repo: https://github.com/moonrunnerkc/tracemantle
-    rev: v1.7.0
+    rev: v1.8.0
     hooks:
       - id: tracemantle
 ```
@@ -75,13 +75,28 @@ introduced. Neutral imports assign a distinct adapter identity; pin it deliberat
 when updating a check context. Promptfoo 0.118.10 retains its adapter identity;
 0.124.1 uses a different exact identity and must be approved independently.
 
-## Unreleased reference classification repair
+## 1.8.0 upgrade notes
+
+Upgrade with `python -m pip install --upgrade tracemantle==1.8.0`. Configuration,
+policies and evidence records need no migration, but some results change:
+
+- A Markdown link to a directory now reports `references.uncertain` and marks
+  dependency coverage incomplete. Link the required files individually.
+- A `__pycache__` entry anywhere in a bundle, or a `.git` entry below its root,
+  makes the manifest incomplete. Remove them, or set `PYTHONDONTWRITEBYTECODE`
+  when running helpers, before creating manifests.
+- Incomplete manifests make `compare` return unknown (exit 4) where 1.7.0 could
+  reuse evidence. Regenerate manifests and rerun the relevant checks.
+- `--quiet` with an emit mode, and `--format sarif` with an emit mode or
+  `--show-history`, are now usage errors (exit 2).
+
+## 1.8.0 reference classification repair
 
 Recompute manifests and rerun comparisons after this repair. Slash-containing inline code now reports uncertain intent rather than a definite broken link or escape. A possible contained edge remains recorded; incomplete coverage still prevents release and cross-bundle reuse. Replace an ambiguous mention with an explicit Markdown link only when the author actually asserts a packaged resource. Bare inline filenames retain the existing excluded-output convention; this parser is still a documented subset, not an arbitrary program dependency analyzer.
 
 The optional Python `DocumentSettings(reference_format="skill-base-dir")` dialect resolves the SARIF format's leading `{baseDir}/` against the selected skill root. The CLI retains its default unresolved behavior. Pin the dialect in the trusted evaluator configuration, not candidate metadata. There is no automatic author-intent classification or coverage override. See [contracts](contracts.md#skill-root-reference-dialect).
 
-## Unreleased closed check scopes
+## 1.8.0 closed check scopes
 
 Existing policies retain their behavior. New manifests use schema 2, adding
 resource_errors while retaining bundle content identity. Readers limited to
@@ -94,5 +109,5 @@ the declaration's byte digest as profile_sha256. Existing evidence needs a new
 approved profile. Use kind=deterministic with observed-execution for non-model
 regression suites, never behavioral. Rerun whenever scope or context is unknown.
 Do not edit authentic skills to remove examples or count omitted task output as
-reuse. The [scope contract](evidence-workflow.md#experimental-closed-check-scopes-unreleased)
+reuse. The [scope contract](evidence-workflow.md#experimental-closed-check-scopes)
 explains the caller's current-context checks and remaining trust assumptions.
