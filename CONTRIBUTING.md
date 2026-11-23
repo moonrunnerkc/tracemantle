@@ -24,7 +24,27 @@ A handful of tests skip on Windows because the underlying OS feature is unavaila
 - `tests/test_references.py`: the two `os.symlink`-based tests use the module-level `_skip_symlink = pytest.mark.skipif(sys.platform == "win32", ...)` mark. `os.symlink` on Windows requires developer mode or admin privileges, so the symlink-escape coverage runs on Linux/macOS only.
 - `tests/test_cli_history.py` and `tests/test_history_io.py`: each has one `pytest.mark.skipif(sys.platform == "win32", ...)` test exercising POSIX file-mode permission errors that Windows does not enforce identically.
 - `tests/test_config_validation.py`: four TOML fallback tests run on Python 3.10 and skip on newer interpreters, which use `tomllib`.
+- `tests/test_changed_since.py`: the whole module skips where `git` is not installed.
 - `tests/test_pre_commit.py`: both tests skip wherever the `pre-commit` binary is not installed. CI installs `pre-commit` so they run there; local runs without `pre-commit` show them as skipped.
+
+## Supported interpreters and dependencies
+
+CI runs the suite on Python 3.10 through 3.15 on Linux, macOS and Windows. Python 3.10 is past upstream end of life and is kept as legacy compatibility; see [Python support](docs/migration.md#python-support) before changing the minimum. `constraints-dev.txt` pins the development, build and audit tools, with interpreter markers where one version cannot cover the whole range. `uv.lock` is the lock for `uv` users and is refreshed with `uv lock`; CI installs from the constraints file.
+
+The `audit` job resolves the runtime and tokenizer dependencies on 3.10 and 3.15 and checks them against published advisories. It needs network access and never runs during ordinary validation. To run it yourself:
+
+```bash
+python -m venv /tmp/runtime && /tmp/runtime/bin/python -m pip install -c constraints-dev.txt '.[tiktoken]'
+/tmp/runtime/bin/python -m pip freeze --exclude tracemantle > /tmp/runtime-requirements.txt
+python -m pip install -c constraints-dev.txt pip-audit
+python scripts/audit_dependencies.py /tmp/runtime-requirements.txt
+```
+
+Exit 1 means an advisory applies; move the pin to a fixed release. Exit 2 means the audit did not complete, for example because the advisory service was unreachable, and is not a clean result. Do not add an advisory exception without an analysis showing the affected code path is not used, scoped to that one advisory.
+
+[Dependabot](.github/dependabot.yml) proposes weekly updates for GitHub Actions and Python dependencies. Nothing merges automatically. It has not yet been observed updating the marker-qualified lines in `constraints-dev.txt`; check those by hand.
+
+The `CI gate` job is the check a branch rule should require. It always runs and fails unless every other CI job succeeded, so a skipped or cancelled job cannot pass for it. Add a new job to its `needs` list and its expected set.
 
 ## Release candidates
 

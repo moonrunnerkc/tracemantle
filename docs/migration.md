@@ -111,3 +111,48 @@ regression suites, never behavioral. Rerun whenever scope or context is unknown.
 Do not edit authentic skills to remove examples or count omitted task output as
 reuse. The [scope contract](evidence-workflow.md#experimental-closed-check-scopes)
 explains the caller's current-context checks and remaining trust assumptions.
+
+## Python support
+
+TraceMantle is tested on Python 3.10 through 3.15. Python 3.10 reached upstream
+end of life on 2026-10-01 and is kept as legacy compatibility: the package still
+installs and the full suite still runs on it, including the `tomli` fallback.
+New installations should use a release that
+[upstream still supports](https://devguide.python.org/versions/), currently 3.11
+or later.
+
+No date is set for removing 3.10. Removal will be a deliberate change that
+raises `requires-python`, drops the `tomli` dependency and the 3.10 CI lanes
+together and is announced in the changelog before the release that makes it. To
+prepare, run your validation on a supported interpreter now; configuration,
+output and evidence formats do not depend on the Python version.
+
+## Unreleased changes after 1.8.0
+
+These apply to installations from `main` and to the next release. Recompute
+manifests and rerun comparisons after upgrading.
+
+- **Link discovery.** Multiline links, links with bracketed text and reference
+  links now resolve as CommonMark specifies, with the first definition of a
+  label taking effect. A comparison that passed because such a link was missed
+  now returns unknown (exit 4) when the linked helper changed. Bracketed text
+  followed by a parenthesized destination that does not parse, for example
+  `[text](two words)`, marks dependency coverage incomplete.
+- **Ignore comments.** `# tracemantle: ignore=...` inside a block or quoted
+  YAML string no longer suppresses anything. Move the directive to a comment
+  line of its own if it was meant to apply.
+- **`--strict`.** It no longer implies `--strict-vscode` and `--strict-cursor`.
+  A strict run that failed only on `compat.vscode-dirname` or
+  `compat.cursor-description-block-scalar` now passes, and those notes are
+  reported as info. Add the vendor flag, config key or Action input to keep the
+  previous result. The Python API's `validate(strict_all=True)` changes the same
+  way; pass `strict_vscode=True` or `strict_cursor=True`.
+- **`--changed-since`.** A configuration change now selects the skills it
+  applies to, so an incremental run can validate more skills than before.
+- **JSON failures.** With `--format json`, input and usage failures detected
+  after argument parsing print the schema-2 error envelope on stdout instead of
+  a stderr message. `--quiet` keeps stderr text for all of them, including
+  configuration errors, which previously printed JSON even with `--quiet`.
+- **History.** `--no-inline-ignores` is part of the history configuration
+  identity, like every other validation option. Records written by 1.8.0 are
+  not compared with new runs, as after any version change.

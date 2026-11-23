@@ -8,6 +8,8 @@ Executed shared cases and intentional divergences are recorded in [conformance.j
 
 Compatibility profile `historical-v1` retains the prior advisory field matrix and provenance date 2026-04-20. Its runtime applicability is **unverified**: the historical claims do not identify tested VS Code, Cursor, Codex or Claude runtime versions. A freshness date is not runtime evidence. In particular, dirname enforcement follows the standard; claims about a specific loader silently rejecting it are not established by the static analyzer. Cursor block-scalar behavior remains historical advice, with strict promotion only when the caller explicitly selects that policy.
 
+General `--strict` rejects warnings and does not promote this advice. Until the release after 1.8.0 it also implied `--strict-vscode` and `--strict-cursor`, which turned the VS Code directory note and the Cursor block-scalar note into errors without runtime evidence. Those two flags, their configuration keys and Action inputs remain available as explicitly selected policies that enforce the historical advice, and their error messages name the policy. `--target-agent cursor` still reports the block-scalar note as a warning, which a strict run rejects like any other warning. The standard's own directory-name rule, `frontmatter.name.directory-mismatch`, is an error in every mode unless `--skip-dirname-check` is given.
+
 Authoritative vendor documentation for future profile updates:
 
 | Profile | Source | Revision evidence | Runtime applicability |
@@ -51,3 +53,17 @@ No parser or rule code changes are needed.
 3. Set `version`, `checked` (the commit, tag or URL you inspected) and `verified_on` (today's date) in the agent's table.
 4. Run `tracemantle skills/tracemantle/SKILL.md --check-profile-freshness --target-agent AGENT` and confirm the age warning is gone.
 5. A contradicted rule is a finding, not a registry edit: open an issue or change the advisory profile in a separate, reviewed commit with the source and runtime evidence required above.
+
+## Documentation review, 2026-11-23
+
+The four vendor pages and the specification were read on 2026-11-23. This is a record of documented behavior only. No agent runtime loaded a skill, so `runtime_applicability` stays `unverified`, `verified_on` is unchanged and no rule is listed as confirmed or contradicted in the registry. The pages carry no revision identifier; the VS Code page shows a footer date of 11/18/2026.
+
+| Claim | Standard | Vendor documentation read | Observed at runtime |
+|---|---|---|---|
+| `name` must equal the parent directory | Required: "Must match the parent directory name". No consequence stated. | VS Code: required; "the skill is not loaded" is stated only for extension-contributed skills. Cursor: required, no consequence stated. Claude Code: not required; the name defaults to the directory name. Codex: not addressed. | Not tested |
+| Cursor shows an empty description for `>` or `|` block scalars | Not addressed | Cursor's page does not mention block scalars. No public report with a Cursor version was found. | Not tested; no Cursor runtime was available |
+| Claude-specific fields are ignored elsewhere | Not addressed | Claude Code: unrecognized fields are ignored without an error. VS Code and Cursor do not state how unknown fields are handled. VS Code now documents `disable-model-invocation`, `user-invocable`, `context` and `argument-hint`; Cursor documents `disable-model-invocation`. | Not tested |
+
+Two differences from the `historical-v1` matrix follow from that reading and are not yet applied: `disable-model-invocation` is listed as Claude-only although VS Code and Cursor now document it, and Claude Code's page no longer documents `mode` or `skills` as frontmatter fields. Changing the matrix needs the source and runtime evidence described above.
+
+Locally installed command-line tools on the review machine were Claude Code 2.1.331, codex-cli 0.162.1 and VS Code 1.138.0. None was used to load a skill: doing so starts a model session, which this review did not do. To verify a claim, load a fixture skill in a pinned runtime version, record the version, fixture, command and observed result, then update the registry by the steps above.

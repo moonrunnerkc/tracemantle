@@ -1,0 +1,209 @@
+# Correctness and trust upgrade: acceptance ledger
+
+Work ledger for requirements A through I of the 2026-11-23 review. Evidence
+files are in this directory. Local results are from one macOS arm64 machine;
+remote results are recorded separately and only for the exact commit named.
+
+## Baseline
+
+| Item | Value |
+|---|---|
+| Starting commit | `5026e8e83f66c6addcdf45fb68f559f3e05b6a0e` (1.8.0), branch `main`, in sync with `origin/main` |
+| Working tree | One uncommitted change, `AGENTS.md`, identical to the local untracked `CLAUDE.md`; carried into this branch |
+| Tools | Python 3.10.14, ruff 0.16.4, mypy 2.3.1, pytest 9.1.1, Git 2.54.0 ([baseline-environment.txt](baseline-environment.txt)) |
+| Baseline gates | ruff, mypy and reference check passed; 1667 passed, 3 skipped, 95% coverage |
+| Review document | `tracemantle-review-2026-11-23.md` was not present; the task text was used |
+
+The review recorded 1,663 passed and 7 skipped. This checkout collected 1,670
+tests; the difference in skips is environmental and neither figure is a target.
+
+## Requirements
+
+| ID | Requirement | Status | Evidence |
+|---|---|---|---|
+| A | Link discovery cannot permit stale approved evidence | Implemented, verified locally | [a-before-5026e8e.txt](a-before-5026e8e.txt), [a-after.txt](a-after.txt), `tests/test_link_dependencies.py` |
+| B | Ignore directives only in YAML comments; `--no-inline-ignores` | Implemented, verified locally | [b-before-5026e8e.txt](b-before-5026e8e.txt), [b-after.txt](b-after.txt), `tests/test_inline_ignores.py` |
+| C | Incremental selection follows effective configuration | Implemented, verified locally | [c-e-before-5026e8e.txt](c-e-before-5026e8e.txt), [c-e-after.txt](c-e-after.txt), `tests/test_changed_since.py` |
+| D | Structured JSON for expected CLI failures | Implemented, verified locally | [d-before-5026e8e.txt](d-before-5026e8e.txt), [d-after.txt](d-after.txt), `tests/test_json_error_contract.py` |
+| E | Amortized root discovery, bounded Git output | Implemented, measured | [benchmark-baseline-5026e8e.json](benchmark-baseline-5026e8e.json), [benchmark-candidate.json](benchmark-candidate.json) |
+| F | Python 3.14/3.15, dependency maintenance, audit | Implemented; see remote CI below | [f-local-audit.txt](f-local-audit.txt), `tests/test_dependency_audit.py` |
+| G | Evidence-based compatibility claims | Strict-mode correction implemented; runtime claims remain unverified | [g-before-5026e8e.txt](g-before-5026e8e.txt), [g-after.txt](g-after.txt), `docs/profiles.md` |
+| H | Repository safeguards | See "Repository safeguards" below | [h-repository-state-before.txt](h-repository-state-before.txt) |
+| I | Documentation, verification, completion | See "Verification" below | this file |
+
+Each "before" file is the new regression module run against the unmodified
+1.8.0 implementation. Tests listed as failing there fail for the defect; tests
+that pass there are the controls.
+
+### A. Link discovery
+
+Reproduced on 1.8.0 with a real temporary trusted Git policy and synthetic
+approved evidence, both binding only `SKILL.md`. After changing only
+`helper.py`, `compare` exited 0 for these forms and now exits 4 with
+`required_reruns: ["validate"]`:
+
+| Form | 1.8.0 | Now |
+|---|---|---|
+| `Run [helper](helper.py).` (control) | exit 4 | exit 4 |
+| `[helper](`, `helper.py`, `)` on three lines | exit 0 | exit 4 |
+| `[run [helper]](helper.py)` | exit 0 | exit 4 |
+| `[run][helper]` with `[helper]: helper.py` then `[helper]: unused.py` (both files exist) | exit 0, resolved to `unused.py` | exit 4, resolved to `helper.py` |
+| Same with the definitions reversed (control: `helper.py` is not a dependency) | exit 4 | exit 0 |
+
+Unchanged bundles and unrelated edits still pass for every fully supported
+form. Examples inside fenced and indented code are still excluded. Expectations
+were derived from CommonMark 0.31.2 sections 4.7 and 6.3.
+
+Design decisions and their cost:
+
+- The scanner is a single forward pass per paragraph block in
+  `markdown.py`, with no new dependency. It records every bracket pair that
+  matches a defined label, which is a superset of the links CommonMark
+  renders. Effect: a document can gain a governed helper that a renderer
+  would not link. That direction is safe for evidence reuse.
+- A definition-shaped line inside a paragraph is text under CommonMark but
+  was treated as a definition before. Its destination stays governed and it
+  can no longer shadow a real definition.
+- `[text](two words)` and similar destinations that do not parse now mark
+  coverage incomplete. Effect: such a document gets exit 4 from `compare`
+  until the link is fixed. Prose such as `array[i](x, y)` outside code
+  triggers this too.
+- Tokenizing a 2.9 MB realistic body took 0.97 s against 0.79 s before on
+  this machine. Twelve adversarial 100,000-repeat inputs each finish inside
+  the existing 5 second bound.
+
+### B. Ignore directives
+
+The `hello` reproduction (directive-shaped line inside `description: |-`,
+body `[missing](missing.py)`, `--strict`): exit 0 on 1.8.0 with
+`references.broken-link` suppressed; now exit 1 with the error reported and no
+`ignore.inline` note. Eight string forms are covered, including chomping and
+indentation indicators and both quote styles. Six real-comment controls,
+including one directly after a block scalar, still suppress and exit 0.
+
+`--no-inline-ignores` keeps the error (exit 1), reports
+`ignore.inline-refused` and still reports invalid tokens. A project
+`no-inline-ignores = false` does not override the flag.
+
+### C. Incremental selection
+
+Reproduction: committed skills with a three-line body and
+`max-lines = 500`; change only the setting to `max-lines = 1`. Full strict
+scan exits 1. `--changed-since HEAD` selected 0 skills and exited 0 on 1.8.0;
+it now selects all three, exits 1 and returns the same results as the full
+scan. Covered: unstaged, staged and committed edits against the resolved
+revision; untracked, deleted and renamed configuration; a nearer
+configuration added; legacy `skillcheck.toml`; a `pyproject.toml` gaining or
+losing its tool table; explicit `--config` changed, external and ignored;
+nested repositories, a linked worktree and a submodule.
+
+Limit, documented in `docs/ci.md`: the selection reflects file changes only.
+It does not show that unselected skills pass under a different tool version,
+environment or flags.
+
+### D. Structured failures
+
+Sixteen expected failures were checked with `--format json` and
+`--format=json`: exit 2, one schema-2 object on stdout, no traceback. The same
+sixteen keep stderr text in text mode and under `--quiet`. Argparse-level
+errors stay usage errors on stderr. Evidence commands keep schema 1. An
+unexpected `KeyError` still propagates.
+
+One existing assertion changed with the contract:
+`tests/test_profile_freshness.py` expected stderr text while passing
+`--format json`; it now expects the envelope and separately checks text mode.
+
+Behavior change to note: `--quiet --format json` configuration errors printed
+JSON before and now print stderr text, like every other failure under `--quiet`.
+
+### E. Performance
+
+Workload: one seeded repository of 500 skills with a helper each, plus a
+50-skill nested repository for the last scenario; `--strict --format json`;
+7 repetitions; medians; Python 3.10.14, Git 2.54.0, macOS arm64. Git ran
+through a counting shell shim, which adds a shell start to every Git call and
+so overstates the baseline's incremental time.
+
+| Scenario | Scan | 1.8.0 median | Candidate median | Git processes | Selected (1.8.0 / candidate) |
+|---|---|---|---|---|---|
+| No changes | full | 0.269 s | 0.276 s | 0 / 0 | 500 / 500 |
+| No changes | incremental | 6.787 s | 0.277 s | 503 / 4 | 0 / 0 |
+| One changed skill | incremental | 7.290 s | 0.277 s | 503 / 4 | 1 / 1 |
+| Shared configuration change | incremental | 6.205 s | 0.424 s | 503 / 4 | 0 (exit 0) / 500 (exit 1) |
+| Nested repository, one change | incremental | 6.798 s | 0.346 s | 556 / 9 | 1 / 1 |
+
+Selected paths and per-file verdicts are identical between baseline and
+candidate in every scenario except the shared configuration change, which is
+the defect fixed in C. The candidate's incremental run with no changes is not
+faster than a full scan of 500 small skills on this machine (0.277 s against
+0.276 s): interpreter start and configuration discovery dominate. The benefit
+is removing the per-skill Git cost, not beating a full scan at this size.
+No timing assertion was added to the test suite. Selective evidence reuse
+remains optional and experimental; no new study was run.
+
+### F. Python support and dependencies
+
+Upstream status read on 2026-11-23 from
+<https://devguide.python.org/versions/>: 3.10 end of life (2026-10-01); 3.11,
+3.12 and 3.13 security; 3.14 and 3.15 bugfix (3.15.0 released 2026-10-09).
+`actions/python-versions` lists stable 3.14.10 and 3.15.2 for Linux, macOS and
+Windows.
+
+- PyYAML 6.0.3 and regex 2026.7.19 publish no CPython 3.15 wheels. PyYAML
+  moves to 6.0.4. regex 2026.11.19 requires Python 3.11, so the constraint is
+  split by interpreter marker.
+- The audit reported PYSEC-2026-4320 against certifi 2026.7.22 and
+  PYSEC-2026-4175, 4176 and 4177 against urllib3 2.7.0, all reached through
+  the `tiktoken` extra. Both pins moved to the fixed releases; the rerun is
+  clean on 3.10 and 3.15 ([f-local-audit.txt](f-local-audit.txt)). No advisory
+  is ignored.
+- pip-audit 2.10.1 behavior was observed directly: exit 1 with a JSON report
+  for advisories, exit 1 with no report when the advisory service is
+  unreachable, exit 0 with a `skip_reason` row for an unknown package. The
+  wrapper maps these to exit 1, 2 and 2.
+- Local installs and full suites: 3.10, 3.14 and 3.15 without the tokenizer;
+  3.10 and 3.15 with it. Python 3.15.2 came from a checksum-verified
+  python-build-standalone archive kept outside the repository.
+- Dependabot: the `pip` ecosystem documents support for any `.txt` file and
+  PEP 621 `pyproject.toml`. Its handling of the marker-qualified constraint
+  lines has not been observed and is not claimed. `uv.lock` was refreshed with
+  `uv lock`; no Dependabot `uv` entry was added, to avoid two ecosystems
+  proposing the same `pyproject.toml` change.
+- Actions pins were left as they are. Newer majors exist; moving them is left
+  to the reviewed Dependabot proposals. The PyPI publish action keeps its
+  version tag for the container-reference reason recorded in `release.yml`.
+
+### G. Compatibility claims
+
+Implemented: general `--strict` no longer promotes the VS Code directory
+note or the Cursor block-scalar note. The explicit flags, config keys and
+Action inputs still do, and their messages name the selected policy.
+Twenty-five CLI cases cover the interaction with `--target-agent` and project
+configuration.
+
+Verified by reading documentation only (2026-11-23), recorded in
+`docs/profiles.md`: what the specification and the four vendor pages state
+about name and directory matching, description format and frontmatter fields.
+
+Not verified: any runtime behavior. No skill was loaded in Claude Code
+2.1.331, codex-cli 0.162.1 or VS Code 1.138.0, because that starts a model
+session, and no Cursor runtime was available. `verified.toml` and
+`compatibility-v1.json` are unchanged: `verified_on` stays 2026-04-20,
+`confirmed` and `contradicted` stay empty, `runtime_applicability` stays
+`unverified`. Next step: load a fixture skill in a pinned runtime version and
+record version, fixture, command and outcome before changing any claim.
+
+### Issues 20 and 21
+
+The exact examples were rerun ([issues-20-21.txt](issues-20-21.txt)). Both
+already behaved this way at 1.8.0; this work did not change them.
+
+- Issue 20 (runtime data paths): eight `references.uncertain` warnings, no
+  `references.escape` error. Exit 0; exit 1 under `--strict`; exit 0 with
+  `--strict --ignore references.uncertain`.
+- Issue 21 (glob pattern): one `references.uncertain` warning, no
+  `references.broken-link` error. Same exit codes.
+
+The direction agreed in the issue threads (an info-level `references.external`
+for home and absolute paths, skipping glob spans without affecting coverage)
+is not implemented. Proposed replies are in the pull request description.

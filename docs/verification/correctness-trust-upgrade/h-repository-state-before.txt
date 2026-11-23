@@ -1,0 +1,31 @@
+# Repository state before changes (read 2026-11-23, sanitized)
+## repository
+{"allow_auto_merge":false,"allow_force_pushes":null,"default_branch":"main","delete_branch_on_merge":false,"owner_type":"User","permissions":{"admin":true,"maintain":true,"pull":true,"push":true,"triage":true},"security_and_analysis":{"dependabot_security_updates":{"status":"disabled"},"secret_scanning":{"status":"enabled"},"secret_scanning_non_provider_patterns":{"status":"disabled"},"secret_scanning_push_protection":{"status":"enabled"},"secret_scanning_validity_checks":{"status":"disabled"}},"visibility":"public"}
+## branch protection (main)
+{"message":"Branch not protected","documentation_url":"https://docs.github.com/rest/branches/branch-protection#get-branch-protection","status":"404"}gh: Branch not protected (HTTP 404)
+## branch main protected flag
+{"protected":false,"protection":{"enabled":false,"required_status_checks":{"checks":[],"contexts":[],"enforcement_level":"off"}}}
+## rulesets
+[]
+## rules active on main
+[]
+## tag protection (legacy)
+{
+  "message": "Not Found",
+  "documentation_url": "https://docs.github.com/rest",
+## private vulnerability reporting
+{"enabled":false}## environments
+{"deployment_branch_policy":{"custom_branch_policies":true,"protected_branches":false},"name":"pypi","protection_rules":["branch_policy"]}
+## actions variables (names only)
+{"name":"TRACEMANTLE_PUBLISH_ENABLED","value":"false"}
+## workflows
+{"name":"CI","path":".github/workflows/ci.yml","state":"active"}
+{"name":"Trusted bundle comparison","path":".github/workflows/compare.yml","state":"active"}
+{"name":"Release notes","path":".github/workflows/release-notes.yml","state":"active"}
+{"name":"Release","path":".github/workflows/release.yml","state":"disabled_manually"}
+{"name":"swarm-verify","path":".github/workflows/swarm-verify.yml","state":"active"}
+{"name":"Verify nonpublishing release guard","path":".github/workflows/verify-gates.yml","state":"active"}
+## tags
+v1.8.0 v1.7.0 v1.6.1 v1.6.0 v1.5.0 v1.4.1 v1.3.0 v1.2.3 v1.2.2 v1.2.1 v1.2.0 v1.1.0 v1.0.1 v1.0.0 v1 v0.2.0 
+## actions default workflow permissions
+{"default_workflow_permissions":"read","can_approve_pull_request_reviews":false}

@@ -2,7 +2,7 @@
 
 Build elegant, effective software with minimal technical debt. Favor clear intent, correct behavior, cohesive modules, and the smallest complete design. Apparent sophistication and low line counts are not goals.
 
-`AGENTS.md` and `CLAUDE.md` are equivalent, standalone instructions for this repository. Keep their policy synchronized when changing either. Apply relevant global and nested instructions as well; these repository details do not waive the engineering standards below.
+`AGENTS.md` and `CLAUDE.md` are equivalent, standalone instructions for this repository. Keep their policy synchronized when changing either. Reconcile any newer repository instructions before installing this file; preserve stronger relevant safeguards. Apply relevant global and nested instructions as well; these repository details and upgrade instructions do not waive the engineering standards below. Preserve every applicable requirement when synchronizing the two files, including the code-quality, error-handling, evidence, verification and release safeguards. This file defines standing engineering policy, not standing authorization to publish, merge or change repository access.
 
 ## Preserve the product
 
@@ -33,6 +33,7 @@ Identify the requirement, affected callers, and observable acceptance criteria. 
 ## Python and design
 
 - Support Python 3.10 and the supported CI matrix. Follow strict mypy and the Ruff settings in `pyproject.toml`; Ruff targets Python 3.10 with a configured line length of 127.
+- Treat those Python and Ruff values as the current required baseline. Do not silently change the minimum version or relax lint/type checks. An explicitly authorized support migration must update package metadata, the CI matrix, tool configuration and documentation together. Verify upstream lifecycle and dependency support; distinguish legacy compatibility from a recommended supported runtime.
 - Use Python naming: `snake_case` modules/functions and `PascalCase` classes. Do not apply TypeScript-specific named-export, kebab-case module, or JSDoc conventions to Python.
 - Keep types precise. Do not silence typing or lint errors with broad `Any`, blanket ignores, or disabled checks. A narrow exception needs a concrete reason.
 - Prefer the standard library and existing dependencies. Verify unfamiliar APIs, package names, imports, and version compatibility against installed code or authoritative documentation. Never invent them.
@@ -58,13 +59,13 @@ Identify the requirement, affected callers, and observable acceptance criteria. 
 - Reject duplicate JSON keys, nonfinite numbers, and exponent overflow throughout the entire input, including unbound export rows, before storing or hashing imported evidence. Do not coerce invalid values into acceptable ones.
 - Keep hashing based on original bytes and canonical identity rules. Analysis-time newline normalization must not change content identity.
 - Dependency discovery is a documented Markdown subset. Unsupported or dynamic constructs must retain incomplete coverage; never claim complete dependency coverage from a partial parse.
-- Linked helper changes and transitive resource changes must invalidate affected evidence. Description changes must preserve routing-check invalidation. Incomplete coverage cannot justify reuse across a changed bundle.
+- Linked helper changes and transitive resource changes must invalidate affected evidence. Description changes must preserve routing-check invalidation. Incomplete inferred coverage cannot justify reuse across a changed bundle. Preserve the documented schema-3 exception for independently reviewed closed check scopes, including its restrictions on check kinds, explicit resource errors, scope identity and execution context.
 - Resolve policy and checker identity from the selected trusted Git base. Candidate files must not replace that trust source or weaken its requirements.
 - Trust is an approval of the complete canonical evidence record, not a runner name, provider label, claimed signature, or artifact name. Preserve all identity, context, freshness, and outcome checks.
 - Never promote model judgment, inferred traces, or user bindings to observed execution. Equal bundle hashes do not establish fresh execution; hosted model aliases are not immutable revisions.
 - Required skipped or unknown evidence cannot pass. Preserve conservative treatment of conflicting approved records and policies with no required checks.
 - Keep evidence stores outside evaluated bundles, preserve original exports, and retain the existing atomic, content-addressed persistence behavior. Do not introduce partial imports or silently overwrite different bytes.
-- Preserve documented validation and product JSON envelopes, exit codes, strict-mode semantics, and reversible JSON values. Escape untrusted terminal controls at human display boundaries.
+- Preserve documented validation and product JSON envelopes, exit codes, strict-mode semantics, and reversible JSON values unless the authorized task explicitly changes a contract with migration notes and regression coverage. Escape untrusted terminal controls at human display boundaries.
 - The Promptfoo importer has a deliberately narrow version/schema contract. Verify it in code and `docs/evidence-workflow.md` before changing support; reject unsupported formats rather than guessing.
 
 ## Code quality
@@ -123,6 +124,36 @@ python scripts/generate_reference.py --check
 - Publishing requires explicit owner instruction, as stated in `CONTRIBUTING.md`. Do not enable Release or `TRACEMANTLE_PUBLISH_ENABLED` merely to test. Preserve the trusted publishing and post-release disablement procedures.
 - Distinguish local edits, commits, pushed code, passing remote CI, built artifacts, and published distributions. Never claim one as evidence of another.
 
+## Correctness at trust boundaries
+
+- Never report complete dependency coverage solely because the tokenizer found no resources. Supported syntax must be parsed correctly; unresolved syntax that can conceal a dependency must remain incomplete.
+- Derive Markdown expectations from the pinned specification and independently checked fixtures. Preserve first-definition precedence, label normalization, code exclusion and source locations. Formatting variants that name the same governed helper must not permit stale evidence reuse.
+- Ignore directives operate only in actual YAML comments, never in literal/folded scalars or quoted strings. Preserve ordinary valid directives and report their effect truthfully. Caller-enforced refusal of inline ignores cannot be reversed by candidate content.
+- Incremental scanning must account for effective configuration changes, including creation, deletion and precedence changes. When configuration history is unavailable, select affected skills conservatively or report a configuration error. Changed-file selection does not prove unchanged skills passed under the current tool version or flags.
+- Reuse repository discovery only within one invocation and respect nested repositories, submodules and worktrees. Never infer common ownership from a path prefix alone. Bound subprocess stdout and stderr while collecting them, enforce deadlines, and terminate and reap failed children.
+- When JSON output has been selected, expected validation failures use the documented structured envelope. Keep help/version behavior and the separate product-command schema intact. Do not hide unexpected implementation exceptions inside success-shaped results.
+- Separate standards compliance, documented vendor behavior and observed runtime behavior. Record exactly what was verified. Dates, model labels and passing synthetic fixtures cannot turn an unverified compatibility claim into runtime evidence.
+- Keep general strict validation conservative about real defects without promoting unverified vendor advice to an asserted runtime failure. Preserve explicitly requested compatibility policies and document authorized semantic changes.
+
+## Maintenance without speculative infrastructure
+
+- Add a dependency or abstraction only when its concrete benefit outweighs upkeep and attack surface. A maintained parser may be justified by correctness; a new parsing framework or hosted service requires a separate product requirement.
+- Measure optimizations on equivalent inputs and outputs, including startup, configuration discovery, hashing and Git calls. Retain raw measurements and environment details. Do not use flaky wall-clock thresholds as the sole correctness gate.
+- Prefer an invocation-scoped cache to persistent state when it solves the measured problem. Preserve the optional experimental status of evidence reuse until an applicable workflow demonstrates a benefit.
+- Keep security checks out of ordinary offline validation. Networked dependency audits belong in explicit development/CI workflows with minimal permissions, bounded execution and actionable failures.
+- Never suppress a dependency advisory without a specific affected-version analysis and a narrow, documented exception. Do not auto-merge dependency updates or claim that an unavailable audit completed successfully.
+- Verify a private reporting channel exists before documenting it in `SECURITY.md`. Do not invent response SLAs, addresses, enabled features or security guarantees.
+
+## Repository changes and attribution
+
+- For owner-requested commits use Git author name `moonrunnerkc` and email `bradkinnard@proton.me`, configured only in this repository. Preserve other contributors' attribution. Do not add an AI co-author trailer or fabricate a signature.
+- Preserve user work; use a focused feature branch or isolated worktree. Do not force-push, reset unrelated changes, rewrite published history or move existing version tags.
+- Repository protections are remote state. Checked-in JSON or workflow YAML does not prove protection is active. Read the actual state, preserve unrelated rules, apply only authorized changes, and verify the resulting state.
+- Require check identities that actually run for the intended commit. A skipped/cancelled prerequisite must not satisfy an aggregate required gate. Never invent workflow names or count an older successful run as validation of a newer head.
+- GitHub bypasses may be actor-scoped rather than workflow-scoped. Do not claim a rule restricts bypass to a particular workflow unless the platform configuration establishes that distinction. Keep immutable release tags separate from moving major tags.
+- Complete independent authorized work while access-dependent steps are blocked. Report the exact missing permission and prepared concrete change; do not broaden access or weaken protections to manufacture completion.
+- Follow the current task's explicit scope for committing, pushing, PRs and administrative changes. Publishing and merging need task authorization; this standing file does not grant it.
+
 ## Finish the actual task
 
 Handle realistic inputs, configuration errors, environment differences, resource cleanup, and relevant concurrency or persistence risks. Add protections appropriate to the affected boundary; do not bolt unrelated service infrastructure onto a local tool.
@@ -130,4 +161,3 @@ Handle realistic inputs, configuration errors, environment differences, resource
 Review the final diff for unnecessary complexity, duplication, fake behavior, swallowed errors, hollow tests, debug residue, and unrelated changes. Resolve concrete problems and stop when the authorized scope is complete and adequately verified.
 
 State what changed, why, which checks actually ran, and any remaining blocker or deliberate technical debt. Include its practical effect and next step. Never label partial or unverified work fully working.
-
