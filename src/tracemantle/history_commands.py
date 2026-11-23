@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from tracemantle import __version__
+from tracemantle.cli_errors import exit_input_error
 from tracemantle.core import (
     LedgerError,
     RunAgents,
@@ -52,23 +53,18 @@ def run_show_history(args: argparse.Namespace, paths: list[Path]) -> None:
             lp = legacy
             print('Reading legacy history; use tracemantle migrate-history to copy it explicitly.', file=sys.stderr)
     if not lp.exists():
-        print(
-            terminal(f"No history ledger found for {target_path}. "
-            f"Run 'tracemantle {target_path} --history' to start tracking."),
-            file=sys.stderr,
-        )
-        sys.exit(2)
+        message = f"No history ledger found for {target_path}. Run 'tracemantle {target_path} --history' to start tracking."
+        exit_input_error(args, message, text=message)
     try:
         ledger = load_ledger(lp)
     except (LedgerError, EvidenceError, OSError) as exc:
         # Exit 2: README documents it as the code for malformed input, and an
         # unreadable ledger is exactly that. This path returned 1 before, which
         # contradicted the documented contract.
-        print(terminal(f"Error: {exc}"), file=sys.stderr)
-        sys.exit(2)
+        exit_input_error(args, str(exc))
     if ledger is None:
-        print(terminal(f"No history ledger found for {target_path}."), file=sys.stderr)
-        sys.exit(2)
+        message = f"No history ledger found for {target_path}."
+        exit_input_error(args, message, text=message)
     if not args.quiet:
         if args.format == "json":
             print(render_ledger_json(ledger))

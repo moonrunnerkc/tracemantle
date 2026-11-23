@@ -178,9 +178,14 @@ def test_malformed_registry_is_rejected_with_the_field_to_fix(tmp_path: Path, co
 def test_cli_rejects_a_malformed_registry_and_orphaned_freshness_options(tmp_path: Path) -> None:
     registry = tmp_path / 'verified.toml'
     registry.write_text('schema_version = 1\n')
-    broken = _validate('--check-profile-freshness', '--profile-registry', str(registry))
-    assert broken.returncode == 2 and 'at least one [agents.NAME] table' in broken.stderr
-    orphaned = _validate('--profile-max-age-days', '10')
-    assert orphaned.returncode == 2 and 'require --check-profile-freshness' in orphaned.stderr
-    nonpositive = _validate('--check-profile-freshness', '--profile-max-age-days', '0')
-    assert nonpositive.returncode == 2 and 'at least 1' in nonpositive.stderr
+    # _validate selects JSON, so each usage failure is the schema-2 error
+    # envelope on stdout; --format text keeps the argparse message on stderr.
+    def error(result: subprocess.CompletedProcess[str]) -> str:
+        assert result.returncode == 2 and result.stderr == ''
+        return str(json.loads(result.stdout)['errors'][0]['error'])
+
+    assert 'at least one [agents.NAME] table' in error(_validate('--check-profile-freshness', '--profile-registry', str(registry)))
+    assert 'require --check-profile-freshness' in error(_validate('--profile-max-age-days', '10'))
+    assert 'at least 1' in error(_validate('--check-profile-freshness', '--profile-max-age-days', '0'))
+    text = _validate('--profile-max-age-days', '10', '--format', 'text')
+    assert text.returncode == 2 and text.stdout == '' and 'require --check-profile-freshness' in text.stderr
