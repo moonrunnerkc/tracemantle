@@ -1,0 +1,18 @@
+E        +  where 0 = CompletedProcess(args=['/Users/brad/projects/tracemantle/.venv-verify/py310/bin/python', '-m', 'tracemantle', '.', '--... 0,\n  "files_failed": 0,\n  "results": []\n}\n', stderr='Loaded config from ci.toml\nNo skills changed since HEAD.\n').returncode
+FAILED tests/test_changed_since.py::test_tightened_shared_configuration_selects_every_skill
+FAILED tests/test_changed_since.py::test_configuration_edits_count_in_every_git_state[unstaged]
+FAILED tests/test_changed_since.py::test_configuration_edits_count_in_every_git_state[staged]
+FAILED tests/test_changed_since.py::test_configuration_edits_count_in_every_git_state[committed]
+FAILED tests/test_changed_since.py::test_configuration_creation_deletion_and_precedence_changes_select_skills[add-untracked]
+FAILED tests/test_changed_since.py::test_configuration_creation_deletion_and_precedence_changes_select_skills[delete]
+FAILED tests/test_changed_since.py::test_configuration_creation_deletion_and_precedence_changes_select_skills[rename]
+FAILED tests/test_changed_since.py::test_configuration_creation_deletion_and_precedence_changes_select_skills[add-legacy]
+FAILED tests/test_changed_since.py::test_configuration_creation_deletion_and_precedence_changes_select_skills[pyproject-namespace]
+FAILED tests/test_changed_since.py::test_pyproject_edits_outside_the_tool_namespace_are_not_configuration
+FAILED tests/test_changed_since.py::test_unchanged_nearer_configuration_shields_a_skill_from_root_changes
+FAILED tests/test_changed_since.py::test_explicit_configuration_is_compared_or_forces_a_full_scan
+FAILED tests/test_changed_since.py::test_nested_repositories_and_worktrees_use_their_own_changes
+FAILED tests/test_changed_since.py::test_one_repository_is_discovered_once
+FAILED tests/test_changed_since.py::test_oversized_git_output_stops_the_child
+FAILED tests/test_changed_since.py::test_a_child_that_keeps_running_is_terminated_at_the_deadline
+16 failed, 11 passed in 6.67s

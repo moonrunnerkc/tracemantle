@@ -81,7 +81,8 @@ def resolve_paths(args: argparse.Namespace) -> list[Path]:
         if not args.config and any(project_configs(p, cache=discovered) != args.config_paths for p in paths):
             raise UntrustedInputError("Mixed project roots are ambiguous. Validate each project separately or supply --config.")
         if args.changed_since is not None:
-            paths = changed_skills(paths, args.changed_since)
+            paths = changed_skills(paths, args.changed_since, explicit_config=args.config,
+                                   notify=lambda message: print(terminal(message), file=sys.stderr))
             if not paths:
                 print(terminal(f"No skills changed since {args.changed_since}."), file=sys.stderr)
         return paths
