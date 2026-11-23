@@ -1,0 +1,8 @@
+commit: 5026e8e83f66c6addcdf45fb68f559f3e05b6a0e
+date: 2026-11-23
+Python 3.10.14
+ruff 0.16.4
+mypy 2.3.1 (compiled: yes)
+pytest 9.1.1
+git version 2.54.0 (Apple Git-157)
+Darwin 25.6.0 arm64

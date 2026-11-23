@@ -1,0 +1,10 @@
+FAILED tests/test_link_dependencies.py::test_link_forms_control_real_trusted_comparison[multiline-destination]
+FAILED tests/test_link_dependencies.py::test_link_forms_control_real_trusted_comparison[nested-label]
+FAILED tests/test_link_dependencies.py::test_link_forms_control_real_trusted_comparison[first-definition-wins]
+FAILED tests/test_link_dependencies.py::test_link_forms_control_real_trusted_comparison[normalized-multiline-definition]
+FAILED tests/test_link_dependencies.py::test_link_forms_control_real_trusted_comparison[multiline-image]
+FAILED tests/test_link_dependencies.py::test_link_forms_control_real_trusted_comparison[escaped-bracket]
+FAILED tests/test_link_dependencies.py::test_link_forms_control_real_trusted_comparison[later-definition-ignored]
+FAILED tests/test_link_dependencies.py::test_link_forms_control_real_trusted_comparison[definition-inside-paragraph]
+FAILED tests/test_link_dependencies.py::test_link_forms_control_real_trusted_comparison[malformed-inline-tail]
+9 failed, 3 passed, 61 deselected in 4.29s
