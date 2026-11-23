@@ -14,8 +14,10 @@ from urllib.parse import unquote, urlsplit
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 # Labels, titles and HTML attributes exclude their own opening delimiter so each
 # candidate scan stops at the next one; untrusted lines stay linear to match.
+# _LINK and _REFERENCE only recognize a code span whose whole content is link
+# syntax, so it is not mistaken for a path. Links themselves are found by
+# _scan_block.
 _LINK = re.compile(r'!?\[[^\[\]\n]*\]\(\s*(<[^>\n]+>|(?:[^\s()\\]|\\.|\([^()\n]*\))+)(?:\s+(?:"[^"\n]*"|\x27[^\x27\n]*\x27))?\s*\)')
-_DEFINITION = re.compile(r'^ {0,3}\[([^\]]+)\]:\s*(<[^>]+>|\S+)')
 _REFERENCE = re.compile(r'\[([^\[\]\n]+)\](?:\[([^\[\]\n]*)\])?')
 _HTML = re.compile(r'<(?:a|img)\s+[^<>]*?(?:href|src)\s*=\s*[\"\x27]([^\"\x27]+)[\"\x27]', re.I)
 _CODE_BOUNDARY = re.compile(r'`+|\n[ \t]*\n')
