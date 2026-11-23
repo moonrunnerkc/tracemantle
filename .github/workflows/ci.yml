@@ -18,7 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        # 3.10 is past upstream end of life and kept as legacy compatibility.
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
 
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -132,16 +133,48 @@ jobs:
 
   tokenizer:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The optional extra on the oldest and newest supported interpreters,
+        # plus the 3.12 lane that also runs calibration and conformance.
+        python-version: ["3.10", "3.12", "3.15"]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
       - run: pip install -c constraints-dev.txt -e ".[dev,tiktoken]"
       - run: python -m pytest tests/ -q --cov-fail-under=80
-      - run: python scripts/calibrate_advisories.py --output calibration.json
-      - run: pip install -c constraints-dev.txt strictyaml click
-      - run: python scripts/verify_reference_corpus.py --output conformance.json
+      - if: matrix.python-version == '3.12'
+        run: python scripts/calibrate_advisories.py --output calibration.json
+      - if: matrix.python-version == '3.12'
+        run: pip install -c constraints-dev.txt strictyaml click
+      - if: matrix.python-version == '3.12'
+        run: python scripts/verify_reference_corpus.py --output conformance.json
+
+  artifacts:
+    # Clean installs of the exact wheel and source archive built above, on the
+    # oldest and newest supported interpreters.
+    needs: package
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.15"]
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: tracemantle-dist
+          path: candidate-dist
+      - run: python scripts/verify_artifacts.py candidate-dist
+
+  audit:
+    uses: ./.github/workflows/audit.yml
 
   approvals:
     # Ubuntu 22.04 permits bubblewrap without changing host namespace protections.
@@ -173,3 +206,29 @@ jobs:
         with:
           path: tests/fixtures/onboarding/hello/SKILL.md
           strict: 'true'
+
+  gate:
+    # The one check a branch rule needs to require. It always runs and passes
+    # only when every job above succeeded, so a failed, cancelled or skipped
+    # prerequisite cannot be mistaken for a pass.
+    name: CI gate
+    if: always()
+    needs: [test, lint, tokenizer, approvals, package, artifacts, audit]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every prerequisite to have succeeded
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+          results = {name: job['result'] for name, job in json.loads(os.environ['NEEDS']).items()}
+          expected = {'test', 'lint', 'tokenizer', 'approvals', 'package', 'artifacts', 'audit'}
+          for name, result in sorted(results.items()):
+              print(f'{name}: {result}')
+          if set(results) != expected:
+              sys.exit(f'Gate prerequisites changed: expected {sorted(expected)}, got {sorted(results)}')
+          failed = sorted(name for name, result in results.items() if result != 'success')
+          if failed:
+              sys.exit(f'Not successful: {", ".join(failed)}')
+          PY

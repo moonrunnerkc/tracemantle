@@ -1,0 +1,11 @@
+
+== Python 3.10 runtime and tokenizer set (pip-audit 2.10.1, 2026-11-23)
+certifi==2026.10.18 charset-normalizer==3.5.1 idna==3.19 PyYAML==6.0.4 regex==2026.7.19 requests==2.34.2 tiktoken==0.14.0 tomli==2.4.1 urllib3==2.8.0 
+AUDIT CLEAN
+  9 pinned requirements audited; no known advisories.
+exit 0
+== Python 3.15 runtime and tokenizer set (pip-audit 2.10.1, 2026-11-23)
+certifi==2026.10.18 charset-normalizer==3.5.1 idna==3.19 PyYAML==6.0.4 regex==2026.11.19 requests==2.34.2 tiktoken==0.14.0 urllib3==2.8.0 
+AUDIT CLEAN
+  8 pinned requirements audited; no known advisories.
+exit 0
