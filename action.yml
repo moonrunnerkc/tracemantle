@@ -28,15 +28,15 @@ inputs:
     required: false
     default: ""
   strict-vscode:
-    description: "Promote VS Code compat issues to errors."
+    description: "Report the VS Code name/directory note as an error (historical advice; not implied by strict)."
     required: false
     default: "false"
   strict-cursor:
-    description: "Promote Cursor compat issues to errors."
+    description: "Report the Cursor block-scalar note as an error (historical advice; not implied by strict)."
     required: false
     default: "false"
   strict:
-    description: "Strict mode. Escalates warnings to exit 1 and enables --strict-vscode and --strict-cursor."
+    description: "Strict mode. Escalates warnings to exit 1. Vendor compatibility notes stay informational unless their own strict input is set."
     required: false
     default: "false"
   skip-dirname-check:

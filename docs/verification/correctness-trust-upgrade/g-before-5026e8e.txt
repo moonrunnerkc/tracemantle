@@ -1,0 +1,16 @@
+FAILED tests/test_strict_compat_policy.py::test_cursor_block_scalar_advice_fails_only_under_a_cursor_policy[args1-0-info]
+FAILED tests/test_strict_compat_policy.py::test_cursor_block_scalar_advice_fails_only_under_a_cursor_policy[args2-1-error]
+FAILED tests/test_strict_compat_policy.py::test_cursor_block_scalar_advice_fails_only_under_a_cursor_policy[args3-1-error]
+FAILED tests/test_strict_compat_policy.py::test_cursor_block_scalar_advice_fails_only_under_a_cursor_policy[args6-1-warning]
+FAILED tests/test_strict_compat_policy.py::test_cursor_block_scalar_advice_fails_only_under_a_cursor_policy[args7-1-error]
+FAILED tests/test_strict_compat_policy.py::test_vscode_directory_advice_fails_only_under_the_vscode_policy[args1-0-info]
+FAILED tests/test_strict_compat_policy.py::test_vscode_directory_advice_fails_only_under_the_vscode_policy[args2-1-error]
+FAILED tests/test_strict_compat_policy.py::test_vscode_directory_advice_fails_only_under_the_vscode_policy[args3-1-error]
+FAILED tests/test_strict_compat_policy.py::test_vscode_directory_advice_fails_only_under_the_vscode_policy[args4-0-info]
+FAILED tests/test_strict_compat_policy.py::test_vscode_directory_advice_fails_only_under_the_vscode_policy[args5-1-error]
+FAILED tests/test_strict_compat_policy.py::test_standard_directory_rule_still_fails_without_any_vendor_policy
+FAILED tests/test_strict_compat_policy.py::test_project_configuration_follows_the_same_policy[strict-all = true\n-args0-0-info]
+FAILED tests/test_strict_compat_policy.py::test_project_configuration_follows_the_same_policy[target-agent = "cursor"\n-args3-1-warning]
+FAILED tests/test_strict_compat_policy.py::test_project_configuration_follows_the_same_policy[[tool.tracemantle]\nstrict-all = true\n-args4-0-info]
+FAILED tests/test_strict_compat_policy.py::test_library_strict_all_does_not_promote_vendor_advice
+15 failed, 10 passed in 3.54s

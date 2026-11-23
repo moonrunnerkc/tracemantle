@@ -115,11 +115,6 @@ def main() -> None:
     args.explicit_fields = frozenset(option_dest[token.split("=", 1)[0]] for token in sys.argv[1:] if token.split("=", 1)[0] in option_dest)
     _apply_config(args, parser)
 
-    # --strict: enable all strict modes.
-    if args.strict_all:
-        args.strict_vscode = True
-        args.strict_cursor = True
-
     if args.format not in {"text", "json", "md", "agent", "github", "sarif"}:
         parser.error("format must be one of: text, json, md, agent, github, sarif")
     if args.target_agent not in {"claude", "vscode", "cursor", "all"}:

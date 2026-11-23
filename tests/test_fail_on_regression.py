@@ -156,14 +156,16 @@ class TestFailOnRegressionCLI:
         """
         _write_prior_passing_ledger(self.skill)
 
-        # Run with --history and --fail-on-regression and --strict to force failure
-        # The prior entry says "valid=True", the current run with --strict makes it
-        # fail (warnings escalate to errors), so regression is detected.
+        # The prior entry says "valid=True". The copied skill's name does not
+        # match its temporary directory, which --strict-vscode reports as an
+        # error, so the current run fails and a regression is detected.
+        # General --strict no longer implies that vendor policy.
         result = _run_cli(
             self.skill,
             "--history",
             "--fail-on-regression",
             "--strict",
+            "--strict-vscode",
         )
         # Either: exit 1 from --strict (warnings → errors), or exit 1 from regression
         # The key is that --fail-on-regression does not reduce the exit code

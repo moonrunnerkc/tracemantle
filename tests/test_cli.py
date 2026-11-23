@@ -324,14 +324,25 @@ def test_strict_escalates_warning_run_to_exit_one():
     assert strict.returncode == 1
 
 
-def test_strict_promotes_cursor_block_scalar_to_error():
+def test_strict_cursor_promotes_cursor_block_scalar_to_error():
     result = run_fixture(
         str(FIXTURES_DIR / "cursor_desc_folded_keep.md"),
-        "--strict",
+        "--strict-cursor",
     )
     assert result.returncode == 1
     assert "compat.cursor-description-block-scalar" in result.stdout
     assert "error" in result.stdout.lower()
+
+
+def test_general_strict_leaves_cursor_block_scalar_advisory():
+    """The block-scalar note is unverified historical advice, so --strict
+    alone reports it as info and does not fail on it."""
+    result = run_fixture(
+        str(FIXTURES_DIR / "cursor_desc_folded_keep.md"),
+        "--strict",
+    )
+    assert result.returncode == 0
+    assert "compat.cursor-description-block-scalar" in result.stdout
 
 
 def test_strict_passes_on_clean_skill():

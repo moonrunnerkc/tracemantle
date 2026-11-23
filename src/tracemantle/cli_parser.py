@@ -132,13 +132,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--strict-vscode",
         action="store_true",
         default=False,
-        help="Promote VS Code compatibility issues to errors.",
+        help="Report the VS Code name/directory note as an error. Enforces historical advice with no verified runtime; not implied by --strict.",
     )
     compatibility.add_argument(
         "--strict-cursor",
         action="store_true",
         default=False,
-        help="Promote Cursor compatibility issues to errors.",
+        help="Report the Cursor description block-scalar note as an error. Enforces historical advice with no verified runtime; not implied by --strict.",
     )
     basic.add_argument(
         "--strict",
@@ -146,10 +146,8 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=False,
         help=(
-            "Strict mode. Escalates warning-only runs to exit 1, "
-            "promotes VS Code compatibility to errors (same as --strict-vscode), "
-            "promotes Cursor compatibility to errors (same as --strict-cursor), "
-            "and enables the 'all' field in config for future strict rules."
+            "Strict mode. Escalates warning-only runs to exit 1. Vendor compatibility notes stay "
+            "informational unless --strict-vscode or --strict-cursor is also given."
         ),
     )
     basic.add_argument(
