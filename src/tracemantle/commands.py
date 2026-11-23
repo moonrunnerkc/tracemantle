@@ -36,7 +36,7 @@ from tracemantle.formatters import (
 )
 from tracemantle.gate import compute_exit_code, filter_results
 from tracemantle.history_commands import record_history
-from tracemantle.inline_ignores import inline_ignore_prefixes
+from tracemantle.inline_ignores import inline_ignore_prefixes, refuse_inline_ignores
 from tracemantle.parser import DocumentSettings, ParsedSkill, ParseError
 from tracemantle.result import Diagnostic, Severity, ValidationResult
 from tracemantle.sarif import format_sarif
@@ -221,6 +221,9 @@ def run_validation(
         graph_source_json = {"mode": "heuristic"}
 
     inline = {path: inline_ignore_prefixes(skill) for path, skill in documents.items()}
+    if args.no_inline_ignores:
+        results = [refuse_inline_ignores(r, inline[r.path]) if inline.get(r.path) else r for r in results]
+        inline = {}
     results = filter_results(results, args.ignore_prefixes, inline)
     if args.history:
         record_history(args, paths, results, agent_id, graph_agent_id, documents)

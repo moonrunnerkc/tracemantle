@@ -57,7 +57,7 @@ def _write_prior_passing_ledger(skill_path: Path) -> None:
         result=ResultCounts(error=0, warning=0, info=0, valid=True),
         exit_code=0,
     )
-    identity = history_identity(skill, {"max_lines": None, "max_tokens": None, "ignore_prefixes": [], "skip_ref_check": False, "skip_dirname_check": True, "strict_all": False, "target_agent": "all", "min_desc_score": None, "strict_vscode": False, "strict_cursor": False, "analyze_graph": False, "semantic": False, "critique_agent": None, "graph_agent": None})
+    identity = history_identity(skill, {"max_lines": None, "max_tokens": None, "ignore_prefixes": [], "no_inline_ignores": False, "skip_ref_check": False, "skip_dirname_check": True, "strict_all": False, "target_agent": "all", "min_desc_score": None, "strict_vscode": False, "strict_cursor": False, "analyze_graph": False, "semantic": False, "critique_agent": None, "graph_agent": None})
     append_history(ledger_path_for(skill_path), skill, entry, identity)
 
 

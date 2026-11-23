@@ -34,6 +34,7 @@ class TraceMantleConfig:
     skip_dirname_check: bool | None = None
     skip_ref_check: bool | None = None
     ignore: tuple[str, ...] = ()
+    no_inline_ignores: bool | None = None
     analyze_graph: bool | None = None
     semantic: bool | None = None
     history: bool | None = None
@@ -69,6 +70,8 @@ _KEY_MAP = {
     "skip-ref-check": "skip_ref_check",
     "skip_ref_check": "skip_ref_check",
     "ignore": "ignore",
+    "no-inline-ignores": "no_inline_ignores",
+    "no_inline_ignores": "no_inline_ignores",
     "analyze-graph": "analyze_graph",
     "analyze_graph": "analyze_graph",
     "semantic": "semantic",
@@ -80,7 +83,7 @@ _KEY_MAP = {
 }
 
 _INT_FIELDS = {"max_lines", "max_tokens", "min_desc_score"}
-_BOOL_FIELDS = {"strict_vscode", "strict_cursor", "strict_all", "skip_dirname_check", "skip_ref_check", "analyze_graph", "semantic", "history"}
+_BOOL_FIELDS = {"strict_vscode", "strict_cursor", "strict_all", "skip_dirname_check", "skip_ref_check", "no_inline_ignores", "analyze_graph", "semantic", "history"}
 _STR_FIELDS = {"tokenizer","format", "target_agent", "critique_agent", "graph_agent"}
 
 

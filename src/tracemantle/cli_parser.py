@@ -78,6 +78,13 @@ def build_parser() -> argparse.ArgumentParser:
         default=[],
         help="Suppress rules matching this prefix. Can be repeated.",
     )
+    settings.add_argument(
+        "--no-inline-ignores",
+        action="store_true",
+        default=False,
+        help="Do not apply '# tracemantle: ignore=' frontmatter comments; report them as ignore.inline-refused. "
+             "Use when validating contributions you have not reviewed. Project configuration cannot turn this off.",
+    )
     basic.add_argument(
         "--no-color",
         action="store_true",

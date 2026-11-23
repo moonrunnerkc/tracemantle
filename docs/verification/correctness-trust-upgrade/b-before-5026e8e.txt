@@ -1,0 +1,15 @@
+FAILED tests/test_inline_ignores.py::test_directive_text_inside_a_string_is_data[literal-strip]
+FAILED tests/test_inline_ignores.py::test_directive_text_inside_a_string_is_data[literal-clip]
+FAILED tests/test_inline_ignores.py::test_directive_text_inside_a_string_is_data[folded-strip]
+FAILED tests/test_inline_ignores.py::test_directive_text_inside_a_string_is_data[folded-keep]
+FAILED tests/test_inline_ignores.py::test_directive_text_inside_a_string_is_data[indentation-indicator]
+FAILED tests/test_inline_ignores.py::test_directive_text_inside_a_string_is_data[double-quoted]
+FAILED tests/test_inline_ignores.py::test_directive_text_inside_a_string_is_data[single-quoted]
+FAILED tests/test_inline_ignores.py::test_directive_text_inside_a_string_is_data[nested-literal]
+FAILED tests/test_inline_ignores.py::test_real_comments_still_suppress[after-folded]
+FAILED tests/test_inline_ignores.py::test_caller_can_refuse_inline_ignores
+FAILED tests/test_inline_ignores.py::test_candidate_configuration_cannot_reverse_a_refusal[config-refuses]
+FAILED tests/test_inline_ignores.py::test_candidate_configuration_cannot_reverse_a_refusal[flag-beats-candidate-config]
+FAILED tests/test_inline_ignores.py::test_candidate_configuration_cannot_reverse_a_refusal[config-default]
+FAILED tests/test_inline_ignores.py::test_refusal_reports_nothing_without_a_directive
+14 failed, 14 passed in 1.91s

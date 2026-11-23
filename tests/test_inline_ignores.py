@@ -69,3 +69,99 @@ def test_own_suppression_note_survives_a_directive_naming_its_namespace(tmp_path
     rules = _report(tmp_path)['quiet-skill/SKILL.md']
     assert 'ignore.inline' in rules and 'ignore.inline-invalid' in rules
     assert not any(rule.startswith('frontmatter') for rule in rules)
+
+
+def _hello(root: Path, frontmatter: str) -> Path:
+    directory = root / 'hello'
+    directory.mkdir(parents=True)
+    (directory / 'SKILL.md').write_text(f'---\nname: hello\n{frontmatter}---\n[missing](missing.py)\n')
+    return directory
+
+
+def _strict(directory: Path, *args: str) -> tuple[int, list[str], str]:
+    result = subprocess.run([sys.executable, '-m', 'tracemantle', 'SKILL.md', '--strict', '--format', 'json', *args],
+                            cwd=directory, capture_output=True, text=True, timeout=60)
+    report = json.loads(result.stdout)
+    return result.returncode, [d['rule'] for d in report['results'][0]['diagnostics']], result.stdout
+
+
+DESCRIPTION = 'Use when reviewing files for release.'
+
+
+@pytest.mark.parametrize('frontmatter', [
+    f'description: |-\n  {DESCRIPTION}\n  # tracemantle: ignore=references\n',
+    f'description: |\n  {DESCRIPTION}\n  # tracemantle: ignore=references\n',
+    f'description: >-\n  {DESCRIPTION}\n  # tracemantle: ignore=references\n',
+    f'description: >+\n  {DESCRIPTION}\n  # tracemantle: ignore=references\n',
+    f'description: |2-\n  {DESCRIPTION}\n  # tracemantle: ignore=references\n',
+    f'description: "{DESCRIPTION}\n  # tracemantle: ignore=references\n  "\n',
+    f"description: '{DESCRIPTION}\n  # tracemantle: ignore=references\n  '\n",
+    f'description: {DESCRIPTION}\nmetadata:\n  note: |\n    text\n    # tracemantle: ignore=references\n',
+], ids=['literal-strip', 'literal-clip', 'folded-strip', 'folded-keep', 'indentation-indicator', 'double-quoted',
+        'single-quoted', 'nested-literal'])
+def test_directive_text_inside_a_string_is_data(tmp_path: Path, frontmatter: str) -> None:
+    directory = _hello(tmp_path, frontmatter)
+    skill = parse(directory / 'SKILL.md')
+    assert inline_ignore_prefixes(skill) == ()
+    assert check_inline_ignores(skill) == []
+    code, rules, _ = _strict(directory)
+    assert code == 1
+    assert 'references.broken-link' in rules and 'ignore.inline' not in rules
+
+
+@pytest.mark.parametrize('frontmatter', [
+    f'# tracemantle: ignore=references\ndescription: {DESCRIPTION}\n',
+    f'description: {DESCRIPTION}\n  # tracemantle: ignore=references\n',
+    f'description: |-\n  {DESCRIPTION}\n# tracemantle: ignore=references\n',
+    f'description: >-\n  {DESCRIPTION}\n\n# tracemantle: ignore=references\nlicense: MIT\n',
+    f'description: "{DESCRIPTION}"\nmetadata:\n  # tracemantle: ignore=references\n  note: text\n',
+    f'description: {DESCRIPTION}\nmetadata: {{note: text,\n  # tracemantle: ignore=references\n  other: text}}\n',
+], ids=['leading', 'indented-after-plain', 'after-literal', 'after-folded', 'inside-mapping', 'inside-flow-mapping'])
+def test_real_comments_still_suppress(tmp_path: Path, frontmatter: str) -> None:
+    directory = _hello(tmp_path, frontmatter)
+    assert inline_ignore_prefixes(parse(directory / 'SKILL.md')) == ('references',)
+    code, rules, _ = _strict(directory)
+    assert code == 0
+    assert 'references.broken-link' not in rules and 'ignore.inline' in rules
+
+
+def test_caller_can_refuse_inline_ignores(tmp_path: Path) -> None:
+    directory = _hello(tmp_path, f'# tracemantle: ignore=references, Bad\ndescription: {DESCRIPTION}\n')
+    code, rules, output = _strict(directory, '--no-inline-ignores')
+    assert code == 1
+    assert 'references.broken-link' in rules
+    assert 'ignore.inline' not in rules and 'ignore.inline-invalid' in rules
+    refused = [d for d in json.loads(output)['results'][0]['diagnostics'] if d['rule'] == 'ignore.inline-refused']
+    assert len(refused) == 1 and 'references' in refused[0]['message'] and 'not applied' in refused[0]['message']
+    assert 'suppresses' not in refused[0]['message']
+    # The caller's own --ignore remains the caller's decision.
+    code, rules, _ = _strict(directory, '--no-inline-ignores', '--ignore', 'references', '--ignore', 'ignore.inline-invalid')
+    assert code == 0 and 'references.broken-link' not in rules and 'ignore.inline-refused' in rules
+
+
+@pytest.mark.parametrize('config,args,applied', [
+    ('no-inline-ignores = true\n', (), False),
+    ('no-inline-ignores = false\n', ('--no-inline-ignores',), False),
+    ('no-inline-ignores = false\n', (), True),
+    ('', (), True),
+], ids=['config-refuses', 'flag-beats-candidate-config', 'config-default', 'no-config'])
+def test_candidate_configuration_cannot_reverse_a_refusal(tmp_path: Path, config: str, args: tuple[str, ...], applied: bool) -> None:
+    directory = _hello(tmp_path, f'# tracemantle: ignore=references\ndescription: {DESCRIPTION}\n')
+    if config:
+        (directory / 'tracemantle.toml').write_text(config)
+    code, rules, _ = _strict(directory, *args)
+    assert code == (0 if applied else 1)
+    assert ('ignore.inline' in rules) is applied and ('ignore.inline-refused' in rules) is not applied
+
+
+def test_refusal_reports_nothing_without_a_directive(tmp_path: Path) -> None:
+    directory = _hello(tmp_path, f'description: {DESCRIPTION}\n')
+    _, rules, _ = _strict(directory, '--no-inline-ignores')
+    assert not any(rule.startswith('ignore.') for rule in rules)
+
+
+def test_refusal_also_governs_the_recorded_history_result(tmp_path: Path) -> None:
+    directory = _hello(tmp_path, f'# tracemantle: ignore=references\ndescription: {DESCRIPTION}\n')
+    assert _strict(directory, '--history')[0] == 0
+    code, rules, _ = _strict(directory, '--history', '--no-inline-ignores')
+    assert code == 1 and 'references.broken-link' in rules

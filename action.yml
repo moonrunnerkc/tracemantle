@@ -51,6 +51,10 @@ inputs:
     description: "Comma-separated rule prefixes to suppress (e.g., 'sizing,disclosure')."
     required: false
     default: ""
+  no-inline-ignores:
+    description: "Do not apply '# tracemantle: ignore=' frontmatter comments. Recommended for pull requests from forks."
+    required: false
+    default: "false"
   max-lines:
     description: "Override the line-count threshold (default: 500)."
     required: false
@@ -133,6 +137,7 @@ runs:
         INPUT_STRICT: ${{ inputs.strict }}
         INPUT_SKIP_DIRNAME_CHECK: ${{ inputs.skip-dirname-check }}
         INPUT_SKIP_REF_CHECK: ${{ inputs.skip-ref-check }}
+        INPUT_NO_INLINE_IGNORES: ${{ inputs.no-inline-ignores }}
         INPUT_SEMANTIC: ${{ inputs.semantic }}
         INPUT_ANALYZE_GRAPH: ${{ inputs.analyze-graph }}
         INPUT_HISTORY: ${{ inputs.history }}
@@ -191,6 +196,7 @@ runs:
         [ "$INPUT_STRICT" = "true" ] && args+=("--strict")
         [ "$INPUT_SKIP_DIRNAME_CHECK" = "true" ] && args+=("--skip-dirname-check")
         [ "$INPUT_SKIP_REF_CHECK" = "true" ] && args+=("--skip-ref-check")
+        [ "$INPUT_NO_INLINE_IGNORES" = "true" ] && args+=("--no-inline-ignores")
         [ "$INPUT_SEMANTIC" = "true" ] && args+=("--semantic")
         [ "$INPUT_ANALYZE_GRAPH" = "true" ] && args+=("--analyze-graph")
         [ "$INPUT_HISTORY" = "true" ] && args+=("--history")
