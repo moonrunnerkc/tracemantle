@@ -287,7 +287,9 @@ def test_many_conflicting_definitions_are_bounded_and_incomplete() -> None:
     '[x' * 500_000 + ']' * 500_000,
     '<a' + ' ' * 400_000,
     'file:a,' * 200_000,
-    '[a]: x\n' * 200_000 + '\n' + '[a] ' * 200_000,
+    # Measured linear from 25,000 to 200,000 repeats (0.16 s to 1.33 s). Sized
+    # so slow runners with coverage tracing stay inside the bound.
+    '[a]: x\n' * 50_000 + '\n' + '[a] ' * 50_000,
 ], ids=['deep-nesting', 'deep-nesting-text', 'html-spaces', 'directive-run', 'definition-uses'])
 def test_review_found_inputs_parse_in_linear_time(body: str) -> None:
     started = time.perf_counter()

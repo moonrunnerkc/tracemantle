@@ -234,6 +234,12 @@ regressions failing on that head.
 | `2.` or an empty item split a paragraph | 1.8.0 | Such items no longer interrupt a paragraph |
 | Changed paths compared by exact spelling (Unicode form, case) | 1.8.0 | Compared after NFC normalization and case folding |
 
+The second remote run (`21e723a`) failed one new timing case on Python 3.10
+to 3.13: 200,000 definitions followed by 200,000 uses took about 7 s under
+coverage tracing. Local scaling is linear (25,000, 50,000, 100,000 and
+200,000 repeats took 0.16, 0.33, 0.66 and 1.33 s), so the input was resized to
+50,000 repeats; the code did not change.
+
 The review found no defect in the YAML comment detection (300,000 generated
 documents compared with PyYAML), the bounded Git runner, the JSON error
 boundary or the CI gate and audit jobs. It did not run on Windows and did not
