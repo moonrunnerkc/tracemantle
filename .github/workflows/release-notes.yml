@@ -12,7 +12,7 @@ jobs:
   promote-unreleased:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: main
           fetch-depth: 0
@@ -93,7 +93,7 @@ jobs:
 
       - name: Open PR with the promoted CHANGELOG
         if: steps.promote.outputs.result == 'promoted'
-        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
+        uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8.1.3
         with:
           commit-message: |
             docs(changelog): promote [Unreleased] to [${{ github.event.release.tag_name }}]
