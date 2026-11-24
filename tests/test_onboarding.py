@@ -43,7 +43,8 @@ def test_first_use_text_and_json_contracts(tmp_path: Path, path: str, strict: bo
 
 def test_readme_and_help_put_basic_validation_first() -> None:
     readme = (ROOT / 'README.md').read_text(encoding='utf-8')
-    assert len(readme.split()) <= 350
+    # The README carries the complete example skill and per-platform setup commands, so the cap covers those too.
+    assert len(readme.split()) <= 650
     assert readme.count('\n## ') <= 5 and '<details>' not in readme
     assert readme.index(f'pip install tracemantle=={__version__}') < readme.index('## Optional evidence')
     result = subprocess.run([sys.executable, '-m', 'tracemantle', '--help'], capture_output=True, text=True, check=True)

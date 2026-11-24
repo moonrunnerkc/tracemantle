@@ -1,0 +1,124 @@
+{
+ "date": "2026-11-23",
+ "package": "tracemantle==1.8.0 from PyPI",
+ "platform": "macOS-26.7.3-arm64-arm-64bit-Mach-O",
+ "scope": "README.md first-run path and every command the README shows, macOS only; Windows PowerShell commands were not executed",
+ "steps": [
+  {
+   "command": "python3 -m venv .venv",
+   "exit_code": 0,
+   "stdout": "",
+   "stderr": ""
+  },
+  {
+   "command": "source .venv/bin/activate",
+   "note": "applied as a prefix to every later command"
+  },
+  {
+   "command": "python -m pip install tracemantle==1.8.0",
+   "exit_code": 0,
+   "stdout": "Collecting tracemantle==1.8.0\n  Using cached tracemantle-1.8.0-py3-none-any.whl.metadata (4.2 kB)\nCollecting pyyaml>=6.0 (from tracemantle==1.8.0)\n  Using cached pyyaml-6.0.4-cp314-cp314-macosx_11_0_arm64.whl.metadata (2.3 kB)\nUsing cached tracemantle-1.8.0-py3-none-any.whl (170 kB)\nUsing cached pyyaml-6.0.4-cp314-cp314-macosx_11_0_arm64.whl (181 kB)\nInstalling collected packages: pyyaml, tracemantle\n\nSuccessfully installed pyyaml-6.0.4 tracemantle-1.8.0\n",
+   "stderr": "\n[notice] A new release of pip is available: 26.2.1 -> 26.3\n[notice] To update, run: pip install --upgrade pip\n"
+  },
+  {
+   "command": "mkdir hello",
+   "exit_code": 0,
+   "stdout": "",
+   "stderr": ""
+  },
+  {
+   "command": "tracemantle --version",
+   "exit_code": 0,
+   "stdout": "tracemantle 1.8.0\n",
+   "stderr": ""
+  },
+  {
+   "command": "python --version",
+   "exit_code": 0,
+   "stdout": "Python 3.14.7\n",
+   "stderr": ""
+  },
+  {
+   "command": "save README markdown fence as hello/SKILL.md",
+   "content": "---\nname: hello\ndescription: Generates conventional commit messages from staged git diffs, enforcing semantic versioning conventions. Use this skill whenever the user needs a commit message, mentions conventional commits, or has staged changes ready to commit.\n---\n\nRead the staged diff and write a conventional commit message.\n"
+  },
+  {
+   "command": "tracemantle hello/SKILL.md",
+   "exit_code": 0,
+   "stdout": "✔ PASS  hello/SKILL.md\n            · info              description.quality-score  Description quality score: 95/100.\n\nChecked 1 file: 1 passed, 0 failed\n",
+   "stderr": ""
+  },
+  {
+   "command": "tracemantle hello/",
+   "exit_code": 0,
+   "stdout": "✔ PASS  hello/SKILL.md\n            · info              description.quality-score  Description quality score: 95/100.\n\nChecked 1 file: 1 passed, 0 failed\n",
+   "stderr": ""
+  },
+  {
+   "command": "tracemantle hello/ --strict",
+   "exit_code": 0,
+   "stdout": "✔ PASS  hello/SKILL.md\n            · info              description.quality-score  Description quality score: 95/100.\n\nChecked 1 file: 1 passed, 0 failed\n",
+   "stderr": ""
+  },
+  {
+   "command": "tracemantle hello/ --format json",
+   "exit_code": 0,
+   "stdout": "{\n  \"tool\": \"TraceMantle\",\n  \"schema_version\": 2,\n  \"version\": \"1.8.0\",\n  \"gate\": {\n    \"exit_code\": 0,\n    \"passed\": true\n  },\n  \"tokenizer\": {\n    \"backend\": \"word-punctuation\",\n    \"version\": \"1\",\n    \"network\": \"none\"\n  },\n  \"files_checked\": 1,\n  \"files_passed\": 1,\n  \"files_failed\": 0,\n  \"results\": [\n    {\n      \"path\": \"hello/SKILL.md\",\n      \"valid\": true,\n      \"diagnostics\": [\n        {\n          \"rule\": \"description.quality-score\",\n          \"severity\": \"info\",\n          \"message\": \"Description quality score: 95/100.\",\n          \"line\": null,\n          \"context\": null,\n          \"source\": \"advisory\",\n          \"confidence\": \"medium\",\n          \"breakdown\": {\n            \"action\": 25,\n            \"trigger\": 20,\n            \"keywords\": 25,\n            \"specificity\": 15,\n            \"length\": 10\n          }\n        }\n      ]\n    }\n  ]\n}\n",
+   "stderr": ""
+  },
+  {
+   "command": "tracemantle --help",
+   "exit_code": 0,
+   "stdout": "usage: tracemantle PATH [PATH ...] [options]\n\nCheck SKILL.md files locally: frontmatter, references, size and compatibility advice.\nStart: tracemantle SKILL.md | Directory: tracemantle skills/\nNo account or evidence policy needed. A static pass does not prove live agent behavior.\n\npositional arguments:\n  path                  Path to a SKILL.md file or a directory to scan\n                        recursively. Multiple paths accepted.\n\noptions:\n  -h, --help            show this help message and exit\n\neveryday validation:\n  --format {text,json,md,agent,github,sarif}\n                        Output format (default: text). sarif writes a SARIF\n                        2.1.0 log for code-scanning upload.\n  --no-color            Disable colored output.\n  -q, --quiet           Suppress all output. Only the exit code indicates\n                        result.\n  --strict              Strict mode. Escalates warning-only runs to exit 1,\n                        promotes VS Code compatibility to errors (same as\n                        --strict-vscode), promotes Cursor compatibility to\n                        errors (same as --strict-cursor), and enables the\n                        'all' field in config for future strict rules.\n  --changed-since REV   Validate only skills with changes under their\n                        directory since Git revision REV (committed, staged,\n                        unstaged or untracked). Exit 0 when none changed.\n  --version             show program's version number and exit\n\nconfiguration and thresholds:\n  --tokenizer {heuristic,tiktoken}\n                        Token backend (default: heuristic; tiktoken may\n                        download on a cold cache).\n  --max-lines N         Override the line-count threshold (default: 500).\n  --max-tokens N        Override the token-count threshold (default: 8000).\n  --ignore PREFIX       Suppress rules matching this prefix. Can be repeated.\n  --skip-dirname-check  Skip directory-name matching check (useful for CI temp\n                        paths).\n  --skip-ref-check      Skip file reference validation (useful when referenced\n                        files are unavailable).\n  --min-desc-score N    Minimum description quality score (0-100). Below this\n                        triggers a warning.\n  --explain-score       Show per-dimension breakdown for description quality\n                        scores.\n  --config CONFIG       Explicit TOML config. Otherwise merge legacy and\n                        TraceMantle settings at the nearest project root.\n\ncompatibility advice:\n  --target-agent {claude,vscode,cursor,all}\n                        Scope compatibility checks to a specific agent\n                        (default: all).\n  --strict-vscode       Promote VS Code compatibility issues to errors.\n  --strict-cursor       Promote Cursor compatibility issues to errors.\n  --check-profile-freshness\n                        Warn on stderr when a verified-profile entry is older\n                        than --profile-max-age-days or its docs page reports a\n                        later Last-Modified. Sends one HTTP HEAD per checked\n                        profile. Never changes the exit code.\n  --profile-max-age-days N\n                        Age limit for --check-profile-freshness (default: 90).\n  --profile-registry PATH\n                        Verified-profile TOML for --check-profile-freshness\n                        (default: the registry shipped with the package).\n\noptional analysis, prompts and history:\n  --semantic            Run semantic-adjacent validation. Implies --analyze-\n                        graph when --ingest-graph is not supplied.\n  --agent-reason        Agent-native workflow shortcut. Without ingested\n                        responses, emits an agent prompt packet and exits 0.\n  --emit-critique-prompt\n                        Print the agent self-critique prompt to stdout and\n                        exit 0. Skips all symbolic validation. Use --format\n                        json to wrap in {\"prompt\": \"...\"}.\n  --ingest-critique PATH\n                        Read an agent self-critique JSON response from PATH\n                        (use - for stdin), convert to diagnostics, merge with\n                        symbolic results, and emit a unified report. Exit code\n                        3 signals semantic drift when symbolic validation\n                        passed.\n  --critique-agent NAME\n                        Agent variant for the self-critique prompt (claude,\n                        codex, cursor; default: claude). Requires --emit-\n                        critique-prompt or --ingest-critique.\n  --emit-graph          Print the extracted capability graph to stdout and\n                        exit 0. Replaces the validation report. Use --format\n                        json for machine-readable output.\n  --analyze-graph       Extract the capability graph, run graph analyzers, and\n                        merge diagnostics into the validation report. Augments\n                        (does not replace) the report.\n  --emit-graph-prompt   Print the graph-extraction prompt to stdout and exit\n                        0. Hand the output to an agent, then use --ingest-\n                        graph with the response. Mutually exclusive with all\n                        other emit and augment modes.\n  --ingest-graph PATH   Read an agent graph-extraction JSON response from PATH\n                        (use - for stdin), build a CapabilityGraph, run graph\n                        analyzers and divergence analyzers, and merge all\n                        diagnostics into the report. Compatible with --ingest-\n                        critique. Supersedes --analyze-graph (which does\n                        heuristic-only analysis).\n  --graph-agent NAME    Agent variant for the graph-extraction prompt (claude,\n                        codex, cursor; default: claude). Requires --emit-\n                        graph-prompt or --ingest-graph.\n  --history             Write an immutable validation record outside the skill\n                        bundle, under its parent .tracemantle/history\n                        directory. Off by default. Incompatible with emit\n                        modes.\n  --show-history        Print the validation history ledger for the skill and\n                        exit 0. Skips all validation. Use --format json for\n                        machine-readable output. Incompatible with emit modes\n                        and with --history.\n  --fail-on-regression  Exit 1 when --history is active and a regression is\n                        detected (history.skill.regressed fires). Without this\n                        flag, regressions are warnings that do not affect the\n                        exit code. Independent of --strict.\n  --activation-hypotheses\n                        Experimental emit mode. Generate likely natural-\n                        language activation triggers for the skill and exit 0.\n\nexamples:\n  tracemantle SKILL.md                         validate one file\n  tracemantle skills/ --strict --format github  fail CI on errors or warnings\n  tracemantle SKILL.md --format json            preserve diagnostics as structured data\n\noptional evidence commands (COMMAND --help for details):\n  tracemantle manifest BUNDLE\n  tracemantle import-evidence EXPORT --bundle BUNDLE --store STORE\n  tracemantle compare BASELINE CANDIDATE --trusted-root REPO --base-revision SHA\n  tracemantle migrate-history LEDGER --store STORE\n\nDiagnostics name the file, line and rule. Specification errors need fixing;\nheuristic advice and compatibility warnings are separate findings.\nGuide: https://github.com/moonrunnerkc/tracemantle/blob/main/docs/getting-started.md\n",
+   "stderr": ""
+  },
+  {
+   "command": "tracemantle nope/",
+   "exit_code": 2,
+   "stdout": "",
+   "stderr": "Error: path not found: nope\n"
+  },
+  {
+   "command": "tracemantle hello/SKILL.md",
+   "exit_code": 1,
+   "stdout": "✗ FAIL  hello/SKILL.md\n            · info              description.quality-score  Description quality score: 95/100.\n    line 8  ✗ error             references.broken-link  Referenced file does not exist: 'checklist.md'.\n              resolved to: checklist.md\n\nChecked 1 file: 0 passed, 1 failed\n",
+   "stderr": "",
+   "note": "after appending a blank line and 'Follow the [commit checklist](checklist.md).'"
+  },
+  {
+   "command": "tracemantle hello/SKILL.md",
+   "exit_code": 0,
+   "stdout": "✔ PASS  hello/SKILL.md\n            · info              description.quality-score  Description quality score: 95/100.\n\nChecked 1 file: 1 passed, 0 failed\n",
+   "stderr": "",
+   "note": "after creating hello/checklist.md"
+  },
+  {
+   "command": "tracemantle hello/SKILL.md",
+   "exit_code": 0,
+   "stdout": "✔ PASS  hello/SKILL.md\n    line 4  ⚠ warning           frontmatter.field.unknown  Unknown frontmatter field 'owner'. Known fields: allowed-tools, compatibility, description, license, metadata, name.\n              owner: ...\n            · info              description.quality-score  Description quality score: 95/100.\n\nChecked 1 file: 1 passed, 0 failed, 1 warning\n",
+   "stderr": "",
+   "note": "warning case: unknown frontmatter field 'owner: docs-team' added"
+  },
+  {
+   "command": "tracemantle hello/SKILL.md --strict",
+   "exit_code": 1,
+   "stdout": "✔ PASS  hello/SKILL.md\n    line 4  ⚠ warning           frontmatter.field.unknown  Unknown frontmatter field 'owner'. Known fields: allowed-tools, compatibility, description, license, metadata, name.\n              owner: ...\n            · info              description.quality-score  Description quality score: 95/100.\n\nChecked 1 file: 1 passed, 0 failed, 1 warning\n",
+   "stderr": "",
+   "note": "same warning case"
+  },
+  {
+   "command": "tracemantle hello/SKILL.md --strict --format json",
+   "exit_code": 1,
+   "stdout": "{\n  \"tool\": \"TraceMantle\",\n  \"schema_version\": 2,\n  \"version\": \"1.8.0\",\n  \"gate\": {\n    \"exit_code\": 1,\n    \"passed\": false\n  },\n  \"tokenizer\": {\n    \"backend\": \"word-punctuation\",\n    \"version\": \"1\",\n    \"network\": \"none\"\n  },\n  \"files_checked\": 1,\n  \"files_passed\": 1,\n  \"files_failed\": 0,\n  \"results\": [\n    {\n      \"path\": \"hello/SKILL.md\",\n      \"valid\": true,\n      \"diagnostics\": [\n        {\n          \"rule\": \"frontmatter.field.unknown\",\n          \"severity\": \"warning\",\n          \"message\": \"Unknown frontmatter field 'owner'. Known fields: allowed-tools, compatibility, description, license, metadata, name.\",\n          \"line\": 4,\n          \"context\": \"owner: ...\",\n          \"source\": \"advisory\",\n          \"confidence\": \"medium\"\n        },\n        {\n          \"rule\": \"description.quality-score\",\n          \"severity\": \"info\",\n          \"message\": \"Description quality score: 95/100.\",\n          \"line\": null,\n          \"context\": null,\n          \"source\": \"advisory\",\n          \"confidence\": \"medium\",\n          \"breakdown\": {\n            \"action\": 25,\n            \"trigger\": 20,\n            \"keywords\": 25,\n            \"specificity\": 15,\n            \"length\": 10\n          }\n        }\n      ]\n    }\n  ]\n}\n",
+   "stderr": "",
+   "note": "same warning case"
+  },
+  {
+   "command": "mv hello greeting && tracemantle greeting/SKILL.md; code=$?; mv greeting hello; exit $code",
+   "exit_code": 1,
+   "stdout": "✗ FAIL  greeting/SKILL.md\n    line 2  ✗ error             frontmatter.name.directory-mismatch  Name 'hello' does not match parent directory 'greeting'. The Agent Skills standard requires these to match.\n              name: hello | directory: greeting\n            · info              description.quality-score  Description quality score: 95/100.\n            · info              compat.vscode-dirname  VS Code requires the name field ('hello') to match the parent directory ('greeting'). This skill would not conform to the standard naming contract; loader behavior is unverified (historical profile 2026-04-20).\n\nChecked 1 file: 0 passed, 1 failed\n",
+   "stderr": "",
+   "note": "directory name not matching frontmatter name"
+  }
+ ]
+}
