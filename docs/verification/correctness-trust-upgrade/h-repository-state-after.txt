@@ -1,0 +1,15 @@
+# Repository state after changes (read back 2026-11-23, sanitized)
+## rulesets
+{"bypass_actors":[],"conditions":{"ref_name":{"exclude":[],"include":["~DEFAULT_BRANCH"]}},"enforcement":"active","id":27949490,"name":"main: pull request and CI gate","rules":[{"type":"deletion"},{"type":"non_fast_forward"},{"parameters":{"allowed_merge_methods":["merge","squash","rebase"],"dismiss_stale_reviews_on_push":false,"require_code_owner_review":false,"require_extra_approval_for_unattributed_changes":true,"require_last_push_approval":false,"required_approving_review_count":0,"required_review_thread_resolution":false,"required_reviewers":[]},"type":"pull_request"},{"parameters":{"do_not_enforce_on_create":false,"required_status_checks":[{"context":"CI gate","integration_id":15368}],"strict_required_status_checks_policy":false},"type":"required_status_checks"}],"target":"branch"}
+{"bypass_actors":[],"conditions":{"ref_name":{"exclude":[],"include":["refs/tags/v*.*.*"]}},"enforcement":"active","id":27947876,"name":"version tags are immutable","rules":[{"type":"deletion"},{"type":"update"}],"target":"tag"}
+## rules active on main
+[{"parameters":null,"ruleset_id":27949490,"type":"deletion"},{"parameters":null,"ruleset_id":27949490,"type":"non_fast_forward"},{"parameters":{"allowed_merge_methods":["merge","squash","rebase"],"dismiss_stale_reviews_on_push":false,"require_code_owner_review":false,"require_extra_approval_for_unattributed_changes":true,"require_last_push_approval":false,"required_approving_review_count":0,"required_review_thread_resolution":false,"required_reviewers":[]},"ruleset_id":27949490,"type":"pull_request"},{"parameters":{"do_not_enforce_on_create":false,"required_status_checks":[{"context":"CI gate","integration_id":15368}],"strict_required_status_checks_policy":false},"ruleset_id":27949490,"type":"required_status_checks"}]
+## rules active on a feature branch (expected none)
+[]
+## private vulnerability reporting
+{"enabled":true}
+## publishing controls (unchanged)
+{"name":"TRACEMANTLE_PUBLISH_ENABLED","value":"false"}
+{"name":"Release","state":"disabled_manually"}
+## tags (unchanged)
+v1.8.0 5026e8e v1.7.0 f358218 v1.6.1 4a502e7 v1.6.0 3f0363c v1.5.0 10953ac v1.4.1 f2c2946 v1.3.0 46c4817 v1.2.3 3c152b7 v1.2.2 2111e6b v1.2.1 fa88991 v1.2.0 0eee715 v1.1.0 44620cc v1.0.1 97c4a6a v1.0.0 45ec061 v1 5026e8e v0.2.0 0e79839 

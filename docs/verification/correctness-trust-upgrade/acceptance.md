@@ -26,10 +26,10 @@ tests; the difference in skips is environmental and neither figure is a target.
 | C | Incremental selection follows effective configuration | Implemented, verified locally | [c-e-before-5026e8e.txt](c-e-before-5026e8e.txt), [c-e-after.txt](c-e-after.txt), `tests/test_changed_since.py` |
 | D | Structured JSON for expected CLI failures | Implemented, verified locally | [d-before-5026e8e.txt](d-before-5026e8e.txt), [d-after.txt](d-after.txt), `tests/test_json_error_contract.py` |
 | E | Amortized root discovery, bounded Git output | Implemented, measured | [benchmark-baseline-5026e8e.json](benchmark-baseline-5026e8e.json), [benchmark-candidate.json](benchmark-candidate.json) |
-| F | Python 3.14/3.15, dependency maintenance, audit | Implemented; see remote CI below | [f-local-audit.txt](f-local-audit.txt), `tests/test_dependency_audit.py` |
+| F | Python 3.14/3.15, dependency maintenance, audit | Implemented, verified locally and in remote CI | [f-local-audit.txt](f-local-audit.txt), `tests/test_dependency_audit.py` |
 | G | Evidence-based compatibility claims | Strict-mode correction implemented; runtime claims remain unverified | [g-before-5026e8e.txt](g-before-5026e8e.txt), [g-after.txt](g-after.txt), `docs/profiles.md` |
-| H | Repository safeguards | See "Repository safeguards" below | [h-repository-state-before.txt](h-repository-state-before.txt) |
-| I | Documentation, verification, completion | See "Verification" below | this file |
+| H | Repository safeguards | Applied and read back; tag rule not exercised | [h-repository-state-before.txt](h-repository-state-before.txt), [h-repository-state-after.txt](h-repository-state-after.txt) |
+| I | Documentation, verification, completion | Done; open items listed under "Not verified" | this file |
 
 Each "before" file is the new regression module run against the unmodified
 1.8.0 implementation. Tests listed as failing there fail for the defect; tests
@@ -251,3 +251,97 @@ are not parsed, so a link inside one is still reported; block quotes and lazy
 continuations keep coverage incomplete; and code spans are matched before
 block-level definitions, which is why a backtick on a definition line now
 marks coverage incomplete rather than being resolved exactly.
+
+## Repository safeguards
+
+State before: `main` unprotected, no rulesets, private vulnerability reporting
+off ([h-repository-state-before.txt](h-repository-state-before.txt)). State
+after, read back from the API
+([h-repository-state-after.txt](h-repository-state-after.txt)):
+
+| Control | Applied | Detail |
+|---|---|---|
+| Ruleset 27949490, `main` | Yes | Blocks deletion and non-fast-forward pushes; requires a pull request with 0 approvals; requires the `CI gate` check from GitHub Actions (app 15368). No bypass actors. |
+| Ruleset 27947876, version tags | Yes | `refs/tags/v*.*.*` cannot be updated or deleted. No bypass actors. Creating a new version tag is still allowed. |
+| Private vulnerability reporting | Yes | `enabled: true` after the change. |
+| Release workflow, `TRACEMANTLE_PUBLISH_ENABLED`, secrets, tags | Unchanged | Release stays disabled and the variable stays `false`. No tag was created, moved or deleted. |
+
+The `CI gate` identity was taken from the check run on pull request head
+`707f79f` (name `CI gate`, app `github-actions`, id 15368) before it was
+required. Definitions as submitted: [ruleset-main.json](ruleset-main.json),
+[ruleset-version-tags.json](ruleset-version-tags.json). GitHub added its
+default `require_extra_approval_for_unattributed_changes: true` to the pull
+request rule; it was not requested and was left as returned.
+
+What was and was not exercised:
+
+- The gate job was observed failing on the first two heads: one failed test
+  job left `package` and `artifacts` skipped and `CI gate` failed, not passed.
+- The branch rule was exercised by this pull request, which had to pass
+  `CI gate` on its final head before it could merge.
+- The tag rule was read back but not exercised. Testing it means trying to
+  move or delete a tag in the release namespace, and a probe tag created for
+  the purpose could not be removed afterwards.
+- The moving `v1` tag is outside the pattern (`File.fnmatch` with
+  `FNM_PATHNAME` returns false for `refs/tags/v1`), so the `move-major-tag`
+  job needs no bypass. No claim is made that any rule is limited to a
+  particular workflow.
+
+Operational consequences for the maintainer:
+
+- Direct pushes to `main` are now rejected. Every change needs a pull request
+  whose head passed `CI gate`.
+- `release-notes.yml` opens its changelog pull request with the workflow
+  token, and GitHub does not start workflows for pull requests created that
+  way. `CI gate` will not report on it until a maintainer closes and reopens
+  the pull request or pushes a commit to its branch.
+- A published version tag can no longer be corrected in place. A bad tag needs
+  a new version.
+
+Rollback: `gh api -X DELETE repos/moonrunnerkc/tracemantle/rulesets/27949490`
+removes the branch rule and `.../rulesets/27947876` the tag rule; setting
+`"enforcement": "disabled"` with `PUT` keeps the definition.
+`gh api -X DELETE repos/moonrunnerkc/tracemantle/private-vulnerability-reporting`
+turns reporting off. Each returns the repository to the "before" state for
+that control.
+
+## Verification
+
+Local, macOS arm64, final code (`21e723a`; `707f79f` changes one test input):
+
+| Environment | Result |
+|---|---|
+| Python 3.10.14, no tokenizer | `make verify-release` passed: ruff, mypy, 1923 passed, 3 skipped, 96% coverage, build, clean wheel and source installs. Reference check passed. |
+| Python 3.10.14 with tiktoken | 1922 passed, 4 skipped, 95.73% |
+| Python 3.14.7, no tokenizer | 1917 passed, 9 skipped, 95.60% |
+| Python 3.15.2, no tokenizer | 1917 passed, 9 skipped, 95.60% |
+| Python 3.15.2 with tiktoken | 1918 passed, 8 skipped, 95.63% |
+
+Local skips: minisign and bubblewrap are not installed here (two tests), the
+offline tokenizer test needs tiktoken, four `tomli` fallback tests run only on
+3.10, and two pre-commit tests need the `pre-commit` binary on `PATH`. OpenSSH
+signature tests ran locally.
+
+Remote CI on `707f79fcfb28352cf1b20247fb8890d3e4d603b4`, run 45296882634: all
+29 jobs succeeded. That covers 18 test jobs (Linux, macOS and Windows on
+Python 3.10 to 3.15), `lint`, `tokenizer` on 3.10, 3.12 and 3.15, `approvals`
+(real OpenSSH and minisign signatures and the bubblewrap producer test, with
+skips rejected, plus the Action from this source), `package`, `artifacts` on
+3.10 and 3.15, `audit` on 3.10 and 3.15, and `CI gate`.
+
+This ledger was committed after that run, so the commit that contains it has
+its own later run. The pull request records the run for the merged head.
+
+## Not verified, and intended debt
+
+| Item | Practical effect | Next action |
+|---|---|---|
+| No agent runtime loaded a skill | Compatibility notes remain historical advice | Record a pinned-runtime observation, then update `verified.toml` |
+| Tag ruleset not exercised | Its effect rests on the API read-back | None planned; see above |
+| Dependabot not yet observed | It may not update marker-qualified constraint lines | Check its first pull requests |
+| Issues 20 and 21 keep `references.uncertain` | Strict runs still fail on documented paths and globs unless ignored | Implement the direction agreed in the issues |
+| HTML blocks are not parsed | A link inside an HTML block is still treated as a dependency | Accept, or add an HTML block pass if it proves noisy |
+| Every definition of a duplicated label is governed | A duplicate naming a missing file is a broken link | Accept; documented in contracts |
+| `strict_all` is still accepted by `get_rules` and `validate` | An unused parameter kept for API compatibility | Remove in a major version |
+| Actions pins not moved to current majors | Older pinned majors keep running | Review the Dependabot proposals |
+| Python 3.10 retained past end of life | One legacy lane and the `tomli` fallback remain | Remove by the process in `docs/migration.md` |
