@@ -313,3 +313,39 @@ def test_a_child_that_keeps_running_is_terminated_at_the_deadline(tmp_path: Path
     with pytest.raises(ChangeDetectionError, match='did not finish'):
         git_changes._git(tmp_path, 'diff')
     assert time.monotonic() - started < 20
+
+
+def test_ignored_discovered_configuration_cannot_be_shown_unchanged(tmp_path: Path) -> None:
+    root = tmp_path / 'repo'
+    skills = _repository(root)
+    (root / '.gitignore').write_text('*.log\ntracemantle.toml\n')
+    _git(root, 'commit', '-qam', 'ignore local configuration')
+    assert changed_skills(list(skills.values()), 'HEAD') == []
+    # Git reports nothing for an ignored file, so its content has no baseline.
+    (root / 'tracemantle.toml').write_text('max-lines = 1\n')
+    notes: list[str] = []
+    assert changed_skills(list(skills.values()), 'HEAD', notify=notes.append) == list(skills.values())
+    assert len(notes) == 1 and 'tracemantle.toml has no history at HEAD' in notes[0]
+
+
+def test_changed_paths_match_regardless_of_unicode_form_or_case(tmp_path: Path) -> None:
+    import unicodedata
+
+    root = tmp_path / 'repo'
+    _repository(root)
+    name = unicodedata.normalize('NFD', 'café-skill')
+    (root / name).mkdir()
+    skill = root / name / 'SKILL.md'
+    skill.write_text('---\nname: cafe-skill\ndescription: Use when testing path forms.\n---\nBody\n')
+    _git(root, 'add', '.')
+    _git(root, 'commit', '-qm', 'accented directory')
+    skill.write_text(skill.read_text() + 'More.\n')
+    listed = next(path for path in root.iterdir() if path.name.endswith('-skill') and not path.name.isascii()) / 'SKILL.md'
+    for form in ('NFC', 'NFD'):
+        spelled = listed.parent.with_name(unicodedata.normalize(form, listed.parent.name)) / 'SKILL.md'
+        if spelled.exists():
+            assert changed_skills([spelled], 'HEAD') == [spelled]
+    (root / 'alpha-skill' / 'notes.md').write_text('note\n')
+    shouted = root / 'ALPHA-SKILL' / 'SKILL.md'
+    if shouted.exists():  # Case-insensitive file systems only.
+        assert changed_skills([shouted], 'HEAD') == [shouted]

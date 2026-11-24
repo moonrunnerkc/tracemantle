@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import subprocess
 import threading
+import unicodedata
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -88,14 +89,22 @@ def _git(root: Path, *args: str, limit: int = _MAX_LISTING_BYTES) -> bytes:
     return bytes(stdout)
 
 
+def _key(path: Path) -> str:
+    """Compare paths the way the loosest supported file system does. Git may
+    report a name in another Unicode form or case than the caller spelled it;
+    treating two distinct paths as one only validates an extra skill."""
+    return unicodedata.normalize('NFC', str(path)).casefold()
+
+
 @dataclass(frozen=True, slots=True)
 class _Changes:
-    """One repository's differences between a commit and its working tree."""
+    """One repository's differences between a commit and its working tree,
+    with changed files and their ancestor directories held as ``_key`` values."""
 
     root: Path
     commit: str
-    files: frozenset[Path]
-    directories: frozenset[Path]
+    files: frozenset[str]
+    directories: frozenset[str]
 
 
 def _changes(root: Path, revision: str) -> _Changes:
@@ -106,8 +115,9 @@ def _changes(root: Path, revision: str) -> _Changes:
         raise ChangeDetectionError(f'--changed-since {revision!r} does not name a commit in {root}; fetch it or pick another revision.') from exc
     tracked = _git(root, 'diff', '--name-only', '--no-renames', '-z', commit, '--')
     untracked = _git(root, 'ls-files', '--others', '--exclude-standard', '-z', '--')
-    files = frozenset(root / name.decode('utf-8', 'surrogateescape') for name in (tracked + untracked).split(b'\0') if name)
-    return _Changes(root, commit, files, frozenset(parent for path in files for parent in path.parents))
+    files = [root / name.decode('utf-8', 'surrogateescape') for name in (tracked + untracked).split(b'\0') if name]
+    return _Changes(root, commit, frozenset(map(_key, files)),
+                    frozenset(_key(parent) for path in files for parent in path.parents))
 
 
 def _toplevel(directory: Path) -> Path:
@@ -143,25 +153,38 @@ def _repository_root(directory: Path, roots: dict[Path, Path]) -> Path:
     return root
 
 
-def _was_project_config(changes: _Changes, path: Path) -> bool:
-    """Whether ``path`` selected a project root at the baseline commit. An
-    unreadable baseline counts, so the skills beneath it are revalidated."""
-    relative = path.relative_to(changes.root).as_posix()
+def _baseline_blob(changes: _Changes, path: Path) -> bytes | None:
+    """Return ``path`` as committed at the baseline, or None if it is absent there."""
     try:
-        raw = _git(changes.root, 'cat-file', 'blob', f'{changes.commit}:{relative}', limit=MAX_CONFIG_BYTES)
+        return _git(changes.root, 'cat-file', 'blob', f'{changes.commit}:{path.relative_to(changes.root).as_posix()}',
+                    limit=MAX_CONFIG_BYTES)
     except ChangeDetectionError:
-        return False  # Absent from the baseline, so it configured nothing there.
+        return None
+
+
+def _applies_differently(changes: _Changes, path: Path, present: bool) -> bool:
+    """Whether the configuration file ``path`` cannot be shown to apply to its
+    directory exactly as it did at the baseline."""
+    if _key(path) not in changes.files:
+        # Git reports no difference. That establishes nothing for a file it
+        # ignores, which has no baseline to compare with.
+        return present and _baseline_blob(changes, path) is None
+    if present:
+        return True
+    raw = _baseline_blob(changes, path)
+    if raw is None:
+        return False  # A changed pyproject.toml that never carried a tool table.
     try:
         return text_selects_project_root(path, raw.decode('utf-8'))
     except (ConfigError, UnicodeDecodeError):
-        return True
+        return True  # An unreadable baseline cannot be ruled out.
 
 
 def _changed_config(directory: Path, changes: _Changes, cache: dict[Path, Path | None]) -> Path | None:
-    """Return a changed configuration file that applies to ``directory`` now
-    or applied at the baseline. The walk follows configuration discovery: it
-    ends at the nearest directory holding unchanged configuration, or at the
-    discovery boundary."""
+    """Return a configuration file that applies to ``directory`` now, or
+    applied at the baseline, and cannot be shown unchanged. The walk follows
+    configuration discovery: it ends at the nearest directory holding
+    unchanged configuration, or at the discovery boundary."""
     visited = []
     result: Path | None = None
     for current in (directory, *directory.parents):
@@ -171,7 +194,7 @@ def _changed_config(directory: Path, changes: _Changes, cache: dict[Path, Path |
         visited.append(current)
         present = configs_in(current)
         result = next((path for path in (current / name for name in CONFIG_NAMES)
-                       if path in changes.files and (path in present or _was_project_config(changes, path))), None)
+                       if _applies_differently(changes, path, path in present)), None)
         if result or present or current == changes.root or is_discovery_boundary(current):
             break
     cache.update(dict.fromkeys(visited, result))
@@ -216,7 +239,7 @@ def changed_skills(paths: list[Path], revision: str, *, explicit_config: Path | 
         if root not in changes:
             changes[root] = _changes(root, revision)
         found = changes[root]
-        if everything or directory in found.directories:
+        if everything or _key(directory) in found.directories:
             selected.append(path)
             continue
         if explicit_config is not None:
@@ -227,7 +250,8 @@ def changed_skills(paths: list[Path], revision: str, *, explicit_config: Path | 
         selected.append(path)
         if config not in notified:
             notified.add(config)
-            notify(f'Configuration {config.relative_to(root).as_posix()} changed since {revision}; validating the skills it applies to.')
+            state = 'changed since' if _key(config) in found.files else 'has no history at'
+            notify(f'Configuration {config.relative_to(root).as_posix()} {state} {revision}; validating the skills it applies to.')
     return selected
 
 
@@ -240,7 +264,7 @@ def _explicit_config_changed(config: Path, revision: str, roots: dict[Path, Path
         if root not in changes:
             changes[root] = _changes(root, revision)
         found = changes[root]
-        if config in found.files:
+        if _key(config) in found.files:
             notify(f'Configuration {config.name} changed since {revision}; validating every skill.')
             return True
         _git(root, 'cat-file', '-e', f'{found.commit}:{config.relative_to(root).as_posix()}')

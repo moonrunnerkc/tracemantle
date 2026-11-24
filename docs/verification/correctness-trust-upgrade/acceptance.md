@@ -47,8 +47,8 @@ approved evidence, both binding only `SKILL.md`. After changing only
 | `Run [helper](helper.py).` (control) | exit 4 | exit 4 |
 | `[helper](`, `helper.py`, `)` on three lines | exit 0 | exit 4 |
 | `[run [helper]](helper.py)` | exit 0 | exit 4 |
-| `[run][helper]` with `[helper]: helper.py` then `[helper]: unused.py` (both files exist) | exit 0, resolved to `unused.py` | exit 4, resolved to `helper.py` |
-| Same with the definitions reversed (control: `helper.py` is not a dependency) | exit 4 | exit 0 |
+| `[run][helper]` with `[helper]: helper.py` then `[helper]: unused.py` (both files exist) | exit 0, only `unused.py` governed | exit 4, `helper.py` governed |
+| Same with the definitions reversed | exit 4 | exit 4, both governed |
 
 Unchanged bundles and unrelated edits still pass for every fully supported
 form. Examples inside fenced and indented code are still excluded. Expectations
@@ -61,16 +61,20 @@ Design decisions and their cost:
   matches a defined label, which is a superset of the links CommonMark
   renders. Effect: a document can gain a governed helper that a renderer
   would not link. That direction is safe for evidence reuse.
-- A definition-shaped line inside a paragraph is text under CommonMark but
-  was treated as a definition before. Its destination stays governed and it
-  can no longer shadow a real definition.
+- CommonMark applies the first definition of a label. A first version of
+  this fix kept only the first, and the independent review showed that a
+  look-alike the tokenizer cannot rule out (inside an HTML comment, or a
+  label differing by a non-breaking space) then hid the real one. Every
+  distinct destination for a label is now governed, up to eight. Effect:
+  changing a file named only by a later duplicate definition also requires
+  a rerun, and a duplicate that names a missing file is a broken link.
 - `[text](two words)` and similar destinations that do not parse now mark
   coverage incomplete. Effect: such a document gets exit 4 from `compare`
   until the link is fixed. Prose such as `array[i](x, y)` outside code
   triggers this too.
 - Tokenizing a 2.9 MB realistic body took 0.97 s against 0.79 s before on
-  this machine. Twelve adversarial 100,000-repeat inputs each finish inside
-  the existing 5 second bound.
+  this machine. Seventeen adversarial inputs each finish inside the existing
+  5 second bound; the slowest measured locally is 0.6 s.
 
 ### B. Ignore directives
 
@@ -126,18 +130,19 @@ so overstates the baseline's incremental time.
 
 | Scenario | Scan | 1.8.0 median | Candidate median | Git processes | Selected (1.8.0 / candidate) |
 |---|---|---|---|---|---|
-| No changes | full | 0.269 s | 0.276 s | 0 / 0 | 500 / 500 |
-| No changes | incremental | 6.787 s | 0.277 s | 503 / 4 | 0 / 0 |
-| One changed skill | incremental | 7.290 s | 0.277 s | 503 / 4 | 1 / 1 |
-| Shared configuration change | incremental | 6.205 s | 0.424 s | 503 / 4 | 0 (exit 0) / 500 (exit 1) |
-| Nested repository, one change | incremental | 6.798 s | 0.346 s | 556 / 9 | 1 / 1 |
+| No changes | full | 0.269 s | 0.277 s | 0 / 0 | 500 / 500 |
+| No changes | incremental | 6.787 s | 0.255 s | 503 / 5 | 0 / 0 |
+| One changed skill | incremental | 7.290 s | 0.256 s | 503 / 5 | 1 / 1 |
+| Shared configuration change | incremental | 6.205 s | 0.417 s | 503 / 4 | 0 (exit 0) / 500 (exit 1) |
+| Nested repository, one change | incremental | 6.798 s | 0.294 s | 556 / 9 | 1 / 1 |
 
 Selected paths and per-file verdicts are identical between baseline and
 candidate in every scenario except the shared configuration change, which is
-the defect fixed in C. The candidate's incremental run with no changes is not
-faster than a full scan of 500 small skills on this machine (0.277 s against
-0.276 s): interpreter start and configuration discovery dominate. The benefit
-is removing the per-skill Git cost, not beating a full scan at this size.
+the defect fixed in C. The candidate's incremental run with no changes is only
+slightly faster than a full scan of 500 small skills on this machine (0.255 s
+against 0.277 s): interpreter start and configuration discovery dominate. The
+benefit is removing the per-skill Git cost, not beating a full scan at this
+size.
 No timing assertion was added to the test suite. Selective evidence reuse
 remains optional and experimental; no new study was run.
 
@@ -207,3 +212,36 @@ already behaved this way at 1.8.0; this work did not change them.
 The direction agreed in the issue threads (an info-level `references.external`
 for home and absolute paths, skipping glob spans without affecting coverage)
 is not implemented. Proposed replies are in the pull request description.
+
+## Independent review of the pushed branch
+
+The first pushed head (`3cfca0f`) was reviewed by a separate read-only pass
+that ran its own inputs, and its first remote CI run failed. Both led to
+changes; [review-before-3cfca0f.txt](review-before-3cfca0f.txt) lists the added
+regressions failing on that head.
+
+| Finding | Origin | Resolution |
+|---|---|---|
+| Two crafted inputs took 5 to 9 s under coverage on CI runners (limit 5 s) | This branch | Failed destination scans are limited per block; 1.4 s to 0.17 s locally |
+| "First definition wins" let a look-alike hide the real definition | This branch | Every distinct destination per label is governed |
+| Slicing bracket text before checking nesting was quadratic (12 s at 2 MB) | This branch | Length is checked before slicing; 0.5 s |
+| Multi-line label containing a backslash was silently not a definition | This branch | Labels are scanned with escapes; no regex fallback |
+| Git-ignored discovered configuration was treated as unchanged | This branch | Configuration with no baseline selects the skills it applies to |
+| `<a` plus spaces, and long `file:` runs, backtracked quadratically | 1.8.0 | Both patterns made linear |
+| Backtick inside an HTML tag, comment or autolink, or on a definition line, hid later links | 1.8.0 | Coverage is marked incomplete |
+| Vertical tab, form feed and similar characters split lines and opened a fence | 1.8.0 | Coverage is marked incomplete |
+| A line holding only a non-breaking space was treated as blank | 1.8.0 | Only spaces and tabs make a line blank |
+| `2.` or an empty item split a paragraph | 1.8.0 | Such items no longer interrupt a paragraph |
+| Changed paths compared by exact spelling (Unicode form, case) | 1.8.0 | Compared after NFC normalization and case folding |
+
+The review found no defect in the YAML comment detection (300,000 generated
+documents compared with PyYAML), the bounded Git runner, the JSON error
+boundary or the CI gate and audit jobs. It did not run on Windows and did not
+exercise worktrees or submodules; the test suite does both for worktrees and
+submodules, and remote CI covers Windows.
+
+Known remaining limits of the tokenizer, unchanged by this work: HTML blocks
+are not parsed, so a link inside one is still reported; block quotes and lazy
+continuations keep coverage incomplete; and code spans are matched before
+block-level definitions, which is why a backtick on a definition line now
+marks coverage incomplete rather than being resolved exactly.

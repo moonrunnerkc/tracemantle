@@ -133,8 +133,9 @@ These apply to installations from `main` and to the next release. Recompute
 manifests and rerun comparisons after upgrading.
 
 - **Link discovery.** Multiline links, links with bracketed text and reference
-  links now resolve as CommonMark specifies, with the first definition of a
-  label taking effect. A comparison that passed because such a link was missed
+  links are now found. When a label is defined more than once, every
+  definition's destination is a dependency, so a duplicate definition that
+  names a missing file is reported as a broken link. A comparison that passed because such a link was missed
   now returns unknown (exit 4) when the linked helper changed. Bracketed text
   followed by a parenthesized destination that does not parse, for example
   `[text](two words)`, marks dependency coverage incomplete.

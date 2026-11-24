@@ -51,10 +51,10 @@ single skill.
 A change to configuration that applies to a skill also selects it: an edited,
 created, deleted or renamed `tracemantle.toml`, `skillcheck.toml` or
 `pyproject.toml` tool table in the skill's directory or above it, up to the
-repository root. With `--config FILE`, a changed file selects every skill. A
-`--config` file with no committed baseline at `REV`, such as one outside the
-repository, cannot be shown unchanged, so every skill is validated and stderr
-says why.
+repository root. With `--config FILE`, a changed file selects every skill.
+Configuration with no committed baseline at `REV`, such as a git-ignored
+`tracemantle.toml` or a `--config` file outside the repository, cannot be
+shown unchanged, so the skills it applies to are validated and stderr says why.
 
 The selection reflects file changes only. A skill that was not selected has
 not been shown to pass under a different TraceMantle version, Python
