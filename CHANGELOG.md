@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Dependency discovery missed inline links whose destination or text spans lines and links whose text contains brackets, and resolved a label defined twice to its last definition. A check that declared only `SKILL.md` could then reuse approved evidence after the linked helper changed. Links are now read per paragraph block following CommonMark 0.31.2. Every destination defined for a label is governed, so the first definition always is, and syntax that could hide a link (an unparseable destination, a backtick on a definition line or inside an HTML tag or comment, a non-CommonMark line break character) marks coverage incomplete.
+- `# tracemantle: ignore=...` inside a literal, folded or multiline quoted YAML string suppressed diagnostics, so a strict run with a broken link could exit 0. Only comment-only lines outside string values are directives.
+- `--changed-since` ignored configuration changes: tightening a shared limit selected no skills and exited 0 where a full scan failed. Created, edited, deleted and renamed configuration now selects the skills it applies to. Configuration with no committed baseline, such as a git-ignored file or an external `--config`, cannot be shown unchanged and selects them too.
+- `--changed-since` compared changed paths by exact spelling, so a skill directory that Git reports in another Unicode normalization form, or that was passed in another letter case on a case-insensitive file system, was not selected. Paths are now compared after NFC normalization and case folding.
+- Git output for `--changed-since` is bounded while it is read, on stdout and stderr, and a child past the limit or the 60 second deadline is killed and reaped.
+- The development constraints move certifi to 2026.10.18 and urllib3 to 2.8.0, the releases that fix advisories reported against the previous pins. Both are reached only through the optional `tiktoken` extra; the package's own dependency ranges are unchanged.
+
+### Added
+
+- `--no-inline-ignores` (config key and Action input of the same name) applies no frontmatter ignore comment and reports each as `ignore.inline-refused`. An explicit flag cannot be reversed by project configuration.
+- Python 3.14 and 3.15 are tested on Linux, macOS and Windows and listed in the package classifiers. The optional tokenizer and the built wheel and source archive are also verified on 3.10 and 3.15.
+- `scripts/audit_dependencies.py` and a `Dependency audit` workflow check the pinned runtime and tokenizer dependencies against published advisories in CI, on demand and weekly. An audit that cannot complete exits 2 and is never reported as clean.
+- A Dependabot configuration proposes weekly GitHub Actions and Python updates for review.
+- `SECURITY.md` describes private vulnerability reporting, the supported release and the tool's trust boundaries.
+- A `CI gate` job always runs and passes only when every other CI job succeeded.
+
+### Changed
+
+- `--strict` no longer implies `--strict-vscode` and `--strict-cursor`. The VS Code directory note and the Cursor block-scalar note are historical advice with no verified runtime, and stay informational unless their own flag, config key or Action input is set. `validate(strict_all=True)` changes the same way. See [migration](docs/migration.md#unreleased-changes-after-180).
+- With `--format json`, expected input and usage failures detected after argument parsing print one schema-2 error object on stdout and exit 2. `--quiet` now keeps stderr text for configuration errors too.
+- `--changed-since` finds each repository root once instead of running Git once per skill. On a 500-skill fixture the incremental run went from 503 Git processes to 5.
+- Python 3.10 is documented as legacy compatibility after its upstream end of life; 3.11 or later is recommended.
+- The development constraints move PyYAML to 6.0.4 and pin regex per interpreter range, because the previous pins publish no Python 3.15 wheels.
+
+### Fixed
+
+- Two patterns in the Markdown tokenizer backtracked quadratically: an `<a` or `<img` tag followed by a long run of spaces, and a long unbroken run of `file:`, `source:` or `include:` words. A 40 KB line took about 13 seconds; both are now linear.
+- A list item that is empty, or ordered with a number other than 1, no longer splits the paragraph it appears in, so a link spanning it is found.
+
 ## [1.8.0] - 2026-11-11
 
 ### Security

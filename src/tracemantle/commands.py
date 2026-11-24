@@ -16,6 +16,7 @@ from typing import Any
 from tracemantle import __version__
 from tracemantle.agents.graph_parser import GraphParseError
 from tracemantle.agents.parser import CritiqueParseError
+from tracemantle.cli_errors import exit_input_error
 from tracemantle.cli_inputs import parse_batch, read_ingest_raw
 from tracemantle.core import (
     extract_graph_agent,
@@ -36,7 +37,7 @@ from tracemantle.formatters import (
 )
 from tracemantle.gate import compute_exit_code, filter_results
 from tracemantle.history_commands import record_history
-from tracemantle.inline_ignores import inline_ignore_prefixes
+from tracemantle.inline_ignores import inline_ignore_prefixes, refuse_inline_ignores
 from tracemantle.parser import DocumentSettings, ParsedSkill, ParseError
 from tracemantle.result import Diagnostic, Severity, ValidationResult
 from tracemantle.sarif import format_sarif
@@ -140,13 +141,9 @@ def run_validation(
         ]
         if active_ingest_flags:
             flags = " and ".join(active_ingest_flags)
-            print(
-                f"Error: {flags} applies one agent response to one skill, but "
-                f"{len(paths)} SKILL.md paths were resolved. Run it once per skill, "
-                f"pointing at a single SKILL.md.",
-                file=sys.stderr,
-            )
-            sys.exit(2)
+            exit_input_error(args, f"{flags} applies one agent response to one skill, but "
+                                   f"{len(paths)} SKILL.md paths were resolved. Run it once per skill, "
+                                   f"pointing at a single SKILL.md.")
 
     documents: dict[Path, ParsedSkill] = {}
     results: list[ValidationResult] = []
@@ -165,7 +162,7 @@ def run_validation(
     graph_source_json: dict[str, Any] | None = None
 
     if args.ingest_critique is not None:
-        raw = read_ingest_raw(args.ingest_critique, 'critique response')
+        raw = read_ingest_raw(args, args.ingest_critique, 'critique response')
 
         try:
             first_skill = documents[paths[0]]
@@ -183,7 +180,7 @@ def run_validation(
         critique_source = agent_id
 
     if args.ingest_graph is not None:
-        raw_graph = read_ingest_raw(args.ingest_graph, 'graph response')
+        raw_graph = read_ingest_raw(args, args.ingest_graph, 'graph response')
 
         try:
             first_skill = documents[paths[0]]
@@ -221,6 +218,9 @@ def run_validation(
         graph_source_json = {"mode": "heuristic"}
 
     inline = {path: inline_ignore_prefixes(skill) for path, skill in documents.items()}
+    if args.no_inline_ignores:
+        results = [refuse_inline_ignores(r, inline[r.path]) if inline.get(r.path) else r for r in results]
+        inline = {}
     results = filter_results(results, args.ignore_prefixes, inline)
     if args.history:
         record_history(args, paths, results, agent_id, graph_agent_id, documents)

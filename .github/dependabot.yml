@@ -1,0 +1,26 @@
+# Weekly reviewed update proposals. Nothing here merges automatically; each
+# pull request must pass the CI gate and be merged by a maintainer.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    # "/" covers .github/workflows and the root action.yml.
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: pip
+    # pyproject.toml ranges and the constraints-dev.txt pins.
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      python:
+        patterns: ["*"]
+        update-types: [minor, patch]

@@ -34,6 +34,7 @@ class TraceMantleConfig:
     skip_dirname_check: bool | None = None
     skip_ref_check: bool | None = None
     ignore: tuple[str, ...] = ()
+    no_inline_ignores: bool | None = None
     analyze_graph: bool | None = None
     semantic: bool | None = None
     history: bool | None = None
@@ -69,6 +70,8 @@ _KEY_MAP = {
     "skip-ref-check": "skip_ref_check",
     "skip_ref_check": "skip_ref_check",
     "ignore": "ignore",
+    "no-inline-ignores": "no_inline_ignores",
+    "no_inline_ignores": "no_inline_ignores",
     "analyze-graph": "analyze_graph",
     "analyze_graph": "analyze_graph",
     "semantic": "semantic",
@@ -80,7 +83,7 @@ _KEY_MAP = {
 }
 
 _INT_FIELDS = {"max_lines", "max_tokens", "min_desc_score"}
-_BOOL_FIELDS = {"strict_vscode", "strict_cursor", "strict_all", "skip_dirname_check", "skip_ref_check", "analyze_graph", "semantic", "history"}
+_BOOL_FIELDS = {"strict_vscode", "strict_cursor", "strict_all", "skip_dirname_check", "skip_ref_check", "no_inline_ignores", "analyze_graph", "semantic", "history"}
 _STR_FIELDS = {"tokenizer","format", "target_agent", "critique_agent", "graph_agent"}
 
 
@@ -94,6 +97,10 @@ def _read_toml(path: Path) -> dict[str, Any]:
         raw = read_guarded_text(path, max_bytes=MAX_CONFIG_BYTES, what="Config", error_cls=ConfigError)
     except OSError as exc:
         raise ConfigError(f"Cannot read {path}: {exc}. Check file permissions and retry.") from exc
+    return _parse_toml(raw, path)
+
+
+def _parse_toml(raw: str, path: Path) -> dict[str, Any]:
     try:
         # tomllib resolves to Any under the 3.10 type target (no stubs there).
         return cast(dict[str, Any], tomllib.loads(raw))
@@ -184,21 +191,45 @@ def _config_from_data(data: dict[str, Any], path: Path) -> TraceMantleConfig:
     return TraceMantleConfig(**values, supplied=frozenset(values))
 
 
-def _configs_in(directory: Path) -> tuple[Path, ...]:
-    """Return the config files that select ``directory`` as a project root."""
+# Discovery order is also merge order: later files override earlier ones.
+CONFIG_NAMES = ("skillcheck.toml", "pyproject.toml", "tracemantle.toml")
+
+
+def _declares_tool_namespace(data: dict[str, Any], path: Path) -> bool:
+    namespaces = data.get("tool", {})
+    if not isinstance(namespaces, dict):
+        raise ConfigError(f"Config section 'tool' in {path} must be a table.")
+    return any(namespace in namespaces for namespace in ("tracemantle", "skillcheck"))
+
+
+def text_selects_project_root(path: Path, text: str) -> bool:
+    """Whether ``text``, as the content of a file named like ``path``, would
+    select its directory as a project root. A ``pyproject.toml`` does so only
+    when it declares a TraceMantle or SkillCheck tool namespace.
+
+    Raises:
+        ConfigError: a ``pyproject.toml`` is not TOML or its ``tool`` is not a table.
+    """
+    return path.name != "pyproject.toml" or _declares_tool_namespace(_parse_toml(text, path), path)
+
+
+def configs_in(directory: Path) -> tuple[Path, ...]:
+    """Return the config files that select ``directory`` as a project root.
+
+    Raises:
+        ConfigError: the directory's ``pyproject.toml`` cannot be read or parsed.
+    """
     found = []
-    for name in ("skillcheck.toml", "pyproject.toml", "tracemantle.toml"):
+    for name in CONFIG_NAMES:
         path = directory / name
-        if not path.is_file():
-            continue
-        if name == "pyproject.toml":
-            namespaces = _read_toml(path).get("tool", {})
-            if not isinstance(namespaces, dict):
-                raise ConfigError(f"Config section 'tool' in {path} must be a table.")
-            if not any(namespace in namespaces for namespace in ("tracemantle", "skillcheck")):
-                continue
-        found.append(path)
+        if path.is_file() and (name != "pyproject.toml" or _declares_tool_namespace(_read_toml(path), path)):
+            found.append(path)
     return tuple(found)
+
+
+def is_discovery_boundary(directory: Path) -> bool:
+    """Configuration discovery never continues above a repository root or the home directory."""
+    return (directory / ".git").exists() or directory == Path.home()
 
 
 def project_configs(start: Path, *, cache: dict[Path, tuple[Path, ...]] | None = None) -> tuple[Path, ...]:
@@ -222,8 +253,8 @@ def project_configs(start: Path, *, cache: dict[Path, tuple[Path, ...]] | None =
             result = cache[directory]
             break
         visited.append(directory)
-        result = _configs_in(directory)
-        if result or (directory / ".git").exists() or directory == Path.home():
+        result = configs_in(directory)
+        if result or is_discovery_boundary(directory):
             break
     if cache is not None:
         cache.update(dict.fromkeys(visited, result))

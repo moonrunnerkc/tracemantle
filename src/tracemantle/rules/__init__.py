@@ -103,7 +103,11 @@ def get_rules(
     strict_all: bool = False,
     target_agent: str = "all",
 ) -> list[Callable[[ParsedSkill], list[Diagnostic]]]:
-    """Build the full rule list, optionally overriding thresholds and toggling features."""
+    """Build the full rule list, optionally overriding thresholds and toggling features.
+
+    ``strict_all`` is accepted for compatibility and selects no rule: vendor
+    compatibility advice is promoted only by ``strict_vscode`` or ``strict_cursor``.
+    """
 
     rules: list[Callable[[ParsedSkill], list[Diagnostic]]] = list(_FRONTMATTER_RULES)
 
@@ -138,10 +142,8 @@ def get_rules(
             f"Must be one of: {', '.join(sorted(_VALID_AGENTS))}"
         )
 
-     # Apply strict_all meta-flag: combine all strict modes
-    _sa = strict_all
-    _sv = strict_vscode or _sa
-    _sc = strict_cursor or _sa
+    _sv = strict_vscode
+    _sc = strict_cursor
 
     if target_agent == "all":
         compat_rules = list(_COMPAT_RULES)

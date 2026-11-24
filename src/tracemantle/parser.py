@@ -56,6 +56,9 @@ class ParsedSkill:
     yaml_anchors: tuple[str, ...] = ()
     settings: DocumentSettings = DocumentSettings()
     raw_bytes: bytes = field(default=b"", repr=False)
+    # Text of each comment-only frontmatter line, after its ``#``. Lines inside
+    # block or quoted scalars are string content and never appear here.
+    yaml_comments: tuple[str, ...] = ()
     markdown: Markdown = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -72,6 +75,7 @@ class _Loader(yaml.SafeLoader):
         self.alias_count = 0
         self.anchor_names: set[str] = set()
         self.field_lines: dict[str, int] = {}
+        self.scalar_spans: list[tuple[int, int]] = []
 
     def compose_node(self, parent: Any, index: Any) -> Any:
         event = self.peek_event()  # type: ignore[no-untyped-call]  # PyYAML event access lacks stubs.
@@ -84,9 +88,12 @@ class _Loader(yaml.SafeLoader):
         if self.depth > MAX_YAML_DEPTH or self.nodes > MAX_YAML_NODES or self.alias_count > MAX_YAML_ALIASES:
             raise ParseError('YAML depth, node or alias limit exceeded. Simplify the frontmatter.', event.start_mark.line + 2)
         try:
-            return super().compose_node(parent, index)
+            node = super().compose_node(parent, index)
         finally:
             self.depth -= 1
+        if isinstance(node, yaml.ScalarNode) and not isinstance(event, yaml.AliasEvent):
+            self.scalar_spans.append((node.start_mark.index, node.end_mark.index))
+        return node
 
     def construct_object(self, node: yaml.Node, deep: bool = False) -> Any:
         try:
@@ -114,6 +121,23 @@ class _Loader(yaml.SafeLoader):
             if node.start_mark.column == 0:
                 self.field_lines[key] = key_node.start_mark.line + 2
         return result
+
+
+def _full_line_comments(yaml_text: str, scalar_spans: list[tuple[int, int]]) -> tuple[str, ...]:
+    """Return each comment-only line, without its ``#``. A line that starts
+    inside a scalar's source span is that scalar's content, not a comment."""
+    spans = sorted(scalar_spans)
+    comments = []
+    offset = position = 0
+    for line in yaml_text.splitlines(keepends=True):
+        stripped = line.lstrip(' \t')
+        if stripped.startswith('#'):
+            while position < len(spans) and spans[position][1] <= offset:
+                position += 1
+            if position == len(spans) or spans[position][0] > offset:
+                comments.append(stripped[1:].rstrip('\n'))
+        offset += len(line)
+    return tuple(comments)
 
 
 def parse(path: Path, *, settings: DocumentSettings | None = None, max_bytes: int = MAX_SKILL_BYTES) -> ParsedSkill:
@@ -155,4 +179,5 @@ def parse(path: Path, *, settings: DocumentSettings | None = None, max_bytes: in
             pending.extend((item, depth + 1) for item in (value.values() if isinstance(value, dict) else value))
     body = ''.join(lines[end + 1:])
     return ParsedSkill(path, loaded, body, len(body.splitlines()), text, end + 2, yaml_text,
-                       loader.field_lines, tuple(sorted(loader.anchor_names)), settings, raw)
+                       loader.field_lines, tuple(sorted(loader.anchor_names)), settings, raw,
+                       _full_line_comments(yaml_text, loader.scalar_spans))

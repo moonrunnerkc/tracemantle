@@ -57,7 +57,7 @@ def _write_prior_passing_ledger(skill_path: Path) -> None:
         result=ResultCounts(error=0, warning=0, info=0, valid=True),
         exit_code=0,
     )
-    identity = history_identity(skill, {"max_lines": None, "max_tokens": None, "ignore_prefixes": [], "skip_ref_check": False, "skip_dirname_check": True, "strict_all": False, "target_agent": "all", "min_desc_score": None, "strict_vscode": False, "strict_cursor": False, "analyze_graph": False, "semantic": False, "critique_agent": None, "graph_agent": None})
+    identity = history_identity(skill, {"max_lines": None, "max_tokens": None, "ignore_prefixes": [], "no_inline_ignores": False, "skip_ref_check": False, "skip_dirname_check": True, "strict_all": False, "target_agent": "all", "min_desc_score": None, "strict_vscode": False, "strict_cursor": False, "analyze_graph": False, "semantic": False, "critique_agent": None, "graph_agent": None})
     append_history(ledger_path_for(skill_path), skill, entry, identity)
 
 
@@ -156,14 +156,16 @@ class TestFailOnRegressionCLI:
         """
         _write_prior_passing_ledger(self.skill)
 
-        # Run with --history and --fail-on-regression and --strict to force failure
-        # The prior entry says "valid=True", the current run with --strict makes it
-        # fail (warnings escalate to errors), so regression is detected.
+        # The prior entry says "valid=True". The copied skill's name does not
+        # match its temporary directory, which --strict-vscode reports as an
+        # error, so the current run fails and a regression is detected.
+        # General --strict no longer implies that vendor policy.
         result = _run_cli(
             self.skill,
             "--history",
             "--fail-on-regression",
             "--strict",
+            "--strict-vscode",
         )
         # Either: exit 1 from --strict (warnings → errors), or exit 1 from regression
         # The key is that --fail-on-regression does not reduce the exit code

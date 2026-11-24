@@ -1,0 +1,36 @@
+== tracemantle recall/SKILL.md 
+ line 10 ⚠ warning references.uncertain Inline path '~/.gemini/antigravity-cli/brain/*/.system_generated/logs/transcript.jsonl' may be a resource, exa
+ line 11 ⚠ warning references.uncertain Inline path '~/.local/share/opencode/opencode.db' may be a resource, example or runtime input; dependency cove
+ line 7 ⚠ warning references.uncertain Inline path '~/.claude/recall.db' may be a resource, example or runtime input; dependency coverage is incomplet
+ line 7 ⚠ warning references.uncertain Inline path '~/.recall.db' may be a resource, example or runtime input; dependency coverage is incomplete. Use 
+ line 7 ⚠ warning references.uncertain Inline path '~/.recall.db.lock' may be a resource, example or runtime input; dependency coverage is incomplete.
+ line 8 ⚠ warning references.uncertain Inline path '~/.claude/projects/' may be a resource, example or runtime input; dependency coverage is incomplet
+ line 8 ⚠ warning references.uncertain Inline path '~/.codex/sessions/' may be a resource, example or runtime input; dependency coverage is incomplete
+ line 9 ⚠ warning references.uncertain Inline path '~/.grok/sessions/**/chat_history.jsonl' may be a resource, example or runtime input; dependency co
+Checked 1 file: 1 passed, 0 failed, 8 warnings
+exit 0
+== tracemantle recall/SKILL.md --strict
+ line 10 ⚠ warning references.uncertain Inline path '~/.gemini/antigravity-cli/brain/*/.system_generated/logs/transcript.jsonl' may be a resource, exa
+ line 11 ⚠ warning references.uncertain Inline path '~/.local/share/opencode/opencode.db' may be a resource, example or runtime input; dependency cove
+ line 7 ⚠ warning references.uncertain Inline path '~/.claude/recall.db' may be a resource, example or runtime input; dependency coverage is incomplet
+ line 7 ⚠ warning references.uncertain Inline path '~/.recall.db' may be a resource, example or runtime input; dependency coverage is incomplete. Use 
+ line 7 ⚠ warning references.uncertain Inline path '~/.recall.db.lock' may be a resource, example or runtime input; dependency coverage is incomplete.
+ line 8 ⚠ warning references.uncertain Inline path '~/.claude/projects/' may be a resource, example or runtime input; dependency coverage is incomplet
+ line 8 ⚠ warning references.uncertain Inline path '~/.codex/sessions/' may be a resource, example or runtime input; dependency coverage is incomplete
+ line 9 ⚠ warning references.uncertain Inline path '~/.grok/sessions/**/chat_history.jsonl' may be a resource, example or runtime input; dependency co
+Checked 1 file: 1 passed, 0 failed, 8 warnings
+exit 1
+== tracemantle recall/SKILL.md --strict --ignore references.uncertain
+Checked 1 file: 1 passed, 0 failed
+exit 0
+== tracemantle bench/SKILL.md 
+ line 5 ⚠ warning references.uncertain Inline path 'tests/bench_*.rs' may be a resource, example or runtime input; dependency coverage is incomplete. 
+Checked 1 file: 1 passed, 0 failed, 1 warning
+exit 0
+== tracemantle bench/SKILL.md --strict
+ line 5 ⚠ warning references.uncertain Inline path 'tests/bench_*.rs' may be a resource, example or runtime input; dependency coverage is incomplete. 
+Checked 1 file: 1 passed, 0 failed, 1 warning
+exit 1
+== tracemantle bench/SKILL.md --strict --ignore references.uncertain
+Checked 1 file: 1 passed, 0 failed
+exit 0

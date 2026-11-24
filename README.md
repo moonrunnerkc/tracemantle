@@ -4,7 +4,7 @@ TraceMantle checks `SKILL.md` files for developers who write or maintain agent s
 
 ## Quick start
 
-Requires Python 3.10 or later. Create an isolated environment and install the published release:
+Requires Python 3.10 or later; 3.11 or later is [recommended](docs/migration.md#python-support). Create an isolated environment and install the published release:
 
 ```bash
 python -m venv .venv
@@ -46,4 +46,4 @@ Per-check maintenance reuse remains experimental. In the [maintainer SARIF study
 - [CLI reference](docs/generated-reference.md): commands and configuration.
 - [Troubleshooting](docs/getting-started.md#troubleshooting): understand diagnostics and exit codes.
 
-[Contribute](CONTRIBUTING.md) · [Report an issue](https://github.com/moonrunnerkc/tracemantle/issues) · [Changelog](CHANGELOG.md) · [MIT license](LICENSE)
+[Contribute](CONTRIBUTING.md) · [Security](SECURITY.md) · [Report an issue](https://github.com/moonrunnerkc/tracemantle/issues) · [Changelog](CHANGELOG.md) · [MIT license](LICENSE)

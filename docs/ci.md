@@ -25,7 +25,8 @@ required by your repository policy. Remove `strict` to allow warnings while
 still rejecting errors. Directory discovery is recursive and does not follow
 directory symlinks.
 
-For any CI system, install Python 3.10+ and run:
+For any CI system, install a supported Python (3.11 or later is recommended; see
+[migration](migration.md#python-support)) and run:
 
 ```bash
 python -m pip install tracemantle==1.8.0
@@ -46,6 +47,41 @@ tracemantle skills/ --changed-since origin/main --strict
 
 It cannot be combined with `--show-history` or the ingest flags, which name a
 single skill.
+
+A change to configuration that applies to a skill also selects it: an edited,
+created, deleted or renamed `tracemantle.toml`, `skillcheck.toml` or
+`pyproject.toml` tool table in the skill's directory or above it, up to the
+repository root. With `--config FILE`, a changed file selects every skill.
+Configuration with no committed baseline at `REV`, such as a git-ignored
+`tracemantle.toml` or a `--config` file outside the repository, cannot be
+shown unchanged, so the skills it applies to are validated and stderr says why.
+
+The selection reflects file changes only. A skill that was not selected has
+not been shown to pass under a different TraceMantle version, Python
+environment or command-line flags. Run a full scan after changing any of those.
+
+## Contributions you have not reviewed
+
+A skill can suppress its own diagnostics with a frontmatter comment, and a
+repository can relax limits in its configuration. When validating a pull
+request from a fork, refuse the comments and take configuration from the base
+branch:
+
+```bash
+tracemantle skills/ --strict --no-inline-ignores --config "$TRUSTED_CHECKOUT/tracemantle.toml"
+```
+
+The Action input is `no-inline-ignores: 'true'`. Refused comments are reported
+as `ignore.inline-refused`. This flag is not in 1.8.0; install from a later
+release or pin a commit that includes it.
+
+## Machine-readable failures
+
+With `--format json`, an input failure such as a missing path or an unusable
+revision prints one JSON object with `gate.exit_code` 2 and an `errors` array,
+and exits 2. Parse stdout before checking for results. Arguments the parser
+cannot read still produce a usage message on stderr. See
+[contracts](contracts.md).
 
 ## Code scanning
 

@@ -1,0 +1,155 @@
+{
+  "source": "src",
+  "tracemantle_version": "1.8.0",
+  "skills": 500,
+  "repeats": 7,
+  "python": "3.10.14",
+  "platform": "macOS-26.7.3-arm64-arm-64bit",
+  "git": "git version 2.54.0 (Apple Git-157)",
+  "scenarios": {
+    "no-changes": {
+      "full": {
+        "exit_code": 0,
+        "selected": 500,
+        "failed": 0,
+        "selected_paths_sha": "9c4631e88d1f4896",
+        "git_processes": 0,
+        "median_seconds": 0.2772,
+        "samples_seconds": [
+          0.3176,
+          0.32,
+          0.2768,
+          0.2758,
+          0.2772,
+          0.277,
+          0.2774
+        ]
+      },
+      "incremental": {
+        "exit_code": 0,
+        "selected": 0,
+        "failed": 0,
+        "selected_paths_sha": "4f53cda18c2baa0c",
+        "git_processes": 5,
+        "median_seconds": 0.2551,
+        "samples_seconds": [
+          0.5858,
+          0.2576,
+          0.2557,
+          0.2551,
+          0.2189,
+          0.253,
+          0.2183
+        ]
+      }
+    },
+    "one-changed-skill": {
+      "full": {
+        "exit_code": 0,
+        "selected": 500,
+        "failed": 0,
+        "selected_paths_sha": "9c4631e88d1f4896",
+        "git_processes": 0,
+        "median_seconds": 0.2767,
+        "samples_seconds": [
+          0.2767,
+          0.2772,
+          0.2769,
+          0.2757,
+          0.2763,
+          0.276,
+          0.2768
+        ]
+      },
+      "incremental": {
+        "exit_code": 0,
+        "selected": 1,
+        "failed": 0,
+        "selected_paths_sha": "70195937b6337a09",
+        "git_processes": 5,
+        "median_seconds": 0.2562,
+        "samples_seconds": [
+          0.2696,
+          0.2577,
+          0.2189,
+          0.2159,
+          0.2562,
+          0.2651,
+          0.2536
+        ]
+      }
+    },
+    "shared-config-change": {
+      "full": {
+        "exit_code": 1,
+        "selected": 500,
+        "failed": 0,
+        "selected_paths_sha": "a66160339a99de7a",
+        "git_processes": 0,
+        "median_seconds": 0.2818,
+        "samples_seconds": [
+          0.2797,
+          0.2802,
+          0.2822,
+          0.2809,
+          0.2887,
+          0.2829,
+          0.2818
+        ]
+      },
+      "incremental": {
+        "exit_code": 1,
+        "selected": 500,
+        "failed": 0,
+        "selected_paths_sha": "a66160339a99de7a",
+        "git_processes": 4,
+        "median_seconds": 0.4167,
+        "samples_seconds": [
+          0.4167,
+          0.4519,
+          0.4161,
+          0.4206,
+          0.4151,
+          0.392,
+          0.4364
+        ]
+      }
+    },
+    "nested-repository-one-change": {
+      "full": {
+        "exit_code": 0,
+        "selected": 550,
+        "failed": 0,
+        "selected_paths_sha": "65d40f22a4824e6f",
+        "git_processes": 0,
+        "median_seconds": 0.2755,
+        "samples_seconds": [
+          0.2798,
+          0.2791,
+          0.277,
+          0.2755,
+          0.2743,
+          0.2742,
+          0.2743
+        ]
+      },
+      "incremental": {
+        "exit_code": 0,
+        "selected": 1,
+        "failed": 0,
+        "selected_paths_sha": "48c9663e1605b83b",
+        "git_processes": 9,
+        "median_seconds": 0.2939,
+        "samples_seconds": [
+          0.3079,
+          0.2892,
+          0.2552,
+          0.326,
+          0.3184,
+          0.2585,
+          0.2939
+        ]
+      }
+    }
+  }
+}

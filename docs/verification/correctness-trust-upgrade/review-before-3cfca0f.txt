@@ -1,0 +1,24 @@
+FAILED tests/test_link_dependencies.py::test_text_shaped_like_an_earlier_definition_cannot_hide_the_real_one[html-comment]
+FAILED tests/test_link_dependencies.py::test_text_shaped_like_an_earlier_definition_cannot_hide_the_real_one[nbsp-label]
+FAILED tests/test_link_dependencies.py::test_text_shaped_like_an_earlier_definition_cannot_hide_the_real_one[code-span-label]
+FAILED tests/test_link_dependencies.py::test_text_shaped_like_an_earlier_definition_cannot_hide_the_real_one[escaped-space]
+FAILED tests/test_link_dependencies.py::test_text_shaped_like_an_earlier_definition_cannot_hide_the_real_one[ordered-item-in-paragraph]
+FAILED tests/test_link_dependencies.py::test_a_link_is_reported_or_coverage_is_incomplete[[a\\b\nc]: helper.py\n\n[a\\b c]\n]
+FAILED tests/test_link_dependencies.py::test_a_link_is_reported_or_coverage_is_incomplete[[fo\\]o\nbar]: helper.py\n\n[fo\\]o bar]\n]
+FAILED tests/test_link_dependencies.py::test_a_link_is_reported_or_coverage_is_incomplete[[`]: x.py\n[b]: helper.py '`'\n\n[b]\n]
+FAILED tests/test_link_dependencies.py::test_a_link_is_reported_or_coverage_is_incomplete[[x]: y '`'\n[foo]: helper.py '`'\n\n[foo]\n]
+FAILED tests/test_link_dependencies.py::test_a_link_is_reported_or_coverage_is_incomplete[<span title="`">[x](helper.py)</span> text `\n]
+FAILED tests/test_link_dependencies.py::test_a_link_is_reported_or_coverage_is_incomplete[<http://a/`> [x](helper.py) `\n]
+FAILED tests/test_link_dependencies.py::test_a_link_is_reported_or_coverage_is_incomplete[<!-- ` -->\n[x](helper.py) `\n]
+FAILED tests/test_link_dependencies.py::test_a_link_is_reported_or_coverage_is_incomplete[x\x0b```\n[a](helper.py)\n]
+FAILED tests/test_link_dependencies.py::test_a_link_is_reported_or_coverage_is_incomplete[x\x0c```\n[a](helper.py)\n]
+FAILED tests/test_link_dependencies.py::test_a_link_is_reported_or_coverage_is_incomplete[x\x85```\n[a](helper.py)\n]
+FAILED tests/test_link_dependencies.py::test_a_link_is_reported_or_coverage_is_incomplete[x\u2028```\n[a](helper.py)\n]
+FAILED tests/test_link_dependencies.py::test_a_link_is_reported_or_coverage_is_incomplete[[foo\n\xa0\nbar](helper.py)\n]
+FAILED tests/test_link_dependencies.py::test_a_link_is_reported_or_coverage_is_incomplete[[foo\n2. bar](helper.py)\n]
+FAILED tests/test_link_dependencies.py::test_a_link_is_reported_or_coverage_is_incomplete[[foo\n*\nbar](helper.py)\n]
+FAILED tests/test_link_dependencies.py::test_many_conflicting_definitions_are_bounded_and_incomplete
+20 failed, 6 passed, 80 deselected in 0.11s
+FAILED tests/test_changed_since.py::test_ignored_discovered_configuration_cannot_be_shown_unchanged
+FAILED tests/test_changed_since.py::test_changed_paths_match_regardless_of_unicode_form_or_case
+2 failed, 27 deselected in 0.44s

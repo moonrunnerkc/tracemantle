@@ -62,8 +62,9 @@ def check_claude_only_fields(skill: ParsedSkill) -> list[Diagnostic]:
 
 def _vscode_dirname_rule(severity: Severity) -> Callable[[ParsedSkill], list[Diagnostic]]:
     """Build the VS Code name/directory rule at ``severity``. The ERROR variant
-    (--strict-vscode) states the consequence as certain rather than likely."""
-    outcome = "will not" if severity == Severity.ERROR else "would not"
+    names the explicitly selected policy that raised it."""
+    outcome = "does not" if severity == Severity.ERROR else "would not"
+    policy = " Reported as an error by the selected --strict-vscode policy." if severity == Severity.ERROR else ""
 
     def check(skill: ParsedSkill) -> list[Diagnostic]:
         pair = name_directory_mismatch(skill)
@@ -76,7 +77,7 @@ def _vscode_dirname_rule(severity: Severity) -> Callable[[ParsedSkill], list[Dia
             message=(
                 f"VS Code requires the name field ('{name}') to match the "
                 f"parent directory ('{parent_dir}'). This skill {outcome} "
-                f"conform to the standard naming contract; loader behavior is unverified (historical profile {_VSCODE_DATA_DATE})."
+                f"conform to the standard naming contract; loader behavior is unverified (historical profile {_VSCODE_DATA_DATE}).{policy}"
             ),
         )]
 
@@ -142,13 +143,14 @@ def _detect_cursor_unsafe_block_scalar(skill: ParsedSkill) -> str | None:
     return marker_match.group("marker")
 
 
-def _cursor_block_scalar_message(marker: str) -> str:
+def _cursor_block_scalar_message(marker: str, severity: Severity) -> str:
     """Return the diagnostic message for an unsafe Cursor block scalar."""
+    policy = " Reported as an error by the selected --strict-cursor policy." if severity == Severity.ERROR else ""
     return (
         f"description uses block scalar '{marker}' which Cursor's skills "
         f"UI historically rendered as empty in an unversioned report (got 'description: {marker}'). Runtime behavior is unverified. Consider "
         f"'description: >-' (folded strip) instead "
-        f"(as of {_CURSOR_DATA_DATE})."
+        f"(as of {_CURSOR_DATA_DATE}).{policy}"
     )
 
 
@@ -163,7 +165,7 @@ def _cursor_block_scalar_rule(severity: Severity) -> Callable[[ParsedSkill], lis
         return [Diagnostic(
             rule="compat.cursor-description-block-scalar",
             severity=severity,
-            message=_cursor_block_scalar_message(marker),
+            message=_cursor_block_scalar_message(marker, severity),
         )]
 
     return check

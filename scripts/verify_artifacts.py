@@ -80,6 +80,9 @@ print(tracemantle.__version__)
             source.write_text(header + f'`Title\n{underline}\n[helper](helper.py) `\n')
             identity = json.loads(run([str(executable), 'manifest', str(bundle), '--format', 'json'], work))['result']
             assert identity['complete'] and ['SKILL.md', 'helper.py'] in identity['dependencies']
+        source.write_text(header + '[helper](\nhelper.py\n)\n')
+        identity = json.loads(run([str(executable), 'manifest', str(bundle), '--format', 'json'], work))['result']
+        assert identity['complete'] and ['SKILL.md', 'helper.py'] in identity['dependencies']
         overflow = work / 'overflow.json'
         overflow.write_text('{"overflow": 1e999}')
         store = work / 'evidence'
@@ -94,7 +97,7 @@ print(tracemantle.__version__)
         assert 'Traceback' not in rejected.stderr and not store.exists()
         run([*pip, 'check'], work)
         return {'artifact': artifact.name, 'sha256': hashlib.sha256(artifact.read_bytes()).hexdigest(),
-                'version': version, 'clean_install': 'passed', 'setext_dependencies': 'passed', 'numeric_overflow': 'passed',
+                'version': version, 'clean_install': 'passed', 'setext_dependencies': 'passed', 'multiline_links': 'passed', 'numeric_overflow': 'passed',
                 'legacy_migration': 'passed' if legacy else 'not requested'}
 
 

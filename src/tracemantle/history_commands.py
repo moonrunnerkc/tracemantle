@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from tracemantle import __version__
+from tracemantle.cli_errors import exit_input_error
 from tracemantle.core import (
     LedgerError,
     RunAgents,
@@ -52,23 +53,18 @@ def run_show_history(args: argparse.Namespace, paths: list[Path]) -> None:
             lp = legacy
             print('Reading legacy history; use tracemantle migrate-history to copy it explicitly.', file=sys.stderr)
     if not lp.exists():
-        print(
-            terminal(f"No history ledger found for {target_path}. "
-            f"Run 'tracemantle {target_path} --history' to start tracking."),
-            file=sys.stderr,
-        )
-        sys.exit(2)
+        message = f"No history ledger found for {target_path}. Run 'tracemantle {target_path} --history' to start tracking."
+        exit_input_error(args, message, text=message)
     try:
         ledger = load_ledger(lp)
     except (LedgerError, EvidenceError, OSError) as exc:
         # Exit 2: README documents it as the code for malformed input, and an
         # unreadable ledger is exactly that. This path returned 1 before, which
         # contradicted the documented contract.
-        print(terminal(f"Error: {exc}"), file=sys.stderr)
-        sys.exit(2)
+        exit_input_error(args, str(exc))
     if ledger is None:
-        print(terminal(f"No history ledger found for {target_path}."), file=sys.stderr)
-        sys.exit(2)
+        message = f"No history ledger found for {target_path}."
+        exit_input_error(args, message, text=message)
     if not args.quiet:
         if args.format == "json":
             print(render_ledger_json(ledger))
@@ -118,7 +114,7 @@ def record_history(
         )
         lp = ledger_path_for(path)
         try:
-            identity = history_identity(skill_for_history, {name: getattr(args, name) for name in ('max_lines', 'max_tokens', 'min_desc_score', 'ignore_prefixes', 'skip_ref_check', 'skip_dirname_check', 'strict_all', 'strict_vscode', 'strict_cursor', 'target_agent', 'analyze_graph', 'semantic', 'critique_agent', 'graph_agent')})
+            identity = history_identity(skill_for_history, {name: getattr(args, name) for name in ('max_lines', 'max_tokens', 'min_desc_score', 'ignore_prefixes', 'no_inline_ignores', 'skip_ref_check', 'skip_dirname_check', 'strict_all', 'strict_vscode', 'strict_cursor', 'target_agent', 'analyze_graph', 'semantic', 'critique_agent', 'graph_agent')})
             prior_runs = comparable_runs(lp, identity)
             regression_diags = check_regression(prior_runs, preliminary_entry)
         except (LedgerError, EvidenceError, OSError) as exc:
@@ -135,6 +131,7 @@ def record_history(
             results[index] = merge_diagnostics(results[index], regression_diags)
 
         results[index] = filter_results([results[index]], args.ignore_prefixes,
+                                          {} if args.no_inline_ignores else
                                           {results[index].path: inline_ignore_prefixes(skill_for_history)})[0]
         file_exit_code = compute_exit_code([results[index]], strict_all=args.strict_all)
         if args.fail_on_regression and any(d.rule == 'history.skill.regressed' for d in results[index].diagnostics):

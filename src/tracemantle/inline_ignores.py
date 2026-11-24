@@ -3,25 +3,30 @@
 A YAML comment such as ``# tracemantle: ignore=sizing, compat.unverified``
 inside the frontmatter suppresses diagnostics whose rule starts with a listed
 prefix, for that file only. A comment keeps the parsed frontmatter, and so
-what an agent loads, unchanged. The directive is reviewed skill content, like
-project configuration: it is always reported as an ``ignore.inline`` note so a
-suppression is never silent, and it cannot suppress its own ``ignore.`` reports.
+what an agent loads, unchanged. Only comment-only lines count: the same text
+inside a block or quoted scalar is string content. The directive is reviewed
+skill content, like project configuration: it is always reported as an
+``ignore.inline`` note so a suppression is never silent, and it cannot suppress
+its own ``ignore.`` reports. A caller validating untrusted contributions can
+refuse directives; they are then reported as ``ignore.inline-refused``.
 """
 
 from __future__ import annotations
 
 import re
+from dataclasses import replace
 
 from tracemantle.parser import ParsedSkill
-from tracemantle.result import Diagnostic, Severity
+from tracemantle.result import Diagnostic, Severity, ValidationResult
 
-_DIRECTIVE = re.compile(r"^[ \t]*#[ \t]*tracemantle:[ \t]*ignore[ \t]*=([^\n]*)$", re.MULTILINE)
+_DIRECTIVE = re.compile(r"[ \t]*tracemantle:[ \t]*ignore[ \t]*=(.*)")
 _PREFIX = re.compile(r"[a-z0-9][a-z0-9._-]*")
 _OWN_NAMESPACE = "ignore."
 
 
 def _directive_tokens(skill: ParsedSkill) -> list[str]:
-    return [token.strip() for match in _DIRECTIVE.finditer(skill.yaml_text) for token in match[1].split(",") if token.strip()]
+    matches = (_DIRECTIVE.fullmatch(comment) for comment in skill.yaml_comments)
+    return [token.strip() for match in matches if match for token in match[1].split(",") if token.strip()]
 
 
 def _is_usable(token: str) -> bool:
@@ -58,3 +63,14 @@ def check_inline_ignores(skill: ParsedSkill) -> list[Diagnostic]:
             message=f"Inline ignore suppresses rules starting with: {', '.join(prefixes)}. Remove the frontmatter comment to restore them.",
         ))
     return diagnostics
+
+
+def refuse_inline_ignores(result: ValidationResult, prefixes: tuple[str, ...]) -> ValidationResult:
+    """Replace a file's ``ignore.inline`` note for a caller that applies no
+    inline directive, so the report never claims a suppression took place."""
+    refused = Diagnostic(
+        rule="ignore.inline-refused",
+        severity=Severity.INFO,
+        message=f"Inline ignore for rules starting with: {', '.join(prefixes)} was not applied because --no-inline-ignores is set.",
+    )
+    return replace(result, diagnostics=[refused if d.rule == "ignore.inline" else d for d in result.diagnostics])

@@ -35,7 +35,8 @@ def validate(
         min_desc_score: Minimum description quality score.
         strict_vscode: Promote VS Code compatibility issues to errors.
         strict_cursor: Promote Cursor compatibility issues to errors.
-        strict_all: Enable all strict modes (promote warnings to exit 1, strict VS Code, strict Cursor).
+        strict_all: Accepted for compatibility. The CLI gate uses it to reject warnings; it no
+            longer promotes vendor compatibility advice, which needs strict_vscode or strict_cursor.
         target_agent: Scope compatibility checks to an agent target.
 
     Returns:
@@ -62,8 +63,8 @@ def validate(
         skip_dirname_check=skip_dirname_check,
         skip_ref_check=skip_ref_check,
         min_desc_score=min_desc_score,
-        strict_vscode=strict_vscode or strict_all,
-        strict_cursor=strict_cursor or strict_all,
+        strict_vscode=strict_vscode,
+        strict_cursor=strict_cursor,
         strict_all=strict_all,
         target_agent=target_agent,
     )

@@ -290,7 +290,7 @@ def test_history_regression_emits_warning(tmp_path: Path):
     }
     lp = _ledger_path(bad_skill)
     document = parse(bad_skill)
-    identity = history_identity(document, {"max_lines": None, "max_tokens": None, "ignore_prefixes": [], "skip_ref_check": False, "skip_dirname_check": True, "strict_all": False, "target_agent": "all", "min_desc_score": None, "strict_vscode": False, "strict_cursor": False, "analyze_graph": False, "semantic": False, "critique_agent": None, "graph_agent": None})
+    identity = history_identity(document, {"max_lines": None, "max_tokens": None, "ignore_prefixes": [], "no_inline_ignores": False, "skip_ref_check": False, "skip_dirname_check": True, "strict_all": False, "target_agent": "all", "min_desc_score": None, "strict_vscode": False, "strict_cursor": False, "analyze_graph": False, "semantic": False, "critique_agent": None, "graph_agent": None})
     put_record(lp, {"schema_version": 2, "kind": "validation-history", "run_id": "synthetic-prior", "bundle_sha256": identity[0], "configuration_sha256": identity[1], "entry": pre_seed["runs"][0]})
 
     # Now run with --history on the same bad_desc_empty.md which will fail.
