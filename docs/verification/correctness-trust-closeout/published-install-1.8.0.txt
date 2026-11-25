@@ -1,0 +1,25 @@
+
+install_exit=0
+No broken requirements found.
+version: tracemantle 1.8.0 / tracemantle 1.8.0
+{"module": ".venv/lib/python3.12/site-packages/tracemantle", "version": "1.8.0", "installer": "pip", "direct_url": null}
+--- README quick start
+✔ PASS  hello/SKILL.md
+            · info              description.quality-score  Description quality score: 95/100.
+
+Checked 1 file: 1 passed, 0 failed
+exit=0
+json 1.8.0 {'exit_code': 0, 'passed': True}
+--- corrected behaviors (fixture builders from the checkout's tests/, CLI from the installed distribution)
+
+{"tracemantle": "1.8.0", "source": "<scratch>/smoke-1.8.0/.venv/lib/python3.12/site-packages/tracemantle", "python": "3.12.13"}
+{"body": "comment", "manifest_complete": true, "dependencies": [], "compare_exit": 0, "state": "pass", "changed_inputs": ["helper.py"], "required_reruns": []}
+{"body": "div", "manifest_complete": true, "dependencies": [], "compare_exit": 0, "state": "pass", "changed_inputs": ["helper.py"], "required_reruns": []}
+{"body": "pre", "manifest_complete": true, "dependencies": [], "compare_exit": 0, "state": "pass", "changed_inputs": ["helper.py"], "required_reruns": []}
+{"command": "tracemantle hello --strict --format json", "state": "target edited, unstaged", "files_checked": 1, "exit": 1}
+{"command": "tracemantle hello --strict --format json --changed-since HEAD", "state": "target edited, unstaged", "files_checked": 0, "exit": 0}
+{"command": "tracemantle hello --strict --format json --changed-since HEAD --config tracemantle.toml", "state": "target edited, unstaged", "files_checked": 0, "exit": 0}
+{"command": "tracemantle hello --strict --format json --changed-since HEAD", "state": "target edited, staged", "files_checked": 0, "exit": 0}
+{"command": "tracemantle hello --strict --format json --changed-since HEAD~1", "state": "target edit committed", "files_checked": 0, "exit": 0}
+{"command": "tracemantle hello --strict --format json --changed-since HEAD", "state": "target edit committed", "files_checked": 0, "exit": 0}
+reproduce_exit=0
