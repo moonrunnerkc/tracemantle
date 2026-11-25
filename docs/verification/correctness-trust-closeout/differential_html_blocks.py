@@ -1,8 +1,11 @@
 """Differential check: every helper.py link markdown-it-py (CommonMark) renders
 must be reported by the tokenizer, or coverage must be incomplete."""
-import random, sys, json
+import json
+import random
+import sys
+
 from markdown_it import MarkdownIt
-import tracemantle
+
 from tracemantle.markdown import tokenize
 
 LINES = ['', '', '', '~~~', '```', '~~~~', '   ```', '    ```', '<!--', '-->', '<!-- c -->', '<div>', '</div>', '<div', '<DIV class="a">',
