@@ -15,7 +15,7 @@ macOS or Linux:
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install tracemantle==1.8.0
+python -m pip install tracemantle==1.9.0
 mkdir hello
 ```
 
@@ -24,7 +24,7 @@ Windows PowerShell:
 ```powershell
 py -m venv .venv
 .venv\Scripts\Activate.ps1
-python -m pip install tracemantle==1.8.0
+python -m pip install tracemantle==1.9.0
 mkdir hello
 ```
 

@@ -30,6 +30,31 @@ _LIST = re.compile(r'^ {0,3}([-+*]|[0-9]{1,9}[.)])( +|$)')
 _PREFIX = re.compile(r'^[ \t]*(?:(?:[-+*]|[0-9]{1,9}[.)])[ \t]+)?')
 _BLOCK_END = re.compile(r'^ {0,3}(?:#{1,6}(?:[ \t]|$)|(?:\*[ \t]*){3,}$|(?:_[ \t]*){3,}$|(?:-[ \t]*){3,}$)')
 _SETEXT = re.compile(r'^ {0,3}(?:=+|-+)[ \t]*$')
+# CommonMark 0.31.2 section 4.6 HTML block start conditions, tested on a line
+# with its container prefix removed. Kinds 1 to 5 end on a line containing the
+# paired text and may span blank lines; kinds 6 and 7 end at a blank line.
+_HTML_ENDS = (
+    (re.compile(r' {0,3}<(?:pre|script|style|textarea)(?:[ \t>]|$)', re.I), re.compile(r'</(?:pre|script|style|textarea)>', re.I)),
+    (re.compile(r' {0,3}<!--'), re.compile(r'-->')),
+    (re.compile(r' {0,3}<\?'), re.compile(r'\?>')),
+    (re.compile(r' {0,3}<![A-Za-z]'), re.compile(r'>')),
+    (re.compile(r' {0,3}<!\[CDATA\['), re.compile(r'\]\]>')),
+)
+_HTML_BLOCK_TAG = re.compile(
+    r' {0,3}</?(?:address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt'
+    r'|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|nav'
+    r'|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul)(?:[ \t>]|/>|$)', re.I)
+# Kind 7: one complete open or closing tag alone on its line. Each attribute
+# starts with required whitespace and its parts cannot overlap, so a line that
+# fails to match is rejected in linear time.
+_HTML_LONE_TAG = re.compile(
+    r' {0,3}(?:<[A-Za-z][A-Za-z0-9-]*(?:[ \t]+[A-Za-z_:][A-Za-z0-9_.:-]*(?:[ \t]*=[ \t]*(?:[^ \t"\x27=<>`]+|\x27[^\x27]*\x27|"[^"]*"))?)*[ \t]*/?>'
+    r'|</[A-Za-z][A-Za-z0-9-]*[ \t]*>)[ \t]*$')
+# CommonMark 0.31.2 starts a block at these names, and at a lowercase
+# declaration, where 0.29, which GitHub Flavored Markdown follows, does not, or
+# the reverse. Renderers then disagree about where the block ends, so the
+# structure after it is not trusted.
+_HTML_VERSION_DEPENDENT = re.compile(r' {0,3}(?:(?i:</?(?:textarea|search|source))(?:[ \t>]|/>|$)|<![a-z])')
 _BRACKET = re.compile(r'[\\\[\]]')
 _ESCAPABLE = frozenset('!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~')
 # Backslash escapes and entity references are literal text once decoded, so one
@@ -118,6 +143,25 @@ def _inline_code(lines: list[str], blocks: list[int]) -> tuple[list[str], dict[i
     return ''.join(masked).split('\n'), paths
 
 
+def _html_block_start(line: str, in_paragraph: bool) -> tuple[bool, re.Pattern[str] | None]:
+    """Return whether ``line`` starts an HTML block, and the pattern that ends
+    it. No pattern means the block ends at the next blank line."""
+    if '<' not in line[:4]:
+        return False, None
+    for start, end in _HTML_ENDS:
+        if start.match(line):
+            return True, end
+    # Only a lone tag cannot interrupt a paragraph.
+    return bool(_HTML_BLOCK_TAG.match(line) or (not in_paragraph and _HTML_LONE_TAG.match(line))), None
+
+
+def _html_line(line: str) -> str:
+    """Return a raw HTML block line for extraction. Backticks are literal there,
+    so they are removed before code spans are paired; href, src and link syntax
+    stay readable and keep any helper they name governed."""
+    return line.lstrip(' ').replace('`', ' ')
+
+
 def _blocks(body: str) -> tuple[list[str], list[str], list[int], bool]:
     """Recognize ordinary lists/continuations; refuse complete container guesses."""
     visible: list[str] = []
@@ -128,11 +172,18 @@ def _blocks(body: str) -> tuple[list[str], list[str], list[int], bool]:
     uncertain = False
     fence = ''
     fence_indent = 0
+    in_html = False
+    html_end: re.Pattern[str] | None = None  # None while in_html: the block ends at a blank line.
+    html_indent = 0
     for original in body.splitlines():
         if not original.strip(' \t'):
             visible.append('')
             content.append('')
             paragraph = False
+            in_html = in_html and html_end is not None
+            # Renderers disagree on whether a blank line ends such a block
+            # when it sits inside a list item.
+            uncertain |= in_html and html_indent > 0
             continue
         line = original
         if '\t' in original:
@@ -149,6 +200,13 @@ def _blocks(body: str) -> tuple[list[str], list[str], list[int], bool]:
             visible.append('')
             content.append('')
             continue
+        if in_html and indent < html_indent:
+            in_html = False  # As for a fence, the block ends with its list container.
+        if in_html:
+            visible.append(original)
+            content.append(_html_line(line))
+            in_html = html_end is None or html_end.search(line) is None
+            continue
         if indents and indent < indents[-1] and paragraph and not (
             _LIST.match(line) or _FENCE.match(line) or _BLOCK_END.match(line)
         ):
@@ -162,10 +220,15 @@ def _blocks(body: str) -> tuple[list[str], list[str], list[int], bool]:
             content.append('')
             continue
         normalized = line[base:]
-        if paragraph and _SETEXT.fullmatch(normalized):
+        # Outdented below a list item, a lone marker starts an empty item instead.
+        if paragraph and _SETEXT.fullmatch(normalized) and not (left_container and _LIST.match(normalized)):
             # The underline ends the entire preceding paragraph as a heading.
             # Resolve this before list markers and inline spans, without
             # splitting the heading's potentially multiline inline content.
+            # If definitions consume the whole paragraph, the line is text
+            # instead and the paragraph continues; that needs the inline pass.
+            # A line that is also a thematic break ends the block either way.
+            uncertain |= bool(blocks) and _definition_label(content[blocks[-1]], 0) is not None and not _BLOCK_END.match(normalized)
             blocks.append(len(content))
             visible.append(original)
             content.append('')
@@ -201,6 +264,18 @@ def _blocks(body: str) -> tuple[list[str], list[str], list[int], bool]:
                 visible.append('')
                 content.append('')
                 continue
+        if _HTML_VERSION_DEPENDENT.match(normalized):
+            uncertain = True
+        starts_html, html_end = _html_block_start(normalized, paragraph)
+        if starts_html:
+            if paragraph:
+                blocks.append(len(content))
+            html_indent = base
+            in_html = html_end is None or html_end.search(normalized) is None
+            paragraph = False
+            visible.append(original)
+            content.append(_html_line(normalized))
+            continue
         match = _FENCE.match(normalized)
         if match and not (match[1][0] == '`' and '`' in match[2]):
             fence = match[1]

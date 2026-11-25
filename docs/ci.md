@@ -13,13 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-      - uses: moonrunnerkc/tracemantle@v1.8.0
+      - uses: moonrunnerkc/tracemantle@v1.9.0
         with:
           path: skills/
           strict: 'true'
 ```
 
-This uses published 1.8.0. Review the [Action inputs](../action.yml) to select
+This uses published 1.9.0. Review the [Action inputs](../action.yml) to select
 report format or change thresholds. Pin the Action's full release commit if
 required by your repository policy. Remove `strict` to allow warnings while
 still rejecting errors. Directory discovery is recursive and does not follow
@@ -29,7 +29,7 @@ For any CI system, install a supported Python (3.11 or later is recommended; see
 [migration](migration.md#python-support)) and run:
 
 ```bash
-python -m pip install tracemantle==1.8.0
+python -m pip install tracemantle==1.9.0
 tracemantle skills/ --strict --format json
 ```
 
@@ -56,6 +56,15 @@ Configuration with no committed baseline at `REV`, such as a git-ignored
 `tracemantle.toml` or a `--config` file outside the repository, cannot be
 shown unchanged, so the skills it applies to are validated and stderr says why.
 
+Configuration reached through a symbolic link is compared only in the simple
+case: the link and its target are both committed in the repository, the link
+points directly at the file through no other link, and neither changed since
+`REV`. A link to a file outside the repository, a chain of links, a link
+through a linked directory, link text with a `name/..` step, and a broken or
+cyclic link cannot be shown unchanged, so every run validates the skills that configuration applies to
+(since 1.9.0). Commit a regular file, or link directly to a committed one, to
+keep the run selective.
+
 The selection reflects file changes only. A skill that was not selected has
 not been shown to pass under a different TraceMantle version, Python
 environment or command-line flags. Run a full scan after changing any of those.
@@ -72,8 +81,7 @@ tracemantle skills/ --strict --no-inline-ignores --config "$TRUSTED_CHECKOUT/tra
 ```
 
 The Action input is `no-inline-ignores: 'true'`. Refused comments are reported
-as `ignore.inline-refused`. This flag is not in 1.8.0; install from a later
-release or pin a commit that includes it.
+as `ignore.inline-refused` (since 1.9.0).
 
 ## Machine-readable failures
 
@@ -95,7 +103,7 @@ permissions:
   security-events: write
 steps:
   - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-  - run: python -m pip install tracemantle==1.8.0
+  - run: python -m pip install tracemantle==1.9.0
   - run: tracemantle skills/ --format sarif > tracemantle.sarif
   - uses: github/codeql-action/upload-sarif@v3  # pin a full commit SHA if your policy requires it
     if: always()

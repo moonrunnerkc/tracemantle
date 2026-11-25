@@ -1,0 +1,10 @@
+{"tracemantle": "1.8.0", "source": "<worktree at bae6ef4>/src/tracemantle", "python": "3.10.14"}
+{"body": "comment", "manifest_complete": true, "dependencies": [], "compare_exit": 0, "state": "pass", "changed_inputs": ["helper.py"], "required_reruns": []}
+{"body": "div", "manifest_complete": true, "dependencies": [], "compare_exit": 0, "state": "pass", "changed_inputs": ["helper.py"], "required_reruns": []}
+{"body": "pre", "manifest_complete": true, "dependencies": [], "compare_exit": 0, "state": "pass", "changed_inputs": ["helper.py"], "required_reruns": []}
+{"command": "tracemantle hello --strict --format json", "state": "target edited, unstaged", "files_checked": 1, "exit": 1}
+{"command": "tracemantle hello --strict --format json --changed-since HEAD", "state": "target edited, unstaged", "files_checked": 0, "exit": 0}
+{"command": "tracemantle hello --strict --format json --changed-since HEAD --config tracemantle.toml", "state": "target edited, unstaged", "files_checked": 1, "exit": 1}
+{"command": "tracemantle hello --strict --format json --changed-since HEAD", "state": "target edited, staged", "files_checked": 0, "exit": 0}
+{"command": "tracemantle hello --strict --format json --changed-since HEAD~1", "state": "target edit committed", "files_checked": 0, "exit": 0}
+{"command": "tracemantle hello --strict --format json --changed-since HEAD", "state": "target edit committed", "files_checked": 0, "exit": 0}
