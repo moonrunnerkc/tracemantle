@@ -2,13 +2,13 @@
 
 TraceMantle is a different distribution. Installing it is not an automatic upgrade of `skillcheck`. Before uninstalling anything, verify that the installed `skillcheck` distribution is this project's old analyzer, not an unrelated package or executable with the same name. Prefer a clean virtual environment.
 
-Use this replacement sequence. The uninstall migration was verified with the published 1.6.1 artifacts; 1.8.0 retains the same package and compatibility surface:
+Use this replacement sequence. The uninstall migration was verified with the published 1.6.1 artifacts; 1.9.0 retains the same package and compatibility surface:
 
 ```bash
 python -m pip show skillcheck
 # Only after identifying this project's old distribution:
 python -m pip uninstall skillcheck
-python -m pip install tracemantle==1.8.0
+python -m pip install tracemantle==1.9.0
 tracemantle --version
 python -m tracemantle --version
 ```
@@ -48,14 +48,14 @@ git remote set-url origin git@github.com:moonrunnerkc/tracemantle.git
 
 If you also rename the local checkout directory, recreate its virtual environment: installed console scripts can retain absolute paths to the old directory.
 
-The installed skill now lives at `skills/tracemantle/SKILL.md`. Version tags before 1.6.0 still identify SkillCheck source. Use `moonrunnerkc/tracemantle@v1.8.0` for TraceMantle, or pin a full CI-verified commit SHA. Renaming the repository does not publish the distribution or update downstream repositories automatically.
+The installed skill now lives at `skills/tracemantle/SKILL.md`. Version tags before 1.6.0 still identify SkillCheck source. Use `moonrunnerkc/tracemantle@v1.9.0` for TraceMantle, or pin a full CI-verified commit SHA. Renaming the repository does not publish the distribution or update downstream repositories automatically.
 
 For pre-commit, pin the TraceMantle release:
 
 ```yaml
 repos:
   - repo: https://github.com/moonrunnerkc/tracemantle
-    rev: v1.8.0
+    rev: v1.9.0
     hooks:
       - id: tracemantle
 ```
@@ -127,10 +127,11 @@ together and is announced in the changelog before the release that makes it. To
 prepare, run your validation on a supported interpreter now; configuration,
 output and evidence formats do not depend on the Python version.
 
-## Unreleased changes after 1.8.0
+## 1.9.0 upgrade notes
 
-These apply to installations from `main` and to the next release. Recompute
-manifests and rerun comparisons after upgrading.
+Upgrade with `python -m pip install --upgrade tracemantle==1.9.0`. Configuration,
+policies and evidence records need no migration, but some results change.
+Recompute manifests and rerun comparisons after upgrading.
 
 - **Link discovery.** Multiline links, links with bracketed text and reference
   links are now found. When a label is defined more than once, every
@@ -139,6 +140,16 @@ manifests and rerun comparisons after upgrading.
   now returns unknown (exit 4) when the linked helper changed. Bracketed text
   followed by a parenthesized destination that does not parse, for example
   `[text](two words)`, marks dependency coverage incomplete.
+- **HTML blocks.** A fence marker inside an HTML block, such as a comment,
+  `<pre>` or `<div>`, no longer opens a code block, so a link after the block
+  is found. A comparison that passed because such a link was hidden now
+  returns unknown (exit 4) when the linked helper changed. A few forms that
+  Markdown versions or renderers read differently now mark dependency
+  coverage incomplete: a line that starts with a `<textarea>`, `<search>` or
+  `<source>` tag or a lowercase declaration such as `<!doctype`, a blank line
+  inside a comment or `<pre>`-style block within a list item, and a Setext
+  underline after a paragraph that begins with a link reference definition.
+  See [contracts](contracts.md).
 - **Ignore comments.** `# tracemantle: ignore=...` inside a block or quoted
   YAML string no longer suppresses anything. Move the directive to a comment
   line of its own if it was meant to apply.
@@ -150,6 +161,11 @@ manifests and rerun comparisons after upgrading.
   way; pass `strict_vscode=True` or `strict_cursor=True`.
 - **`--changed-since`.** A configuration change now selects the skills it
   applies to, so an incremental run can validate more skills than before.
+  This includes a change to the target of a symbolic link named
+  `tracemantle.toml`, `skillcheck.toml` or `pyproject.toml`, or passed to
+  `--config`. A linked configuration that cannot be compared with the
+  revision is validated on every run; see
+  [changed skills only](ci.md#changed-skills-only).
 - **JSON failures.** With `--format json`, input and usage failures detected
   after argument parsing print the schema-2 error envelope on stdout instead of
   a stderr message. `--quiet` keeps stderr text for all of them, including

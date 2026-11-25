@@ -7,11 +7,11 @@ Python 3.10 or later is required. In a clean working directory:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install tracemantle==1.8.0
+python -m pip install tracemantle==1.9.0
 ```
 
 On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1` instead.
-This installs 1.8.0. No account, evaluator or evidence policy is needed.
+This installs 1.9.0. No account, evaluator or evidence policy is needed.
 Default validation makes no network calls; package installation downloads packages.
 
 ## Validate your first skill
