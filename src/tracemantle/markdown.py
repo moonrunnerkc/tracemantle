@@ -8,7 +8,8 @@ from __future__ import annotations
 import html
 import re
 from bisect import bisect_right
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
+from itertools import combinations
 from urllib.parse import unquote, urlsplit
 
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
@@ -20,7 +21,6 @@ _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 _LINK = re.compile(r'!?\[[^\[\]\n]*\]\(\s*(<[^>\n]+>|(?:[^\s()\\]|\\.|\([^()\n]*\))+)(?:\s+(?:"[^"\n]*"|\x27[^\x27\n]*\x27))?\s*\)')
 _REFERENCE = re.compile(r'\[([^\[\]\n]+)\](?:\[([^\[\]\n]*)\])?')
 _HTML = re.compile(r'<(?:a|img)\s[^<>]*?(?:href|src)\s*=\s*[\"\x27]([^\"\x27]+)[\"\x27]', re.I)
-_CODE_BOUNDARY = re.compile(r'`+|\n[ \t]*\n')
 # The whole whitespace-free run is consumed so a failed candidate is not
 # rescanned from every later directive word inside it; _DIRECTIVE_PATH then
 # keeps the longest prefix that ends in a file extension.
@@ -50,12 +50,40 @@ _HTML_BLOCK_TAG = re.compile(
 _HTML_LONE_TAG = re.compile(
     r' {0,3}(?:<[A-Za-z][A-Za-z0-9-]*(?:[ \t]+[A-Za-z_:][A-Za-z0-9_.:-]*(?:[ \t]*=[ \t]*(?:[^ \t"\x27=<>`]+|\x27[^\x27]*\x27|"[^"]*"))?)*[ \t]*/?>'
     r'|</[A-Za-z][A-Za-z0-9-]*[ \t]*>)[ \t]*$')
-# CommonMark 0.31.2 starts a block at these names, and at a lowercase
-# declaration, where 0.29, which GitHub Flavored Markdown follows, does not, or
-# the reverse. Renderers then disagree about where the block ends, so the
-# structure after it is not trusted.
-_HTML_VERSION_DEPENDENT = re.compile(r' {0,3}(?:(?i:</?(?:textarea|search|source))(?:[ \t>]|/>|$)|<![a-z])')
-_BRACKET = re.compile(r'[\\\[\]]')
+# Where renderers read HTML blocks differently from CommonMark 0.31.2. Each
+# entry names an alternative reading, the text whose presence makes it matter,
+# and the line start it changes. Revision 0.29, which GitHub Flavored Markdown
+# follows, has no <textarea> raw block, requires an uppercase declaration and
+# lists <source> as a block tag; <search> joined that list in 0.31.
+# markdown-it also requires the uppercase declaration.
+_ALTERNATIVES = {
+    'textarea': (re.compile(r'</?textarea', re.I), None),
+    'declaration': (re.compile(r'<![a-z]'), re.compile(r' {0,3}<![a-z]')),
+    'search': (re.compile(r'</?search', re.I), re.compile(r' {0,3}</?search(?:[ \t>]|/>|$)', re.I)),
+    'source': (re.compile(r'</?source', re.I), re.compile(r' {0,3}</?source(?:[ \t>]|/>|$)', re.I)),
+}
+# The raw text block of the 'textarea' reading, in place of the first _HTML_ENDS pair.
+_RAW_WITHOUT_TEXTAREA = (re.compile(r' {0,3}<(?:pre|script|style)(?:[ \t>]|$)', re.I), re.compile(r'</(?:pre|script|style)>', re.I))
+# Readings that depend on where the document goes, reported by _blocks when it
+# reaches the form. markdown-it ends a comment or <pre>-style block at a blank
+# line when the block sits in a list item; CommonMark continues it.
+_LIST_BLANK = 'list-blank'
+# markdown-it closes the paragraph after each complete link reference
+# definition, so the next line starts a block; cmark keeps the paragraph open
+# and reads that line as its continuation.
+_DEFINITION_BREAK = 'definition-break'
+# After definitions that consume their paragraph, cmark reads a line of
+# hyphens as paragraph text; commonmark.js reads a thematic break or list item.
+_UNDERLINE_TEXT = 'underline-text'
+# markdown-it and cmark remember, per run length, where a failed search for a
+# closing backtick run ended, and can then read a later span's delimiters as
+# literal text. Their state is per paragraph, so this reading takes every
+# backtick as literal in a block that has both an unclosed run and a span.
+_LITERAL_BACKTICKS = 'literal-backticks'
+_MAX_READINGS = 8  # Alternative readings tokenized per document before coverage is incomplete.
+_MAX_DEFINITION_LINES = 16  # Lines one definition may span while its paragraph is tracked.
+_INLINE = re.compile(r'[\\\[\]`]')
+_BACKTICKS = re.compile('`+')
 _ESCAPABLE = frozenset('!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~')
 # Backslash escapes and entity references are literal text once decoded, so one
 # pass handles both. The escaped space is a retained pre-CommonMark extension.
@@ -86,73 +114,41 @@ class Markdown:
     uncertain: bool = False
 
 
-def _inline_code(lines: list[str], blocks: list[int]) -> tuple[list[str], dict[int, list[str]]]:
-    """Mask exact-delimiter code spans in linear passes, retaining path mentions."""
-    text = '\n'.join(lines)
-    if '`' not in text:
-        return lines, {}
-    starts = [0]
-    for line in lines:
-        starts.append(starts[-1] + len(line) + 1)
-    boundaries = [starts[number] for number in blocks]
-    runs = list(_CODE_BOUNDARY.finditer(text))
-    next_run: dict[int, int] = {}
-    pairs: dict[int, int] = {}
-    escaped: set[int] = set()
-    for index in range(len(runs) - 1, -1, -1):
-        while boundaries and runs[index].start() < boundaries[-1]:
-            next_run.clear()
-            boundaries.pop()
-        if runs[index][0].startswith('\n'):
-            next_run.clear()
-            continue
-        length = runs[index].end() - runs[index].start()
-        offset = runs[index].start() - 1
-        while offset >= 0 and text[offset] == '\\':
-            offset -= 1
-        odd = (runs[index].start() - 1 - offset) % 2
-        if odd:
-            escaped.add(index)
-        # Outside a span an escape consumes the first backtick only. Inside
-        # a span backslashes are literal, so closers retain their full length.
-        if length - odd in next_run:
-            pairs[index] = next_run[length - odd]
-        next_run[length] = index
-    masked = list(text)
-    paths: dict[int, list[str]] = {}
-    index = 0
-    while index < len(runs):
-        end = pairs.get(index)
-        if end is None:
-            index += 1
-            continue
-        opener, closer = runs[index], runs[end]
-        target = text[opener.end():closer.start()].strip()
-        # An interior separator in one whitespace-free token, tested without
-        # a backtracking pattern over the untrusted span.
-        path_like = re.fullmatch(r'[^\s`]+', target) and '/' in target[1:-1] and not any(
-            pattern.fullmatch(target) for pattern in (_LINK, _REFERENCE)
-        ) and not ((directive := _DIRECTIVE.fullmatch(target)) and _DIRECTIVE_PATH.fullmatch(directive[1]))
-        if path_like or re.fullmatch(r'[\w.-]+\.[a-zA-Z0-9]+', target):
-            line_number = bisect_right(starts, opener.start()) - 1
-            paths.setdefault(line_number, []).append(target)
-        for offset in range(opener.start() + (index in escaped), closer.end()):
-            if masked[offset] != '\n':
-                masked[offset] = ' '
-        index = end + 1
-    return ''.join(masked).split('\n'), paths
-
-
-def _html_block_start(line: str, in_paragraph: bool) -> tuple[bool, re.Pattern[str] | None]:
-    """Return whether ``line`` starts an HTML block, and the pattern that ends
-    it. No pattern means the block ends at the next blank line."""
+def _html_block_start(line: str, in_paragraph: bool, reading: frozenset[str]) -> tuple[bool, re.Pattern[str] | None]:
+    """Return whether ``line`` starts an HTML block under ``reading``, and the
+    pattern that ends it. No pattern means the block ends at the next blank line."""
     if '<' not in line[:4]:
         return False, None
-    for start, end in _HTML_ENDS:
-        if start.match(line):
-            return True, end
+
+    def alternative(name: str) -> bool:
+        changed = _ALTERNATIVES[name][1]
+        return name in reading and changed is not None and changed.match(line) is not None
+
+    if not alternative('declaration'):
+        for start, end in (_RAW_WITHOUT_TEXTAREA, *_HTML_ENDS[1:]) if 'textarea' in reading else _HTML_ENDS:
+            if start.match(line):
+                return True, end
+    block_tag = alternative('source') or (_HTML_BLOCK_TAG.match(line) is not None and not alternative('search'))
     # Only a lone tag cannot interrupt a paragraph.
-    return bool(_HTML_BLOCK_TAG.match(line) or (not in_paragraph and _HTML_LONE_TAG.match(line))), None
+    return block_tag or (not in_paragraph and _HTML_LONE_TAG.match(line) is not None), None
+
+
+def _definition_run(text: str) -> tuple[int, bool]:
+    """Parse the link reference definitions that ``text`` starts with. Return
+    the offset where the last one starts and True if they consume ``text``,
+    otherwise the offset of the first text that is not a definition and False."""
+    starts = [0]
+    starts.extend(m.end() for m in re.finditer('\n', text))
+    links = _Links()
+    unclosed: set[str] = set()
+    offset = last = 0
+    while offset < len(text):
+        close = _definition_label(text, offset)
+        end = None if close is None else _definition_end(text, offset, close, 0, starts, links, unclosed)
+        if end is None:
+            return offset, False
+        last, offset = offset, end
+    return last, True
 
 
 def _html_line(line: str) -> str:
@@ -162,8 +158,13 @@ def _html_line(line: str) -> str:
     return line.lstrip(' ').replace('`', ' ')
 
 
-def _blocks(body: str) -> tuple[list[str], list[str], list[int], bool]:
-    """Recognize ordinary lists/continuations; refuse complete container guesses."""
+def _blocks(body: str, reading: frozenset[str]) -> tuple[list[str], list[str], list[int], bool, set[str]]:
+    """Recognize ordinary lists/continuations; refuse complete container guesses.
+
+    Returns the visible lines, the lines as inline content, the block start
+    indexes, whether structure is uncertain, and the position-dependent
+    readings whose form the document reaches.
+    """
     visible: list[str] = []
     content: list[str] = []
     indents: list[int] = []
@@ -175,15 +176,22 @@ def _blocks(body: str) -> tuple[list[str], list[str], list[int], bool]:
     in_html = False
     html_end: re.Pattern[str] | None = None  # None while in_html: the block ends at a blank line.
     html_indent = 0
+    reached: set[str] = set()
+    # While a paragraph may hold only link reference definitions: a content
+    # index at or before the start of its last one. Lines after it are parsed
+    # when a line arrives whose reading depends on the answer.
+    definition_from: int | None = None
     for original in body.splitlines():
+        if not paragraph:
+            definition_from = None
         if not original.strip(' \t'):
             visible.append('')
             content.append('')
             paragraph = False
             in_html = in_html and html_end is not None
-            # Renderers disagree on whether a blank line ends such a block
-            # when it sits inside a list item.
-            uncertain |= in_html and html_indent > 0
+            if in_html and html_indent > 0:
+                reached.add(_LIST_BLANK)
+                in_html = _LIST_BLANK not in reading
             continue
         line = original
         if '\t' in original:
@@ -207,6 +215,26 @@ def _blocks(body: str) -> tuple[list[str], list[str], list[int], bool]:
             content.append(_html_line(line))
             in_html = html_end is None or html_end.search(line) is None
             continue
+        after_definitions = False
+        text = line.lstrip(' ')
+        # Whether a paragraph of definitions is still open only matters to a
+        # line that could start a block which cannot interrupt one, or that is
+        # indented or outdented against its container. Only then is it parsed.
+        if definition_from is not None and (text[0] in '<-+*=' or text[0].isdigit() or indent != (indents[-1] if indents else 0)):
+            pending = '\n'.join(content[definition_from:])
+            start, complete = _definition_run(pending)
+            definition_from += pending.count('\n', 0, start)
+            if not complete and _definition_label(pending, start) is None:
+                definition_from = None  # The paragraph holds ordinary text.
+            elif not complete and len(content) - definition_from > _MAX_DEFINITION_LINES:
+                definition_from = None
+                uncertain = True
+            elif complete and not _definition_run(f'{pending[start:]}\n{text}')[1]:
+                # The line is neither the last definition's title nor another definition.
+                after_definitions = True
+                definition_from = None
+                reached.add(_DEFINITION_BREAK)
+                paragraph = _DEFINITION_BREAK not in reading
         if indents and indent < indents[-1] and paragraph and not (
             _LIST.match(line) or _FENCE.match(line) or _BLOCK_END.match(line)
         ):
@@ -221,21 +249,27 @@ def _blocks(body: str) -> tuple[list[str], list[str], list[int], bool]:
             continue
         normalized = line[base:]
         # Outdented below a list item, a lone marker starts an empty item instead.
-        if paragraph and _SETEXT.fullmatch(normalized) and not (left_container and _LIST.match(normalized)):
+        setext = paragraph and _SETEXT.fullmatch(normalized) and not (left_container and _LIST.match(normalized))
+        plain = False
+        if setext and after_definitions:
+            # A heading cannot be empty. Definitions consumed the paragraph,
+            # so this line is not an underline: it starts whatever it would
+            # start after them, or is plain text under the cmark reading.
+            setext = paragraph = False
+            if '-' in normalized:
+                reached.add(_UNDERLINE_TEXT)
+                plain = _UNDERLINE_TEXT in reading
+        if setext:
             # The underline ends the entire preceding paragraph as a heading.
             # Resolve this before list markers and inline spans, without
             # splitting the heading's potentially multiline inline content.
-            # If definitions consume the whole paragraph, the line is text
-            # instead and the paragraph continues; that needs the inline pass.
-            # A line that is also a thematic break ends the block either way.
-            uncertain |= bool(blocks) and _definition_label(content[blocks[-1]], 0) is not None and not _BLOCK_END.match(normalized)
             blocks.append(len(content))
             visible.append(original)
             content.append('')
             paragraph = False
             continue
-        block_end = bool(_BLOCK_END.match(normalized))
-        marker = _LIST.match(normalized)
+        block_end = not plain and bool(_BLOCK_END.match(normalized))
+        marker = None if plain else _LIST.match(normalized)
         if block_end:
             marker = None  # A thematic break takes precedence over a list item.
         if marker and paragraph and not left_container and (
@@ -264,9 +298,7 @@ def _blocks(body: str) -> tuple[list[str], list[str], list[int], bool]:
                 visible.append('')
                 content.append('')
                 continue
-        if _HTML_VERSION_DEPENDENT.match(normalized):
-            uncertain = True
-        starts_html, html_end = _html_block_start(normalized, paragraph)
+        starts_html, html_end = _html_block_start(normalized, paragraph, reading)
         if starts_html:
             if paragraph:
                 blocks.append(len(content))
@@ -286,10 +318,13 @@ def _blocks(body: str) -> tuple[list[str], list[str], list[int], bool]:
         else:
             if normalized.lstrip().startswith('>'):
                 uncertain = True  # Blockquote/container nesting is not parsed.
+            continuing = paragraph
             visible.append(original)
             content.append(normalized.lstrip(' '))
-            paragraph = bool(normalized.strip(' \t')) and not bool(_BLOCK_END.match(normalized))
-    return visible, content, blocks, uncertain
+            paragraph = plain or (bool(normalized.strip(' \t')) and not bool(_BLOCK_END.match(normalized)))
+            if paragraph and not continuing:
+                definition_from = len(content) - 1 if _definition_label(content[-1], 0) is not None else None
+    return visible, content, blocks, uncertain, reached
 
 
 def _skip_space(text: str, offset: int) -> int:
@@ -302,9 +337,10 @@ def _escaped(text: str, offset: int) -> bool:
     return text[offset] == '\\' and offset + 1 < len(text) and text[offset + 1] in _ESCAPABLE
 
 
-def _destination(text: str, offset: int) -> tuple[str | None, int]:
+def _destination(text: str, offset: int, escaped_space: bool = False) -> tuple[str | None, int]:
     """Return a raw link destination and the offset after it, or None and the
-    offset where the scan gave up."""
+    offset where the scan gave up. With ``escaped_space`` a backslash keeps a
+    following space in the destination, which CommonMark does not."""
     end = offset
     if text.startswith('<', offset):
         end += 1
@@ -315,7 +351,7 @@ def _destination(text: str, offset: int) -> tuple[str | None, int]:
         return None, end
     depth = 0
     while end < len(text) and not text[end].isspace():
-        if text[end] == '\\' and end + 1 < len(text) and (text[end + 1] in _ESCAPABLE or text[end + 1] == ' '):
+        if text[end] == '\\' and end + 1 < len(text) and (text[end + 1] in _ESCAPABLE or (escaped_space and text[end + 1] == ' ')):
             end += 2
             continue
         if text[end] == '(':
@@ -358,12 +394,15 @@ def _label(raw: str) -> str:
 
 @dataclass(slots=True)
 class _Links:
-    """Inline destinations and reference-label uses by line index, plus every
-    destination defined for each normalized label, in document order."""
+    """Inline destinations, reference-label uses and path-like code span
+    contents by line index, plus every destination defined for each normalized
+    label, in document order."""
     inline: dict[int, list[str]] = field(default_factory=dict)
     uses: dict[int, list[str]] = field(default_factory=dict)
     definitions: dict[str, list[str]] = field(default_factory=dict)
+    code_paths: dict[int, list[str]] = field(default_factory=dict)
     uncertain: bool = False
+    unclosed_backticks: bool = False  # Some block holds both a code span and an unclosed backtick run.
 
 
 def _label_close(text: str, offset: int) -> int | None:
@@ -384,10 +423,10 @@ def _definition_label(text: str, offset: int) -> int | None:
 
 
 def _definition_end(text: str, offset: int, close: int, first_line: int, starts: list[int], links: _Links,
-                    unclosed: set[str]) -> int | None:
+                    unclosed: set[str], escaped_space: bool = False) -> int | None:
     """Record the definition whose label spans ``offset`` to ``close`` and
     return the offset after it, or None if its destination or title does not parse."""
-    destination, end = _destination(text, _skip_space(text, close + 2))
+    destination, end = _destination(text, _skip_space(text, close + 2), escaped_space)
     if destination is None:
         return None
     line_end = end
@@ -431,39 +470,69 @@ def _definition_end(text: str, offset: int, close: int, first_line: int, starts:
     return min(line_end + 1, len(text))
 
 
-def _scan_block(text: str, first_line: int, links: _Links) -> None:
-    """Collect links from one paragraph-level block in a single forward pass.
+def _code_path(target: str) -> bool:
+    """Whether a code span's stripped content reads as one file path."""
+    # An interior separator in one whitespace-free token, tested without a
+    # backtracking pattern over the untrusted span.
+    path_like = re.fullmatch(r'[^\s`]+', target) and '/' in target[1:-1] and not any(
+        pattern.fullmatch(target) for pattern in (_LINK, _REFERENCE)
+    ) and not ((directive := _DIRECTIVE.fullmatch(target)) and _DIRECTIVE_PATH.fullmatch(directive[1]))
+    return bool(path_like or re.fullmatch(r'[\w.-]+\.[a-zA-Z0-9]+', target))
 
-    Every bracket pair that could be a link label is recorded as a use, so
-    full, collapsed and shortcut references all resolve without lookahead. This
-    is deliberately a superset of CommonMark's link set: an extra governed
-    helper is safe, a missed one permits stale evidence reuse.
-    """
-    starts = [0]
-    starts.extend(m.end() for m in re.finditer('\n', text))
-    unclosed: set[str] = set()
-    offset = 0
-    while offset < len(text):
-        close = _definition_label(text, offset)
-        end = None if close is None else _definition_end(text, offset, close, first_line, starts, links, unclosed)
-        if end is None:
-            break
-        offset = end
-    # A definition cannot interrupt a paragraph, so CommonMark reads these
-    # lines as text. Other renderers accept them, so they are recorded too.
-    for start in starts[bisect_right(starts, offset) - 1:]:
-        close = _definition_label(text, start) if start >= offset else None
-        if close is not None and _definition_end(text, start, close, first_line, starts, links, unclosed) is None:
-            links.uncertain = True  # Shaped like a definition, with a destination that does not parse.
+
+def _inline_target(text: str, offset: int, unclosed: set[str], escaped_space: bool) -> tuple[str | None, int, int]:
+    """Parse the parenthesized destination and title that open at ``offset``.
+    Return the destination, the offset where it starts and the offset after
+    the closing parenthesis; or None, that start and the offset where the
+    destination scan gave up."""
+    start = _skip_space(text, offset + 1)
+    destination, end = ('', start) if text.startswith(')', start) else _destination(text, start, escaped_space)
+    if destination is None:
+        return None, start, end
+    after = _skip_space(text, end)
+    if after > end and after < len(text) and text[after] in '"\'(':
+        title = _title_end(text, after, unclosed)
+        after = len(text) if title is None else _skip_space(text, title)
+    return (destination, start, after + 1) if text.startswith(')', after) else (None, start, start)
+
+
+def _scan_inline(text: str, offset: int, first_line: int, starts: list[int], links: _Links, unclosed: set[str],
+                 escaped_space: bool, literal_backticks: bool) -> list[tuple[int, int]]:
+    """Collect inline links, label uses and code spans from ``offset`` on, and
+    return the code spans as offset pairs. With ``literal_backticks`` a block
+    that has an unclosed backtick run is read without code spans."""
+    # A span closes at the next backtick run of exactly its opening length.
+    offset_from = offset
+    closers: dict[int, list[int]] = {}
+    for run in _BACKTICKS.finditer(text, offset):
+        closers.setdefault(run.end() - run.start(), []).append(run.start())
+    spans: list[tuple[int, int]] = []
+    unclosed_run = False
     openers: list[tuple[int, bool]] = []
     # Failed destination scans in ordinary prose end at the next space and do
     # not overlap. Crafted nesting makes them overlap up to _MAX_PARENS deep, so
     # past this allowance the block stops trying; it is already incomplete.
     budget = 2 * len(text) + 1024
-    while (match := _BRACKET.search(text, offset)) is not None:
+    while (match := _INLINE.search(text, offset)) is not None:
         offset = match.start()
         if text[offset] == '\\':
             offset += 2 if _escaped(text, offset) else 1
+            continue
+        if text[offset] == '`':
+            opened = offset
+            while offset < len(text) and text[offset] == '`':
+                offset += 1
+            candidates = closers.get(offset - opened, ())
+            index = bisect_right(candidates, offset - 1)
+            if index < len(candidates):
+                closer = candidates[index]
+                target = text[offset:closer].strip()
+                if _code_path(target):
+                    links.code_paths.setdefault(first_line + bisect_right(starts, opened) - 1, []).append(target)
+                offset = closer + offset - opened
+                spans.append((opened, offset))
+            else:
+                unclosed_run = True
             continue
         if text[offset] == '[':
             openers.append((offset, False))
@@ -478,38 +547,104 @@ def _scan_block(text: str, first_line: int, links: _Links) -> None:
         if text.startswith('(', offset) and budget < 0:
             links.uncertain = True
         elif text.startswith('(', offset):
-            start = _skip_space(text, offset + 1)
-            destination, end = ('', start) if text.startswith(')', start) else _destination(text, start)
-            if destination is None:
-                budget -= end - start
+            destination, start, end = _inline_target(text, offset, unclosed, False)
+            line = first_line + bisect_right(starts, start) - 1
+            if destination is not None:
+                if destination:
+                    links.inline.setdefault(line, []).append(destination)
+                offset = end
+                continue
+            budget -= end - start
+            destination, _, end = _inline_target(text, offset, unclosed, True) if escaped_space else (None, start, start)
+            budget -= end - start
+            if destination:
+                links.inline.setdefault(line, []).append(destination)
             else:
-                after = _skip_space(text, end)
-                if after > end and after < len(text) and text[after] in '"\'(':
-                    title = _title_end(text, after, unclosed)
-                    after = len(text) if title is None else _skip_space(text, title)
-                if text.startswith(')', after):
-                    if destination:
-                        links.inline.setdefault(first_line + bisect_right(starts, start) - 1, []).append(destination)
-                    offset = after + 1
-                    continue
-            links.uncertain = True  # Bracketed text with a destination that does not parse.
+                links.uncertain = True  # Bracketed text with a destination that does not parse.
         if not nested and offset - opened - 2 <= _MAX_LABEL:
             raw = text[opened + 1:offset - 1]
             if raw.strip():
                 links.uses.setdefault(first_line + bisect_right(starts, opened) - 1, []).append(_label(raw))
+    if spans and unclosed_run:
+        links.unclosed_backticks = True
+        if literal_backticks:
+            # Read the block again with no spans; what the first pass recorded stays governed.
+            return _scan_inline(text.replace('`', ' '), offset_from, first_line, starts, links, unclosed, escaped_space, False)
+    return spans
 
 
-def _links(lines: list[str], blocks: list[int]) -> _Links:
+def _scan_block(text: str, first_line: int, links: _Links, literal_backticks: bool) -> str:
+    """Collect links and code spans from one paragraph-level block in a single
+    forward pass, and return the block with its code spans blanked.
+
+    Code spans and links bind left to right, as in CommonMark: whichever opens
+    first wins, a span's content is not link syntax, and a link's destination
+    and title are raw text in which a backtick opens nothing.
+
+    Every bracket pair that could be a link label is recorded as a use, so
+    full, collapsed and shortcut references all resolve without lookahead. This
+    is deliberately a superset of CommonMark's link set: an extra governed
+    helper is safe, a missed one permits stale evidence reuse.
+    """
+    starts = [0]
+    starts.extend(m.end() for m in re.finditer('\n', text))
+    unclosed: set[str] = set()
+    offset = 0
+    # A backslash before a space ends a CommonMark destination. Renderers that
+    # predate it keep the space, so that reading is recorded as well, without
+    # consuming text that CommonMark still reads as inline content.
+    escaped_space = '\\ ' in text
+    while offset < len(text):
+        close = _definition_label(text, offset)
+        end = None if close is None else _definition_end(text, offset, close, first_line, starts, links, unclosed)
+        if end is None:
+            break
+        offset = end
+    # A definition cannot interrupt a paragraph, so CommonMark reads these
+    # lines as text. Other renderers accept them, so they are recorded too.
+    for start in starts[bisect_right(starts, offset) - 1:]:
+        close = _definition_label(text, start) if start >= offset else None
+        if close is not None and _definition_end(text, start, close, first_line, starts, links, unclosed) is None and not (
+                escaped_space and _definition_end(text, start, close, first_line, starts, links, unclosed, True) is not None):
+            links.uncertain = True  # Shaped like a definition, with a destination that does not parse.
+    if offset:
+        # Renderers disagree on some definitions, for example one with an empty
+        # title, and read the line as text instead. Its link syntax is governed
+        # for them; code spans and path mentions there are not recorded.
+        consumed = _Links()
+        _scan_inline(text[:offset], 0, first_line, starts, consumed, set(), escaped_space, literal_backticks)
+        for line, destinations in consumed.inline.items():
+            links.inline.setdefault(line, []).extend(destinations)
+        for line, labels in consumed.uses.items():
+            links.uses.setdefault(line, []).extend(labels)
+        links.uncertain |= consumed.uncertain
+        links.unclosed_backticks |= consumed.unclosed_backticks
+    spans = _scan_inline(text, offset, first_line, starts, links, unclosed, escaped_space, literal_backticks)
+    if not spans:
+        return text
+    blanked = []
+    offset = 0
+    for opened, closed in spans:
+        blanked.append(text[offset:opened])
+        blanked.append(re.sub(r'[^\n]', ' ', text[opened:closed]))
+        offset = closed
+    return ''.join(blanked) + text[offset:]
+
+
+def _links(lines: list[str], blocks: list[int], literal_backticks: bool) -> tuple[_Links, list[str]]:
+    """Scan each block, and return the links with the lines as the other
+    extractors read them: code spans blanked, everything else unchanged."""
     links = _Links()
+    extraction = list(lines)
     boundaries = set(blocks)
     first = 0
     for index in range(len(lines) + 1):
         if index < len(lines) and lines[index] and (index == first or index not in boundaries):
             continue
         if index > first:
-            _scan_block('\n'.join(lines[first:index]), first, links)
+            extraction[first:index] = _scan_block('\n'.join(lines[first:index]), first, links, literal_backticks).split('\n')
         first = index if index < len(lines) and lines[index] else index + 1
-    return links
+    return links, extraction
 
 
 def _decode(raw: str) -> str:
@@ -523,15 +658,59 @@ def _plain(raw: str) -> str:
 
 
 def tokenize(body: str, start_line: int = 1) -> Markdown:
-    visible, content, blocks, uncertain = _blocks(body)
-    extraction, inline_paths = _inline_code(content, blocks)
-    links = _links(extraction, blocks)
+    """Tokenize ``body`` as CommonMark 0.31.2 and govern every resource that
+    any recognized alternative reading of its HTML blocks would also name.
+
+    Lines, headings and source locations follow the CommonMark reading. A
+    document that needs more than ``_MAX_READINGS`` readings is incomplete.
+    """
+    result, reached = _read(body, start_line, frozenset())
+    names = [name for name, (present, _) in _ALTERNATIVES.items() if present.search(body)]
+    if not names and not reached:
+        return result
+    if 2 ** len(names) > _MAX_READINGS:
+        return replace(result, uncertain=True)
+    queue = [frozenset(chosen) for size in range(1, len(names) + 1) for chosen in combinations(names, size)]
+    scheduled = {frozenset(), *queue}
+    resources = list(result.resources)
+    seen = {(resource.target, resource.kind) for resource in resources}
+    uncertain = result.uncertain
+    reading: frozenset[str] = frozenset()
+    index = 0
+    while True:
+        for name in reached - reading:
+            if reading | {name} in scheduled:
+                continue
+            if len(scheduled) == _MAX_READINGS:
+                uncertain = True
+                break
+            scheduled.add(reading | {name})
+            queue.append(reading | {name})
+        if index == len(queue):
+            break
+        reading = queue[index]
+        index += 1
+        other, reached = _read(body, start_line, reading)
+        uncertain |= other.uncertain
+        for resource in other.resources:
+            if (resource.target, resource.kind) not in seen:
+                seen.add((resource.target, resource.kind))
+                resources.append(resource)
+    return replace(result, resources=tuple(resources), uncertain=uncertain)
+
+
+def _read(body: str, start_line: int, reading: frozenset[str]) -> tuple[Markdown, set[str]]:
+    """Tokenize ``body`` under one reading; also report ``_blocks``' last value."""
+    visible, content, blocks, uncertain, reached = _blocks(body, reading)
+    links, extraction = _links(content, blocks, _LITERAL_BACKTICKS in reading)
+    if links.unclosed_backticks:
+        reached.add(_LITERAL_BACKTICKS)
     uncertain |= links.uncertain or _FOREIGN_LINE_BREAK.search(body) is not None
     if '`' in body:
-        # Definitions are block structure and bind before inline code, but
-        # spans are masked first here; a backtick on such a line, or inside an
-        # HTML comment, can pair with a later one and hide what lies between.
-        uncertain |= any('`' in line and (_definition_label(line, 0) is not None or _BACKTICK_IN_ANGLE.search(line)) for line in content)
+        # Inline HTML and autolinks are not parsed. A backtick inside a tag,
+        # comment or autolink opens no span there, but it does here, and can
+        # pair with a later one and hide what lies between.
+        uncertain |= any('`' in line and _BACKTICK_IN_ANGLE.search(line) for line in content)
         uncertain |= any('`' in comment.partition('-->')[0] for comment in body.split('<!--')[1:])
     resources: list[Resource] = []
     headings: list[tuple[int, int, str]] = []
@@ -546,7 +725,7 @@ def tokenize(body: str, start_line: int = 1) -> Markdown:
         candidates.extend((_plain(path[0]), 'resource') for m in _DIRECTIVE.finditer(line) if (path := _DIRECTIVE_PATH.match(m[1])))
         candidates.extend((_decode(raw), 'link') for label in links.uses.get(index, [])
                           for raw in links.definitions.get(label, ()) if raw)
-        for target in inline_paths.get(index, []):
+        for target in links.code_paths.get(index, []):
             candidates.append((_plain(target), 'mention' if '/' in target else 'generated'))
         for target, kind in candidates:
             template_path = target.removeprefix('{baseDir}/')
@@ -575,4 +754,4 @@ def tokenize(body: str, start_line: int = 1) -> Markdown:
             if (target, kind) not in seen:
                 resources.append(Resource(target, number, kind))
                 seen.add((target, kind))
-    return Markdown(tuple(visible), tuple(resources), tuple(headings), uncertain)
+    return Markdown(tuple(visible), tuple(resources), tuple(headings), uncertain), reached

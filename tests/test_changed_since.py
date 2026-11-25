@@ -410,7 +410,7 @@ def test_symlinked_configuration_target_edits_count_in_every_git_state(tmp_path:
     incremental = _cli(root, '.', '--strict', '--changed-since', baseline, '--format', 'json')
     assert full.returncode == incremental.returncode == 1
     assert json.loads(incremental.stdout)['results'] == json.loads(full.stdout)['results'] and _selected(full) == ALL
-    assert 'tracemantle.toml is a symbolic link whose target cannot be shown unchanged' in incremental.stderr
+    assert 'tracemantle.toml is reached through a symbolic link and cannot be shown unchanged' in incremental.stderr
 
 
 @_needs_symlinks
@@ -529,7 +529,8 @@ def test_a_symlinked_pyproject_gaining_a_tool_table_selects_its_skills(tmp_path:
 
 
 @_needs_symlinks
-@pytest.mark.parametrize('change,expected', [('none', []), ('target-edited', ALL), ('retargeted', ALL), ('directory-retargeted', ALL)])
+@pytest.mark.parametrize('change,expected', [('none', []), ('target-edited', ALL), ('retargeted', ALL), ('directory-retargeted', ALL),
+                                             ('directory-unchanged', []), ('directory-target-edited', ALL)])
 def test_explicit_symlinked_configuration_is_compared_through_its_link(tmp_path: Path, change: str, expected: list[str]) -> None:
     root = tmp_path / 'repo'
     _configured(root, config_name='config-policy.toml')
@@ -542,7 +543,7 @@ def test_explicit_symlinked_configuration_is_compared_through_its_link(tmp_path:
     (root / 'active').symlink_to('lenient', target_is_directory=True)
     _git(root, 'add', '.')
     _git(root, 'commit', '-qm', 'linked explicit configuration')
-    config = 'active/ci.toml' if change == 'directory-retargeted' else 'ci.toml'
+    config = 'active/ci.toml' if change.startswith('directory') else 'ci.toml'
     if change == 'target-edited':
         (root / 'config-policy.toml').write_text('max-lines = 1\n')
     elif change == 'retargeted':
@@ -551,5 +552,59 @@ def test_explicit_symlinked_configuration_is_compared_through_its_link(tmp_path:
     elif change == 'directory-retargeted':
         (root / 'active').unlink()
         (root / 'active').symlink_to('strict', target_is_directory=True)
+    elif change == 'directory-target-edited':
+        (root / 'lenient' / 'ci.toml').write_text('max-lines = 1\n')
     result = _cli(root, '.', '--strict', '--config', config, '--changed-since', 'HEAD', '--format', 'json')
     assert _selected(result) == expected and result.returncode == (1 if expected else 0)
+
+
+@_needs_symlinks
+@pytest.mark.parametrize('link_target', ['current.toml', 'current/policy.toml', 'tracked/../config/policy.toml', 'current/../config/policy.toml'],
+                         ids=['link-to-link', 'through-linked-directory', 'through-tracked-directory', 'out-of-linked-directory'])
+def test_an_unchanged_link_chain_is_shown_unchanged_hop_by_hop(tmp_path: Path, link_target: str) -> None:
+    root = tmp_path / 'repo'
+    skills = _repository(root)
+    (root / 'config').mkdir()
+    (root / 'config' / 'policy.toml').write_text('max-lines = 500\n')
+    (root / 'tracked').mkdir()
+    (root / 'tracked' / 'keep.txt').write_text('keeps the directory in history\n')
+    (root / 'current.toml').symlink_to('config/policy.toml')
+    (root / 'current').symlink_to('config', target_is_directory=True)
+    (root / 'tracemantle.toml').symlink_to(link_target)
+    _git(root, 'add', '.')
+    _git(root, 'commit', '-qm', 'linked configuration baseline')
+    paths = list(skills.values())
+    # Every link, every directory left through "..", and the file are in history and unchanged.
+    assert changed_skills(paths, 'HEAD') == []
+    (skills['beta-skill'].parent / 'notes.md').write_text('note\n')
+    assert changed_skills(paths, 'HEAD') == [skills['beta-skill']]
+    (root / 'config' / 'policy.toml').write_text('max-lines = 1\n')
+    assert changed_skills(paths, 'HEAD') == paths
+    _git(root, 'commit', '-qam', 'tighten')
+    # The untracked note still selects its own skill, and nothing else does.
+    assert changed_skills(paths, 'HEAD~1') == paths and changed_skills(paths, 'HEAD') == [skills['beta-skill']]
+
+
+@_needs_symlinks
+def test_a_link_into_another_repository_is_compared_with_that_repository(tmp_path: Path) -> None:
+    shared = tmp_path / 'shared'
+    shared.mkdir()
+    _git(shared, 'init', '-q', '-b', 'main')
+    (shared / 'policy.toml').write_text('max-lines = 500\n')
+    _git(shared, 'add', '.')
+    _git(shared, 'commit', '-qm', 'shared policy')
+    root = tmp_path / 'repo'
+    skills = _repository(root)
+    (root / 'tracemantle.toml').symlink_to(shared / 'policy.toml')
+    _git(root, 'add', '.')
+    _git(root, 'commit', '-qm', 'link to the shared policy')
+    _git(root, 'branch', '-f', 'baseline')
+    paths = list(skills.values())
+    # "baseline" names no commit in the other repository, so its file has no history there.
+    assert changed_skills(paths, 'baseline') == paths
+    _git(shared, 'branch', 'baseline')
+    assert changed_skills(paths, 'baseline') == []
+    (shared / 'policy.toml').write_text('max-lines = 1\n')
+    notes: list[str] = []
+    assert changed_skills(paths, 'baseline', notify=notes.append) == paths
+    assert len(notes) == 1 and 'cannot be shown unchanged' in notes[0]

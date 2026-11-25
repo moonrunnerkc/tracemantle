@@ -21,7 +21,8 @@ _MAX_LISTING_BYTES = 16 * 1024 * 1024
 _MAX_STDERR_BYTES = 64 * 1024
 _DEADLINE_SECONDS = 60.0
 _GIT: tuple[str, ...] = ('git', '--no-pager', '--no-replace-objects')
-_LINK_UNPROVEN = 'is a symbolic link whose target cannot be shown unchanged since'
+_LINK_UNPROVEN = 'is reached through a symbolic link and cannot be shown unchanged since'
+_MAX_LINK_HOPS = 40  # The usual kernel limit; a longer chain is treated as a cycle.
 
 
 class ChangeDetectionError(Exception):
@@ -163,35 +164,91 @@ def _baseline_blob(changes: _Changes, path: Path) -> bytes | None:
         return None
 
 
-def _link_unchanged(changes: _Changes, link: Path) -> bool:
-    """Whether the symbolic link ``link``, whose parent directory is already
-    resolved, can be shown to name the same content as at the baseline.
-
-    Git records only the link's own text. The proof therefore needs the
-    committed link to resolve in one step, through no other link, to a file
-    committed in the same repository, with neither changed. A longer chain, a
-    target outside the repository, and a broken or cyclic link are not proven.
-    Neither is link text that normalization would alter: "name/.." resolves
-    only while "name" exists, which Git does not record for a directory.
-    """
+def _in_history(changes: _Changes, path: Path, kind: str) -> bool:
+    """Whether ``path`` is a ``kind`` object (blob or tree) at the baseline.
+    A symbolic link is recorded as a blob."""
+    if path == changes.root:
+        return kind == 'tree'
     try:
-        text = os.readlink(link)
-        resolved = os.path.realpath(link, strict=True)
-    except OSError:
+        found = _git(changes.root, 'cat-file', '-t', f'{changes.commit}:{path.relative_to(changes.root).as_posix()}', limit=64)
+    except ChangeDetectionError:
         return False
-    target = Path(os.path.normpath(link.parent / text))
-    if os.path.normpath(text) != text or resolved != str(target):
-        return False
-    if not (link.is_relative_to(changes.root) and target.is_relative_to(changes.root)):
-        return False
-    return not {_key(link), _key(target)} & changes.files and None not in (_baseline_blob(changes, link), _baseline_blob(changes, target))
+    return found.strip() == kind.encode()
 
 
-def _applies_differently(changes: _Changes, path: Path, present: bool) -> bool:
+def _resolves_unchanged(start: Path, parts: tuple[str, ...], history: Callable[[Path], _Changes], spelled: bool) -> bool:
+    """Whether following ``parts`` from the resolved directory ``start``
+    reaches a file that can be shown to be the one they reached at the baseline.
+
+    The path is resolved one component at a time, as the kernel does, and Git
+    must vouch for each step it cannot infer. A symbolic link must be committed
+    and unchanged in the repository that holds it, since Git records its text.
+    A directory left through ".." must have existed at the baseline, which Git
+    records only for a directory with committed content. The file reached must
+    be committed and unchanged. ``history`` returns the changes of the
+    repository that contains a directory; a step in no repository, or in one
+    where the revision is unknown, is not shown.
+
+    With ``spelled``, ``parts`` are a path the caller wrote. A link among them
+    that is kept outside every repository only says where things are, like the
+    working directory, and is followed without proof. Link text never gets
+    that allowance.
+    """
+    def recorded(path: Path, kind: str) -> bool:
+        try:
+            changes = history(path.parent if kind == 'blob' else path)
+        except ChangeDetectionError:
+            return False
+        # Canonical spelling for Git; the parent holds no link at this point.
+        path = Path(os.path.realpath(path.parent)) / path.name
+        return _key(path) not in changes.files and path.is_relative_to(changes.root) and _in_history(changes, path, kind)
+
+    pending = [(part, spelled) for part in reversed(parts)]
+    entered: list[Path] = []  # Directories stepped into, which a later ".." would leave.
+    current = start
+    hops = 0
+    while pending:
+        part, written = pending.pop()
+        if part == '..':
+            if entered and not recorded(entered.pop(), 'tree'):
+                return False
+            current = current.parent
+            continue
+        candidate = current / part
+        if candidate.is_symlink():
+            hops += 1
+            if hops > _MAX_LINK_HOPS:
+                return False
+            if not recorded(candidate, 'blob'):
+                try:
+                    history(current)
+                except ChangeDetectionError:
+                    if not written:
+                        return False
+                else:
+                    return False
+            try:
+                text = Path(os.readlink(candidate))
+            except OSError:
+                return False
+            if text.is_absolute():
+                current, entered = Path(text.anchor), []
+            pending.extend((name, False) for name in reversed(text.parts[1:] if text.is_absolute() else text.parts))
+        elif pending:
+            if not candidate.is_dir():
+                return False
+            entered.append(candidate)
+            current = candidate
+        else:
+            return candidate.is_file() and recorded(candidate, 'blob')
+    return False
+
+
+def _applies_differently(changes: _Changes, path: Path, present: bool, history: Callable[[Path], _Changes]) -> bool:
     """Whether the configuration file ``path`` cannot be shown to apply to its
     directory exactly as it did at the baseline."""
     if path.is_symlink():
-        return not _link_unchanged(changes, path)
+        return not _resolves_unchanged(path.parent, (path.name,), history, False)
     if _key(path) not in changes.files:
         # Git reports no difference. That establishes nothing for a file it
         # ignores, which has no baseline to compare with.
@@ -207,7 +264,8 @@ def _applies_differently(changes: _Changes, path: Path, present: bool) -> bool:
         return True  # An unreadable baseline cannot be ruled out.
 
 
-def _changed_config(directory: Path, changes: _Changes, cache: dict[Path, Path | None]) -> Path | None:
+def _changed_config(directory: Path, changes: _Changes, cache: dict[Path, Path | None],
+                    history: Callable[[Path], _Changes]) -> Path | None:
     """Return a configuration file that applies to ``directory`` now, or
     applied at the baseline, and cannot be shown unchanged. The walk follows
     configuration discovery: it ends at the nearest directory holding
@@ -221,7 +279,7 @@ def _changed_config(directory: Path, changes: _Changes, cache: dict[Path, Path |
         visited.append(current)
         present = configs_in(current)
         result = next((path for path in (current / name for name in CONFIG_NAMES)
-                       if _applies_differently(changes, path, path in present)), None)
+                       if _applies_differently(changes, path, path in present, history)), None)
         if result or present or current == changes.root or is_discovery_boundary(current):
             break
     cache.update(dict.fromkeys(visited, result))
@@ -261,20 +319,25 @@ def changed_skills(paths: list[Path], revision: str, *, explicit_config: Path | 
     changes: dict[Path, _Changes] = {}
     configs: dict[Path, Path | None] = {}
     notified: set[Path] = set()
-    everything = explicit_config is not None and _explicit_config_changed(explicit_config, revision, roots, changes, notify)
-    selected = []
-    for path in paths:
-        directory = path.resolve().parent
+
+    def history(directory: Path) -> _Changes:
         root = _repository_root(directory, roots)
         if root not in changes:
             changes[root] = _changes(root, revision)
-        found = changes[root]
+        return changes[root]
+
+    everything = explicit_config is not None and _explicit_config_changed(explicit_config, revision, history, notify)
+    selected = []
+    for path in paths:
+        directory = path.resolve().parent
+        found = history(directory)
+        root = found.root
         if everything or _key(directory) in found.directories:
             selected.append(path)
             continue
         if explicit_config is not None:
             continue
-        config = _changed_config(directory, found, configs)
+        config = _changed_config(directory, found, configs, history)
         if config is None:
             continue
         selected.append(path)
@@ -286,31 +349,28 @@ def changed_skills(paths: list[Path], revision: str, *, explicit_config: Path | 
     return selected
 
 
-def _explicit_config_changed(config: Path, revision: str, roots: dict[Path, Path], changes: dict[Path, _Changes],
+def _explicit_config_changed(config: Path, revision: str, history: Callable[[Path], _Changes],
                              notify: Callable[[str], None]) -> bool:
     """Compare a ``--config`` file with ``revision`` in its own repository.
-    A file with no committed baseline there cannot be shown unchanged, and
-    neither can one reached through a symbolic link, unless the link is the
-    file name itself and ``_link_unchanged`` holds."""
+    A file with no committed baseline there cannot be shown unchanged. One
+    reached through a symbolic link or a ".." step is shown unchanged only by
+    ``_resolves_unchanged``."""
     spelled = config.absolute()  # Not normalized: ".." after a link must not be collapsed lexically.
-    config = config.resolve()
     try:
-        root = _repository_root(config.parent, roots)
-        if root not in changes:
-            changes[root] = _changes(root, revision)
-        found = changes[root]
-        # A link kept outside the repository that resolves to its root or
-        # above only spells where the repository is; this history cannot
-        # describe it and it is not examined.
-        link = spelled.parent.resolve() / spelled.name
-        if any(path.is_symlink() and (root in path.resolve().parents or path.parent.resolve().is_relative_to(root))
-               for path in spelled.parents) or (link.is_symlink() and not _link_unchanged(found, link)):
-            notify(f'Configuration {config.name} {_LINK_UNPROVEN} {revision}; validating every skill.')
-            return True
-        if _key(config) in found.files:
+        resolved = config.resolve()
+    except (OSError, RuntimeError):  # A link cycle, reported differently across Python versions.
+        resolved = None
+    if resolved != spelled:
+        if resolved is not None and _resolves_unchanged(Path(spelled.anchor), spelled.parts[1:], history, True):
+            return False
+        notify(f'Configuration {config.name} {_LINK_UNPROVEN} {revision}; validating every skill.')
+        return True
+    try:
+        found = history(resolved.parent)
+        if _key(resolved) in found.files:
             notify(f'Configuration {config.name} changed since {revision}; validating every skill.')
             return True
-        _git(root, 'cat-file', '-e', f'{found.commit}:{config.relative_to(root).as_posix()}')
+        _git(found.root, 'cat-file', '-e', f'{found.commit}:{resolved.relative_to(found.root).as_posix()}')
         return False
     except ChangeDetectionError:
         notify(f'Configuration {config.name} has no history at {revision}; validating every skill.')

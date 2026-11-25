@@ -43,5 +43,7 @@ verify-release:
 	@if grep -rn "$(LEGACY_VERSION)" --include="*.py" --include="*.toml" --include="*.md" --include="*.yml" src/ pyproject.toml README.md action.yml ; then echo "FAIL: $(LEGACY_VERSION) references found"; exit 1; fi
 	@if grep -En "moonrunnerkc/(skillcheck|tracemantle)@v0" README.md; then echo "FAIL: @v0 reference in README"; exit 1; fi
 	@grep -q "rev: v$(VERSION)" docs/migration.md && echo "OK: migration pre-commit rev matches v$(VERSION)" || { echo "FAIL: migration pre-commit 'rev:' does not match pyproject version v$(VERSION); update the rev in docs/migration.md"; exit 1; }
+	@# Build output only. An artifact left from an earlier version fails the clean-directory check below.
+	rm -rf candidate-dist
 	python3 -m build --no-isolation --outdir candidate-dist
 	python3 scripts/verify_artifacts.py candidate-dist

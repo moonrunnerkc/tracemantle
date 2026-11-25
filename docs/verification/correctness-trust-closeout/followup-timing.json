@@ -1,0 +1,104 @@
+{"environment": "CPython 3.10.14, macOS arm64; seconds for 200,000 and 400,000 units of each input (lines, or bytes for the run inputs)",
+"v1.9.0":
+{
+ "definition-lines": [
+  1.001,
+  2.041
+ ],
+ "definition-open-title": [
+  0.432,
+  0.87
+ ],
+ "definition-then-indented": [
+  0.51,
+  1.019
+ ],
+ "definition-then-prose-indented": [
+  0.508,
+  1.019
+ ],
+ "definitions-with-breaks": [
+  1.985,
+  4.066
+ ],
+ "three-alternatives": [
+  0.882,
+  1.797
+ ],
+ "backtick-runs": [
+  0.001,
+  0.001
+ ],
+ "mixed-backtick-runs": [
+  0.016,
+  0.032
+ ],
+ "unclosed-spans": [
+  0.041,
+  0.082
+ ],
+ "bracket-backtick": [
+  0.093,
+  0.187
+ ],
+ "escaped-space-destinations": [
+  0.047,
+  0.094
+ ],
+ "list-blank-comments": [
+  0.097,
+  0.196
+ ]
+}
+, "this change":
+{
+ "definition-lines": [
+  1.48,
+  3.018
+ ],
+ "definition-open-title": [
+  0.48,
+  0.904
+ ],
+ "definition-then-indented": [
+  0.779,
+  1.568
+ ],
+ "definition-then-prose-indented": [
+  0.513,
+  1.028
+ ],
+ "definitions-with-breaks": [
+  7.846,
+  15.785
+ ],
+ "three-alternatives": [
+  7.485,
+  15.096
+ ],
+ "backtick-runs": [
+  0.001,
+  0.001
+ ],
+ "mixed-backtick-runs": [
+  0.024,
+  0.048
+ ],
+ "unclosed-spans": [
+  0.064,
+  0.128
+ ],
+ "bracket-backtick": [
+  0.099,
+  0.199
+ ],
+ "escaped-space-destinations": [
+  0.071,
+  0.141
+ ],
+ "list-blank-comments": [
+  0.232,
+  0.464
+ ]
+}
+}

@@ -127,6 +127,34 @@ together and is announced in the changelog before the release that makes it. To
 prepare, run your validation on a supported interpreter now; configuration,
 output and evidence formats do not depend on the Python version.
 
+## Unreleased changes after 1.9.0
+
+These apply to installations from `main` and to the next release. Recompute
+manifests and rerun comparisons after upgrading.
+
+- **Code spans and links.** They are now read in one left-to-right pass. A
+  link whose title or destination contains a backtick is found, and a title
+  can no longer run across a code span and absorb a later link. A comparison
+  that passed because such a link was hidden returns unknown (exit 4) when the
+  linked helper changed. A definition whose destination is a backticked word
+  now names that word as its destination, as CommonMark does.
+- **Forms that renderers read differently.** `<textarea>`, `<search>`,
+  `<source>` and lowercase declarations at the start of a line, a blank line
+  inside a comment or `<pre>`-style block within a list item, and a line of
+  hyphens after link reference definitions no longer mark coverage
+  incomplete. Every resource named under any recognized reading is a
+  dependency instead, so a document can gain a governed helper, and a link to
+  a missing file under one reading is a broken link.
+- **Unclosed backticks.** In a paragraph that holds both a code span and an
+  unclosed backtick run, link syntax inside the span is now a dependency,
+  because markdown-it and cmark can render it as a link.
+- **Escaped spaces.** `[text](my\ file.py)` still governs `my file.py`. The
+  text is now also read as CommonMark, where it is not a link.
+- **`--changed-since`.** A linked configuration reached through a chain of
+  links, a linked directory or another repository is compared step by step
+  and no longer validated on every run when each step is unchanged in Git.
+  See [changed skills only](ci.md#changed-skills-only).
+
 ## 1.9.0 upgrade notes
 
 Upgrade with `python -m pip install --upgrade tracemantle==1.9.0`. Configuration,

@@ -262,6 +262,7 @@ def test_text_shaped_like_an_earlier_definition_cannot_hide_the_real_one(body: s
     '[foo\n\xa0\nbar](helper.py)\n',
     '[foo\n2. bar](helper.py)\n',
     '[foo\n*\nbar](helper.py)\n',
+    '[x](<a`b>) [L](helper.py) `',
     '<?>\n- [h]: helper.py\n[h]\n',
     '<!--->\n- [x](a "\n- [L](helper.py) ")\n',
     '[d]: x\n===\n<span>\n`[x](a "` [L](helper.py) ")\n',
@@ -305,7 +306,12 @@ def test_many_conflicting_definitions_are_bounded_and_incomplete() -> None:
     # Measured linear from 200,000 to 400,000 repeats (0.03 s to 0.05 s and 0.29 s to 0.56 s).
     '<x' + ' a' * 200_000,
     '<div>\n' * 200_000,
-], ids=['deep-nesting', 'deep-nesting-text', 'html-spaces', 'directive-run', 'definition-uses', 'html-tag-attributes', 'html-block-lines'])
+    # Measured linear from 200,000 to 400,000 lines: 1.8 s to 3.6 s for definitions, and for 20,000 to
+    # 40,000 lines under eight readings 0.8 s to 1.6 s.
+    '[a]: x\n' * 100_000,
+    '<textarea>\n<search>\n<source>\n' + '[a](b) `c`\n' * 20_000,
+], ids=['deep-nesting', 'deep-nesting-text', 'html-spaces', 'directive-run', 'definition-uses', 'html-tag-attributes', 'html-block-lines',
+        'definition-lines', 'eight-readings'])
 def test_review_found_inputs_parse_in_linear_time(body: str) -> None:
     started = time.perf_counter()
     tokenize(body)
@@ -371,15 +377,26 @@ def test_a_link_inside_a_genuine_fence_stays_excluded_around_html(body: str) -> 
     assert result.resources == () and not result.uncertain
 
 
-@pytest.mark.parametrize('body', [
-    f'<textarea>\n\n~~~\n</textarea>\n{LINK}',
-    f'Text\n<source src="a.png">\n~~~\n\n{LINK}',
-    f'Text\n<search>\n~~~\n\n{LINK}',
-], ids=['textarea', 'source', 'search'])
-def test_html_block_tags_that_differ_between_commonmark_versions_keep_coverage_incomplete(body: str) -> None:
-    # CommonMark 0.31.2 starts a block at <textarea> and <search>; 0.29, which
-    # GitHub Flavored Markdown follows, starts one at <source> instead.
-    assert tokenize(body).uncertain
+@pytest.mark.parametrize('body,complete', [
+    (f'<textarea>\n\n~~~\n</textarea>\n{LINK}', True),
+    (f'<textarea>\n\n~~~\n</textarea>\n\n~~~\n{LINK}\n~~~', True),
+    (f'Text\n<source src="a.png">\n~~~\n\n{LINK}', True),
+    (f'Text\n<search>\n~~~\n\n{LINK}', True),
+    (f'<!doctype html\n~~~\n>\n{LINK}', True),
+    (f'- <!--\n\n  ~~~\n  -->\n\n{LINK}', True),
+    (f'<textarea>\n<search>\n<source>\n<!x>\n\n{LINK}', False),
+], ids=['textarea', 'textarea-then-fence', 'source', 'search', 'lowercase-declaration', 'comment-with-blank-line-in-list-item',
+        'more-forms-than-the-reading-bound'])
+def test_html_forms_that_renderers_read_differently_govern_every_reading(body: str, complete: bool) -> None:
+    # CommonMark 0.31.2 starts a block at <textarea>, <search> and a lowercase
+    # declaration; 0.29, which GitHub Flavored Markdown follows, starts one at
+    # <source> instead, and markdown-it ends a comment in a list item at a
+    # blank line. In each body at least one of those readings renders the link
+    # and, except in the first, another reads it as code. The helper is
+    # governed under every reading, so coverage stays complete.
+    result = tokenize(body)
+    assert 'helper.py' in {r.target for r in result.resources}
+    assert result.uncertain is not complete
 
 
 @pytest.mark.parametrize('body,targets', [
@@ -390,3 +407,78 @@ def test_html_block_tags_that_differ_between_commonmark_versions_keep_coverage_i
 def test_dependencies_named_inside_html_blocks_stay_governed(body: str, targets: list[str]) -> None:
     result = tokenize(body)
     assert [r.target for r in result.resources] == targets and not result.uncertain
+
+
+@pytest.mark.parametrize('body,linked', [
+    ('[d]:\n`x`\n[L](helper.py)\n', True),
+    ('[x](a "`") [L](helper.py) `', True),
+    ('[a `]` b](helper.py)', True),
+    ('`[a](helper.py)`', False),
+    ('[a `b](helper.py)` c', False),
+    ('\\`[a](helper.py)`', True),
+    ('``[a](helper.py)`` and `x`', False),
+    ('`a` [L](helper.py) `b`', True),
+    ("[x](a '`') `[L](helper.py)`", False),
+    ('[x]: a "`"\n\n[L](helper.py) `', True),
+    ('``` [L](helper.py) `', True),
+    ('[L](helper.py "`") `x`', True),
+    ('`one\n\ntwo` [L](helper.py)', True),
+], ids=['definition-destination-is-a-code-like-word', 'backtick-in-title', 'code-span-in-link-text', 'link-inside-code-span',
+        'code-span-opens-in-link-text', 'escaped-backtick', 'double-backtick-span', 'spans-around-a-link',
+        'link-inside-later-span', 'backtick-in-definition-title', 'unclosed-backtick-run', 'backtick-in-own-title', 'span-cannot-cross-blank-line'])
+def test_code_spans_and_links_bind_left_to_right(body: str, linked: bool) -> None:
+    # CommonMark 6.1 and 6.3: whichever of a code span or a link starts first
+    # wins, and a destination or title is read as raw text. Each expectation
+    # matches markdown-it-py 4.0.0.
+    result = tokenize(body)
+    assert ('helper.py' in {r.target for r in result.resources}) is linked
+    assert not result.uncertain
+
+
+def test_a_title_cannot_absorb_a_link_across_a_code_span() -> None:
+    # The first bracket pair has no closing parenthesis after its title, so it
+    # is not a link, and the later link is real.
+    result = tokenize('[x](a "\n`[x](a "` [L](helper.py) ")\n')
+    assert 'helper.py' in {r.target for r in result.resources}
+
+
+@pytest.mark.parametrize('body,linked', [
+    ('[d]: x\n===\n    [L](helper.py)\n', True),
+    ('[d]: x\n===\n<span>\n[L](helper.py)\n', True),
+    ('[d]: x\n[e]: y\n=\n[L](helper.py)\n', True),
+    ('[d]: x\ntext\n===\n    [L](helper.py)\n', False),
+    ('[d]: x\n---\n    [L](helper.py)\n', True),
+], ids=['underline-is-text', 'underline-is-text-before-a-tag', 'two-definitions', 'heading-with-text', 'hyphens-are-text-in-cmark'])
+def test_a_setext_underline_after_definitions_is_resolved_exactly(body: str, linked: bool) -> None:
+    # CommonMark example 216: when definitions consume the whole paragraph the
+    # underline is paragraph text, so a following indented line continues it.
+    # For a line of hyphens cmark reads text and commonmark.js a thematic
+    # break, so the link under it is governed for the cmark reading.
+    result = tokenize(body)
+    assert ('helper.py' in {r.target for r in result.resources}) is linked
+    assert not result.uncertain
+
+
+@pytest.mark.parametrize('body,targets', [
+    ('[d]: x\n<span>\n~~~\n\n[L](helper.py)', {'x', 'helper.py'}),
+    ('[d]: x\n    [L](helper.py)', {'x', 'helper.py'}),
+    ('[d]: x\n"title"\n    [L](helper.py)', {'x', 'helper.py'}),
+    ('[d]:\\ [L](helper.py)', {'helper.py', '[L](helper.py)'}),
+    ('[a](my\\ file.py) and [L](helper.py)', {'my file.py', 'helper.py'}),
+    ('[d]:[L](helper.py)\n"")', {'[L](helper.py)', 'helper.py'}),
+    ('[[``][L](helper.py)``<)> `', {'helper.py'}),
+    ('``[L](helper.py)`` and `x`', set()),
+], ids=['tag-line-after-definition', 'indented-line-after-definition', 'indented-line-after-definition-title', 'escaped-space-definition',
+        'escaped-space-destination', 'definition-with-an-empty-title', 'span-beside-an-unclosed-backtick', 'spans-with-no-unclosed-backtick'])
+def test_readings_that_reference_renderers_disagree_on_are_all_governed(body: str, targets: set[str]) -> None:
+    # markdown-it closes the paragraph after a complete definition and cmark
+    # continues it, so the first body links only in markdown-it and the next
+    # two only in cmark. A backslash before a space ends a CommonMark
+    # destination; renderers that predate it keep the space. commonmark.py and
+    # markdown-it reject a definition whose title is empty and read its line
+    # as text. markdown-it reads the span in the seventh body as literal text
+    # because of the unclosed backtick after it; with no unclosed run, as in
+    # the last body, every renderer reads code.
+    result = tokenize(body)
+    assert {r.target for r in result.resources} == targets
+    assert not result.uncertain
