@@ -1,0 +1,41 @@
+{
+ "note": "Inputs of the existing five-second timing tests, best of two runs, seconds, CPython 3.10.14 on macOS arm64, no coverage tracing",
+ "v1.9.0": {
+  "double-title": 0.233,
+  "single-title": 0.233,
+  "paren-title": 0.21,
+  "angle": 0.181,
+  "open-paren": 0.158,
+  "bare-destination": 0.175,
+  "nesting": 0.049,
+  "definition-title": 0.095,
+  "definition-lines": 0.371,
+  "reference-labels": 0.103,
+  "backslashes": 0.013,
+  "multiline-tails": 0.406,
+  "deep-nesting": 0.506,
+  "deep-nesting-text": 0.258,
+  "html-spaces": 0.026,
+  "directive-run": 0.011,
+  "definition-uses": 0.341
+ },
+ "this change": {
+  "double-title": 0.252,
+  "single-title": 0.251,
+  "paren-title": 0.226,
+  "angle": 0.202,
+  "open-paren": 0.156,
+  "bare-destination": 0.175,
+  "nesting": 0.055,
+  "definition-title": 0.099,
+  "definition-lines": 0.414,
+  "reference-labels": 0.108,
+  "backslashes": 0.014,
+  "multiline-tails": 0.418,
+  "deep-nesting": 0.55,
+  "deep-nesting-text": 0.286,
+  "html-spaces": 0.028,
+  "directive-run": 0.02,
+  "definition-uses": 0.283
+ }
+}

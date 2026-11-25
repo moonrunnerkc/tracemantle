@@ -78,15 +78,23 @@ which are larger than the ones used for the 1.9.0 record.
 Every input stays linear. [followup-timing.json](followup-timing.json),
 produced by [followup_timing.py](followup_timing.py), holds seconds at two
 sizes for 1.9.0 and for this change. The timings were taken on a shared
-machine and vary between runs by up to a factor of two; the doubling from
-200,000 to 400,000 units is the property that matters.
+machine and vary between runs; the doubling from 200,000 to 400,000 units is
+the property that matters. The first pull request revision exceeded the
+five-second bound of an existing timing test on slower CI runners; repeated
+labels and candidates are now classified once, which brought that input back
+to its 1.9.0 time.
 
 | Input, 400,000 units | 1.9.0 | This change | Why |
 |---|---|---|---|
-| Definition lines | 2.0 s | 3.0 s | Link syntax inside definitions is read |
-| Definitions each followed by a tag line | 4.1 s | 15.8 s | Two readings of every paragraph |
-| Three divergent tags and 400,000 link lines | 1.8 s | 15.1 s | Eight readings |
+| Definition lines | 2.0 s | 2.0 s | |
+| Definitions each followed by a tag line | 3.9 s | 13.1 s | Two readings of every paragraph |
+| Three divergent tags and 400,000 link lines | 1.7 s | 11.3 s | Eight readings |
+| Comments with blank lines in list items | 0.19 s | 0.43 s | Two readings |
 | Unclosed spans | 0.08 s | 0.13 s | |
+
+[followup-timing-existing-tests.json](followup-timing-existing-tests.json)
+holds the inputs of the existing timing tests: each is within 1.12 times its
+1.9.0 time, apart from one that takes 0.02 s.
 
 A document tokenizes once unless it contains one of the divergent forms.
 The eight-reading bound caps the multiplier.

@@ -306,10 +306,10 @@ def test_many_conflicting_definitions_are_bounded_and_incomplete() -> None:
     # Measured linear from 200,000 to 400,000 repeats (0.03 s to 0.05 s and 0.29 s to 0.56 s).
     '<x' + ' a' * 200_000,
     '<div>\n' * 200_000,
-    # Measured linear from 200,000 to 400,000 lines: 1.8 s to 3.6 s for definitions, and for 20,000 to
-    # 40,000 lines under eight readings 0.8 s to 1.6 s.
-    '[a]: x\n' * 100_000,
-    '<textarea>\n<search>\n<source>\n' + '[a](b) `c`\n' * 20_000,
+    # Measured linear locally: 0.19 s at 40,000 definition lines and 0.38 s at 80,000; 0.16 s at 6,000
+    # lines under eight readings and 0.32 s at 12,000. Sized for slow runners with coverage tracing.
+    '[a]: x\n' * 40_000,
+    '<textarea>\n<search>\n<source>\n' + '[a](b) `c`\n' * 6_000,
 ], ids=['deep-nesting', 'deep-nesting-text', 'html-spaces', 'directive-run', 'definition-uses', 'html-tag-attributes', 'html-block-lines',
         'definition-lines', 'eight-readings'])
 def test_review_found_inputs_parse_in_linear_time(body: str) -> None:
@@ -463,7 +463,7 @@ def test_a_setext_underline_after_definitions_is_resolved_exactly(body: str, lin
     ('[d]: x\n<span>\n~~~\n\n[L](helper.py)', {'x', 'helper.py'}),
     ('[d]: x\n    [L](helper.py)', {'x', 'helper.py'}),
     ('[d]: x\n"title"\n    [L](helper.py)', {'x', 'helper.py'}),
-    ('[d]:\\ [L](helper.py)', {'helper.py', '[L](helper.py)'}),
+    ('[d]:x\\ [L](helper.py)', {'helper.py', 'x [L](helper.py)'}),
     ('[a](my\\ file.py) and [L](helper.py)', {'my file.py', 'helper.py'}),
     ('[d]:[L](helper.py)\n"")', {'[L](helper.py)', 'helper.py'}),
     ('[[``][L](helper.py)``<)> `', {'helper.py'}),

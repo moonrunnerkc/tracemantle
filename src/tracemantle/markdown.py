@@ -616,7 +616,9 @@ def _scan_block(text: str, first_line: int, links: _Links, literal_backticks: bo
         for line, destinations in consumed.inline.items():
             links.inline.setdefault(line, []).extend(destinations)
         for line, labels in consumed.uses.items():
-            links.uses.setdefault(line, []).extend(labels)
+            # A definition already counts as a use of its own label.
+            known = links.uses.setdefault(line, [])
+            known.extend(label for label in labels if label not in known)
         links.uncertain |= consumed.uncertain
         links.unclosed_backticks |= consumed.unclosed_backticks
     spans = _scan_inline(text, offset, first_line, starts, links, unclosed, escaped_space, literal_backticks)
@@ -715,6 +717,10 @@ def _read(body: str, start_line: int, reading: frozenset[str]) -> tuple[Markdown
     resources: list[Resource] = []
     headings: list[tuple[int, int, str]] = []
     seen: set[tuple[str, str]] = set()
+    # A label's destinations and a decoded candidate classify the same way
+    # wherever they recur, and only the first line is reported.
+    expanded: set[str] = set()
+    classified: set[tuple[str, str]] = set()
     for number, line in enumerate(extraction, start_line):
         heading = re.match(r'^(#{1,6})\s+(.*)', line)
         if heading:
@@ -723,11 +729,16 @@ def _read(body: str, start_line: int, reading: frozenset[str]) -> tuple[Markdown
         candidates = [(_decode(raw), 'link') for raw in links.inline.get(index, [])]
         candidates.extend((_plain(m[1]), 'link') for m in _HTML.finditer(line))
         candidates.extend((_plain(path[0]), 'resource') for m in _DIRECTIVE.finditer(line) if (path := _DIRECTIVE_PATH.match(m[1])))
-        candidates.extend((_decode(raw), 'link') for label in links.uses.get(index, [])
-                          for raw in links.definitions.get(label, ()) if raw)
+        for label in links.uses.get(index, ()):
+            if label not in expanded:
+                expanded.add(label)
+                candidates.extend((_decode(raw), 'link') for raw in links.definitions.get(label, ()) if raw)
         for target in links.code_paths.get(index, []):
             candidates.append((_plain(target), 'mention' if '/' in target else 'generated'))
         for target, kind in candidates:
+            if (target, kind) in classified:
+                continue
+            classified.add((target, kind))
             template_path = target.removeprefix('{baseDir}/')
             if any(c in template_path for c in '<>${}'):
                 uncertain = True

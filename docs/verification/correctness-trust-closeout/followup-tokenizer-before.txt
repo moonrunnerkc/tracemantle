@@ -22,4 +22,4 @@ FAILED tests/test_link_dependencies.py::test_readings_that_reference_renderers_d
 FAILED tests/test_link_dependencies.py::test_readings_that_reference_renderers_disagree_on_are_all_governed[escaped-space-definition]
 FAILED tests/test_link_dependencies.py::test_readings_that_reference_renderers_disagree_on_are_all_governed[definition-with-an-empty-title]
 FAILED tests/test_link_dependencies.py::test_readings_that_reference_renderers_disagree_on_are_all_governed[span-beside-an-unclosed-backtick]
-21 failed, 170 passed in 16.32s
+21 failed, 170 passed in 15.85s
