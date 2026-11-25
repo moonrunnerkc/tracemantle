@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Code spans were blanked before links were parsed, so a link title or a definition could run across a blanked span and absorb a later real link while dependency coverage stayed complete, and a link whose own title contained a backtick was hidden. Code spans and links are now read in one left-to-right pass, as CommonMark binds them.
+- A backslash before a space kept the space in a destination, which CommonMark does not, so a definition such as `[d]:\ [link](helper.py)` swallowed the link that CommonMark renders. The CommonMark reading is now parsed first; the destination with the space is still governed when that reading does not parse.
+- A complete link reference definition followed directly by an HTML tag line or an indented line is read differently by markdown-it, which closes the paragraph, and cmark, which continues it. Only one reading was tokenized, so a link the other renders could be missed. Both are now governed.
+- Link syntax inside a definition's destination or title was never read. commonmark.py and markdown-it reject a definition whose title is empty and render that text, so a link there could be missed. It is now governed.
+- markdown-it and cmark can read a code span's delimiters as literal text when the same paragraph holds an unclosed backtick run, which exposes a link inside the span. Such a paragraph is now also read with every backtick literal, and what that reading names is governed.
+
+### Changed
+
+- Forms that renderers read differently no longer mark dependency coverage incomplete. The document is tokenized once per recognized reading, to at most eight, and every resource named under any of them is a dependency. This covers `<textarea>`, `<search>`, `<source>` and lowercase declarations at the start of a line, a blank line inside a comment or `<pre>`-style block within a list item, and a line of hyphens after definitions. A Setext underline of `=` after definitions that consume their paragraph is resolved exactly as paragraph text.
+- `--changed-since` follows a linked configuration one step at a time and asks Git about each link, each directory left through `..` and the file reached, in the repository that holds it. An unchanged chain of links, linked directory or link into another repository is no longer validated on every run. A step with no history still selects the skills the configuration applies to.
+- `make verify-release` empties `candidate-dist` before building, so artifacts from an earlier version cannot fail the clean-directory check.
+
 ## [1.9.0] - 2026-11-24
 
 ### Security

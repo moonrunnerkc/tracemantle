@@ -1,0 +1,13 @@
+implementation: src/ of b7a7e1e6d36505f8e28c1b785a4a2910936f4216 (v1.9.0), selected with PYTHONPATH; tests: this change
+environment: Python 3.10.14, git version 2.54.0 (Apple Git-157), Darwin arm64
+command: python -m pytest tests/test_changed_since.py --no-cov -q
+FAILED tests/test_changed_since.py::test_symlinked_configuration_target_edits_count_in_every_git_state[unstaged]
+FAILED tests/test_changed_since.py::test_symlinked_configuration_target_edits_count_in_every_git_state[staged]
+FAILED tests/test_changed_since.py::test_symlinked_configuration_target_edits_count_in_every_git_state[committed]
+FAILED tests/test_changed_since.py::test_explicit_symlinked_configuration_is_compared_through_its_link[directory-unchanged-expected4]
+FAILED tests/test_changed_since.py::test_an_unchanged_link_chain_is_shown_unchanged_hop_by_hop[link-to-link]
+FAILED tests/test_changed_since.py::test_an_unchanged_link_chain_is_shown_unchanged_hop_by_hop[through-linked-directory]
+FAILED tests/test_changed_since.py::test_an_unchanged_link_chain_is_shown_unchanged_hop_by_hop[through-tracked-directory]
+FAILED tests/test_changed_since.py::test_an_unchanged_link_chain_is_shown_unchanged_hop_by_hop[out-of-linked-directory]
+FAILED tests/test_changed_since.py::test_a_link_into_another_repository_is_compared_with_that_repository
+9 failed, 48 passed in 14.99s

@@ -187,6 +187,9 @@ reported to the owner with reproductions.
 
 ## Retained limits
 
+This table describes 1.9.0. Most of it was resolved afterwards; see the
+[follow-up record](followup.md).
+
 | Limit | Practical effect | Next step |
 |---|---|---|
 | A multi-hop or external configuration link is never shown unchanged | Every incremental run validates the skills it applies to | Commit a regular file or link directly to a committed one |

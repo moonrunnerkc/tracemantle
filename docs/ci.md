@@ -56,14 +56,24 @@ Configuration with no committed baseline at `REV`, such as a git-ignored
 `tracemantle.toml` or a `--config` file outside the repository, cannot be
 shown unchanged, so the skills it applies to are validated and stderr says why.
 
-Configuration reached through a symbolic link is compared only in the simple
-case: the link and its target are both committed in the repository, the link
-points directly at the file through no other link, and neither changed since
-`REV`. A link to a file outside the repository, a chain of links, a link
-through a linked directory, link text with a `name/..` step, and a broken or
-cyclic link cannot be shown unchanged, so every run validates the skills that configuration applies to
-(since 1.9.0). Commit a regular file, or link directly to a committed one, to
-keep the run selective.
+Configuration reached through a symbolic link is followed one step at a time,
+and Git has to vouch for each step. Every link on the way must be committed
+and unchanged since `REV` in the repository that holds it. A directory that
+the path leaves through `..` must have had committed content at `REV`. The
+file reached must be committed and unchanged. When all of that holds the
+configuration is unchanged and the run stays selective, including through a
+chain of links, a linked directory, or a link into another repository in
+which `REV` names a commit (since the release after 1.9.0; 1.9.0 accepted
+only a direct link inside one repository).
+
+When a step cannot be shown, the skills that configuration applies to are
+validated and stderr says why. That is the case for a target or link in no
+Git repository, a repository where `REV` is unknown, a git-ignored or
+untracked target, a directory with no committed content that the path leaves
+through `..`, and a broken or cyclic link. No history exists for those, so
+this is the answer, not a shortcut. On a `--config` path that you type, a
+link kept outside every repository, such as `/tmp` on macOS, only says where
+things are and is followed without proof.
 
 The selection reflects file changes only. A skill that was not selected has
 not been shown to pass under a different TraceMantle version, Python

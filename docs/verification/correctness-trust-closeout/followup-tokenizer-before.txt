@@ -1,0 +1,25 @@
+implementation: src/ of b7a7e1e6d36505f8e28c1b785a4a2910936f4216 (v1.9.0), selected with PYTHONPATH; tests: this change
+environment: Python 3.10.14, git version 2.54.0 (Apple Git-157), Darwin arm64
+command: python -m pytest tests/test_link_dependencies.py --no-cov -q
+FAILED tests/test_link_dependencies.py::test_html_forms_that_renderers_read_differently_govern_every_reading[textarea]
+FAILED tests/test_link_dependencies.py::test_html_forms_that_renderers_read_differently_govern_every_reading[textarea-then-fence]
+FAILED tests/test_link_dependencies.py::test_html_forms_that_renderers_read_differently_govern_every_reading[source]
+FAILED tests/test_link_dependencies.py::test_html_forms_that_renderers_read_differently_govern_every_reading[search]
+FAILED tests/test_link_dependencies.py::test_html_forms_that_renderers_read_differently_govern_every_reading[lowercase-declaration]
+FAILED tests/test_link_dependencies.py::test_html_forms_that_renderers_read_differently_govern_every_reading[comment-with-blank-line-in-list-item]
+FAILED tests/test_link_dependencies.py::test_code_spans_and_links_bind_left_to_right[definition-destination-is-a-code-like-word]
+FAILED tests/test_link_dependencies.py::test_code_spans_and_links_bind_left_to_right[backtick-in-title]
+FAILED tests/test_link_dependencies.py::test_code_spans_and_links_bind_left_to_right[link-inside-later-span]
+FAILED tests/test_link_dependencies.py::test_code_spans_and_links_bind_left_to_right[backtick-in-definition-title]
+FAILED tests/test_link_dependencies.py::test_code_spans_and_links_bind_left_to_right[backtick-in-own-title]
+FAILED tests/test_link_dependencies.py::test_a_title_cannot_absorb_a_link_across_a_code_span
+FAILED tests/test_link_dependencies.py::test_a_setext_underline_after_definitions_is_resolved_exactly[underline-is-text]
+FAILED tests/test_link_dependencies.py::test_a_setext_underline_after_definitions_is_resolved_exactly[underline-is-text-before-a-tag]
+FAILED tests/test_link_dependencies.py::test_a_setext_underline_after_definitions_is_resolved_exactly[two-definitions]
+FAILED tests/test_link_dependencies.py::test_a_setext_underline_after_definitions_is_resolved_exactly[heading-with-text]
+FAILED tests/test_link_dependencies.py::test_a_setext_underline_after_definitions_is_resolved_exactly[hyphens-are-text-in-cmark]
+FAILED tests/test_link_dependencies.py::test_readings_that_reference_renderers_disagree_on_are_all_governed[tag-line-after-definition]
+FAILED tests/test_link_dependencies.py::test_readings_that_reference_renderers_disagree_on_are_all_governed[escaped-space-definition]
+FAILED tests/test_link_dependencies.py::test_readings_that_reference_renderers_disagree_on_are_all_governed[definition-with-an-empty-title]
+FAILED tests/test_link_dependencies.py::test_readings_that_reference_renderers_disagree_on_are_all_governed[span-beside-an-unclosed-backtick]
+21 failed, 170 passed in 15.85s
