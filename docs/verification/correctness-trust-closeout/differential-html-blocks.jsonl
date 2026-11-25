@@ -1,0 +1,7 @@
+# markdown-it-py 4.0.0 (CommonMark mode) on CPython 3.12 against the tokenizer. 'missed' counts documents where the renderer
+# produced a helper.py link that the tokenizer neither reported nor marked incomplete.
+#   PYTHONPATH=<tree>/src python differential_html_blocks.py SEED 300000 LABEL
+{"source": "origin/main@bae6ef4", "seed": 31, "documents": 300000, "oracle_links": 37539, "reported": 37237, "incomplete": 162, "missed": 140, "complete_documents": 195516}
+{"source": "final-implementation", "seed": 31, "documents": 300000, "oracle_links": 37539, "reported": 37463, "incomplete": 76, "missed": 0, "complete_documents": 216808}
+{"source": "final-implementation", "seed": 32, "documents": 300000, "oracle_links": 37433, "reported": 37357, "incomplete": 76, "missed": 0, "complete_documents": 216772}
+{"source": "final-implementation", "seed": 33, "documents": 300000, "oracle_links": 37233, "reported": 37127, "incomplete": 106, "missed": 0, "complete_documents": 216923}

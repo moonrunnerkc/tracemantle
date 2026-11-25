@@ -1,7 +1,7 @@
 """Link forms that must keep a helper governed by approved evidence.
 
-Expectations follow CommonMark 0.31.2 sections 4.7 (link reference
-definitions) and 6.3 (links), not the tokenizer's implementation. The records
+Expectations follow CommonMark 0.31.2 sections 4.6 (HTML blocks), 4.7 (link
+reference definitions) and 6.3 (links), not the tokenizer's implementation. The records
 are synthetic policy controls; no skill or evaluator is executed.
 """
 from __future__ import annotations
@@ -39,9 +39,13 @@ def _targets(body: str, start_line: int = 1) -> list[tuple[str, int]]:
     ('[helper](helper.py unquoted title)', False, False),
     ('    [example](helper.py)', True, False),
     ('```md\n[run][helper]\n\n[helper]: helper.py\n```', True, False),
+    ('<!--\n~~~\n-->\n\n[helper](helper.py)', True, True),
+    ('<div>\n```\n</div>\n\n[helper](helper.py)', True, True),
+    ('<pre>\n~~~\n</pre>\n[helper](helper.py)', True, True),
 ], ids=['single-line-control', 'multiline-destination', 'nested-label', 'first-definition-wins',
         'normalized-multiline-definition', 'multiline-image', 'escaped-bracket', 'later-definition-also-governed',
-        'definition-inside-paragraph', 'paragraph-decoy-before-definition', 'malformed-inline-tail', 'indented-code-example', 'fenced-example'])
+        'definition-inside-paragraph', 'paragraph-decoy-before-definition', 'malformed-inline-tail', 'indented-code-example', 'fenced-example',
+        'fence-marker-in-html-comment', 'fence-marker-in-html-div', 'fence-marker-in-html-pre'])
 def test_link_forms_control_real_trusted_comparison(tmp_path: Path, body: str, complete: bool, dependency: bool) -> None:
     base = _bundle(tmp_path / 'base')
     source = base / 'SKILL.md'
@@ -258,6 +262,12 @@ def test_text_shaped_like_an_earlier_definition_cannot_hide_the_real_one(body: s
     '[foo\n\xa0\nbar](helper.py)\n',
     '[foo\n2. bar](helper.py)\n',
     '[foo\n*\nbar](helper.py)\n',
+    '<?>\n- [h]: helper.py\n[h]\n',
+    '<!--->\n- [x](a "\n- [L](helper.py) ")\n',
+    '[d]: x\n===\n<span>\n`[x](a "` [L](helper.py) ")\n',
+    '[d]: x\n===\n    [L](helper.py)\n',
+    '<!x>\n    [L](helper.py)\n',
+    '- <style\n\n  `[x](a "` [L](helper.py) ")\n',
 ])
 def test_a_link_is_reported_or_coverage_is_incomplete(body: str) -> None:
     result = tokenize(body)
@@ -267,6 +277,8 @@ def test_a_link_is_reported_or_coverage_is_incomplete(body: str) -> None:
 @pytest.mark.parametrize('body,targets', [
     ('1. first\n2. [second](helper.py)', ['helper.py']),
     ('- first\n-\n  [second](helper.py)', ['helper.py']),
+    ('- first\n-\n    [second](helper.py)', ['helper.py']),
+    ('1. first\n-\n    [second](helper.py)', ['helper.py']),
     ('Steps\n1. [first](helper.py)', ['helper.py']),
     ('Text with <b>bold</b> and `code`.\n\n[a](helper.py)', ['helper.py']),
     ('a < b and `c` or d > e\n\n[a](helper.py)', ['helper.py']),
@@ -290,8 +302,91 @@ def test_many_conflicting_definitions_are_bounded_and_incomplete() -> None:
     # Measured linear from 25,000 to 200,000 repeats (0.16 s to 1.33 s). Sized
     # so slow runners with coverage tracing stay inside the bound.
     '[a]: x\n' * 50_000 + '\n' + '[a] ' * 50_000,
-], ids=['deep-nesting', 'deep-nesting-text', 'html-spaces', 'directive-run', 'definition-uses'])
+    # Measured linear from 200,000 to 400,000 repeats (0.03 s to 0.05 s and 0.29 s to 0.56 s).
+    '<x' + ' a' * 200_000,
+    '<div>\n' * 200_000,
+], ids=['deep-nesting', 'deep-nesting-text', 'html-spaces', 'directive-run', 'definition-uses', 'html-tag-attributes', 'html-block-lines'])
 def test_review_found_inputs_parse_in_linear_time(body: str) -> None:
     started = time.perf_counter()
     tokenize(body)
     assert time.perf_counter() - started < 5
+
+
+LINK = '[helper](helper.py)'
+
+
+@pytest.mark.parametrize('body', [
+    f'<!--\n~~~\n-->\n\n{LINK}',
+    f'<!-- note\n\n~~~\n\n-->\n{LINK}',
+    f'<?php\n~~~\n?>\n{LINK}',
+    f'<!DOCTYPE html\n~~~\n>\n{LINK}',
+    f'<![CDATA[\n~~~\n]]>\n{LINK}',
+    f'<pre>\n~~~\n</pre>\n{LINK}',
+    f'<PRE class="x">\n\n~~~\n\n</Pre>\n{LINK}',
+    f'<script>\n~~~\n</script>\n{LINK}',
+    f'<style\n>\n~~~\n</style>\n{LINK}',
+    f'<div>\n```\n</div>\n\n{LINK}',
+    f'<div>\n~~~\n</div>\n\n{LINK}',
+    f'  <DIV\n~~~\n\n{LINK}',
+    f'</div>\n~~~\n\n{LINK}',
+    f'<hr/>\n~~~\n\n{LINK}',
+    f'Text\n<table>\n~~~\n\n{LINK}',
+    f'<span class="a">\n~~~\n</span>\n\n{LINK}',
+    f'</span>\n~~~\n\n{LINK}',
+    f'<custom-tag data-x=1 />\n~~~\n\n{LINK}',
+    f'- <div>\n  ~~~\n\n{LINK}',
+    f'- <!--\n  ~~~\n{LINK}',
+], ids=['comment', 'comment-with-blank-lines', 'processing-instruction', 'declaration', 'cdata', 'pre', 'pre-mixed-case-blank-lines',
+        'script', 'style-open-tag-continues', 'div-backticks', 'div-tildes', 'indented-incomplete-div', 'closing-div', 'self-closing-hr',
+        'table-interrupts-paragraph', 'complete-open-tag', 'complete-closing-tag', 'custom-element', 'div-in-list-item',
+        'comment-ends-with-list-item'])
+def test_a_fence_marker_inside_an_html_block_does_not_hide_a_later_link(body: str) -> None:
+    # CommonMark 4.6: a fence marker inside an HTML block is raw HTML and opens
+    # no code block. markdown-it-py 4.0.0 renders the link in every body.
+    result = tokenize(body)
+    assert ('helper.py', body.count('\n') + 1) in {(r.target, r.line) for r in result.resources}
+    assert not result.uncertain
+
+
+@pytest.mark.parametrize('body', [
+    f'```\n<div>\n{LINK}\n```',
+    f'Text\n<span>\n```\n{LINK}\n```',
+    f'<div>\n\n```\n{LINK}\n```',
+    f'<span>\n\n~~~\n{LINK}\n~~~',
+    f'<!-- note -->\n```\n{LINK}\n```',
+    f'<pre></pre>\n~~~\n{LINK}\n~~~',
+    f'<?>\n~~~\n{LINK}\n~~~',
+    f'<!-->\n~~~\n{LINK}\n~~~',
+    f'<http://example.com>\n```\n{LINK}\n```',
+    f'<div\n\n```\n{LINK}\n```',
+    f'<prefix>\n\n```\n{LINK}\n```',
+    f'- <div>\n\n```\n{LINK}\n```',
+], ids=['html-inside-fence','open-tag-cannot-interrupt-paragraph', 'div-ends-at-blank-line',
+        'span-ends-at-blank-line', 'one-line-comment', 'one-line-pre', 'end-overlaps-instruction-start', 'end-overlaps-comment-start',
+        'autolink-is-not-a-tag', 'incomplete-div-ends-at-blank-line',
+        'pre-prefix-is-an-ordinary-tag', 'div-in-list-item-ends-with-the-item'])
+def test_a_link_inside_a_genuine_fence_stays_excluded_around_html(body: str) -> None:
+    # markdown-it-py 4.0.0 renders the link line as code in every body.
+    result = tokenize(body)
+    assert result.resources == () and not result.uncertain
+
+
+@pytest.mark.parametrize('body', [
+    f'<textarea>\n\n~~~\n</textarea>\n{LINK}',
+    f'Text\n<source src="a.png">\n~~~\n\n{LINK}',
+    f'Text\n<search>\n~~~\n\n{LINK}',
+], ids=['textarea', 'source', 'search'])
+def test_html_block_tags_that_differ_between_commonmark_versions_keep_coverage_incomplete(body: str) -> None:
+    # CommonMark 0.31.2 starts a block at <textarea> and <search>; 0.29, which
+    # GitHub Flavored Markdown follows, starts one at <source> instead.
+    assert tokenize(body).uncertain
+
+
+@pytest.mark.parametrize('body,targets', [
+    ('<div>\n<a href="helper.py">helper</a>\n</div>', ['helper.py']),
+    ('<div>\n`<img src="helper.png">`\n</div>', ['helper.png']),
+    ('<details>\n<summary>More</summary>\n\n[helper](helper.py)\n\n</details>', ['helper.py']),
+], ids=['href-in-block', 'backticks-are-literal-in-block', 'markdown-between-block-tags'])
+def test_dependencies_named_inside_html_blocks_stay_governed(body: str, targets: list[str]) -> None:
+    result = tokenize(body)
+    assert [r.target for r in result.resources] == targets and not result.uncertain

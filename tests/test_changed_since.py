@@ -349,3 +349,207 @@ def test_changed_paths_match_regardless_of_unicode_form_or_case(tmp_path: Path) 
     shouted = root / 'ALPHA-SKILL' / 'SKILL.md'
     if shouted.exists():  # Case-insensitive file systems only.
         assert changed_skills([shouted], 'HEAD') == [shouted]
+
+
+_needs_symlinks = pytest.mark.skipif(sys.platform == 'win32', reason='symlink creation needs privileges on Windows')
+
+
+def _linked_configuration(root: Path, link_target: str = 'config/policy.toml') -> dict[str, Path]:
+    """A committed repository whose root tracemantle.toml is a symlink to a
+    committed policy file that the skills pass under."""
+    skills = _repository(root)
+    for path in skills.values():
+        path.write_text(path.read_text().replace('Body\n', LONG_BODY))
+    (root / 'config').mkdir()
+    (root / 'config' / 'policy.toml').write_text('max-lines = 500\n')
+    (root / 'tracemantle.toml').symlink_to(link_target)
+    _git(root, 'add', '.')
+    _git(root, 'commit', '-qm', 'linked configuration baseline')
+    return skills
+
+
+@_needs_symlinks
+def test_review_reproduction_symlinked_configuration_target(tmp_path: Path) -> None:
+    root = tmp_path / 'repo'
+    (root / 'hello').mkdir(parents=True)
+    (root / 'config').mkdir()
+    _git(root, 'init', '-q')
+    (root / 'hello' / 'SKILL.md').write_text(
+        '---\nname: hello\ndescription: Use when reviewing changed configuration for a release.\n---\nOne.\nTwo.\nThree.\n')
+    (root / 'config' / 'policy.toml').write_text('max-lines = 500\n')
+    (root / 'tracemantle.toml').symlink_to('config/policy.toml')
+    _git(root, 'add', '.')
+    _git(root, 'commit', '-qm', 'baseline')
+    (root / 'config' / 'policy.toml').write_text('max-lines = 1\n')
+
+    def checked(*args: str) -> tuple[int, int]:
+        result = _cli(root, 'hello', '--strict', '--format', 'json', *args)
+        return json.loads(result.stdout)['files_checked'], result.returncode
+
+    assert checked() == (1, 1)
+    assert checked('--changed-since', 'HEAD') == (1, 1)
+    assert checked('--changed-since', 'HEAD', '--config', 'tracemantle.toml') == (1, 1)
+    _git(root, 'commit', '-qam', 'tighten the target')
+    assert checked('--changed-since', 'HEAD~1') == (1, 1)
+
+
+@_needs_symlinks
+@pytest.mark.parametrize('state', ['unstaged', 'staged', 'committed'])
+def test_symlinked_configuration_target_edits_count_in_every_git_state(tmp_path: Path, state: str) -> None:
+    root = tmp_path / 'repo'
+    _linked_configuration(root)
+    baseline = subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
+    unchanged = _cli(root, '.', '--strict', '--changed-since', baseline, '--format', 'json')
+    assert unchanged.returncode == 0 and _selected(unchanged) == []
+    (root / 'config' / 'policy.toml').write_text('max-lines = 1\n')
+    if state != 'unstaged':
+        _git(root, 'add', '.')
+    if state == 'committed':
+        _git(root, 'commit', '-qm', 'tighten')
+    full = _cli(root, '.', '--strict', '--format', 'json')
+    incremental = _cli(root, '.', '--strict', '--changed-since', baseline, '--format', 'json')
+    assert full.returncode == incremental.returncode == 1
+    assert json.loads(incremental.stdout)['results'] == json.loads(full.stdout)['results'] and _selected(full) == ALL
+    assert 'tracemantle.toml is a symbolic link whose target cannot be shown unchanged' in incremental.stderr
+
+
+@_needs_symlinks
+@pytest.mark.parametrize('case', ['external-target', 'retargeted', 'second-hop-retargeted', 'directory-hop-retargeted', 'target-deleted',
+                                  'cyclic', 'ignored-target'])
+def test_symlinked_configuration_that_cannot_be_shown_unchanged_selects_its_skills(tmp_path: Path, case: str) -> None:
+    root = tmp_path / 'repo'
+    target = {'external-target': str(tmp_path / 'external.toml'), 'second-hop-retargeted': 'current.toml',
+              'directory-hop-retargeted': 'current/policy.toml', 'cyclic': 'loop.toml', 'ignored-target': 'local.log'}
+    (tmp_path / 'external.toml').write_text('max-lines = 500\n')
+    skills = _repository(root)
+    (root / 'config').mkdir()
+    (root / 'config' / 'policy.toml').write_text('max-lines = 500\n')
+    (root / 'config' / 'strict.toml').write_text('max-lines = 1\n')
+    (root / 'strict').mkdir()
+    (root / 'strict' / 'policy.toml').write_text('max-lines = 1\n')
+    (root / 'current.toml').symlink_to('config/policy.toml')
+    (root / 'current').symlink_to('config', target_is_directory=True)
+    (root / 'loop.toml').symlink_to('tracemantle.toml')
+    (root / 'local.log').write_text('max-lines = 500\n')
+    (root / 'tracemantle.toml').symlink_to(target.get(case, 'config/policy.toml'))
+    _git(root, 'add', '.')
+    _git(root, 'commit', '-qm', 'linked configuration baseline')
+    paths = list(skills.values())
+    if case == 'retargeted':
+        (root / 'tracemantle.toml').unlink()
+        (root / 'tracemantle.toml').symlink_to('config/strict.toml')
+    elif case == 'second-hop-retargeted':
+        (root / 'current.toml').unlink()
+        (root / 'current.toml').symlink_to('config/strict.toml')
+    elif case == 'directory-hop-retargeted':
+        (root / 'current').unlink()
+        (root / 'current').symlink_to('strict', target_is_directory=True)
+    elif case == 'target-deleted':
+        (root / 'config' / 'policy.toml').unlink()
+    elif case == 'ignored-target':
+        (root / 'local.log').write_text('max-lines = 1\n')
+    notes: list[str] = []
+    # Nothing under a skill directory changed; only the configuration path did,
+    # or its baseline cannot be established.
+    assert changed_skills(paths, 'HEAD', notify=notes.append) == paths
+    assert len(notes) == 1 and 'tracemantle.toml' in notes[0]
+
+
+@_needs_symlinks
+@pytest.mark.parametrize('change', ['create-directory', 'remove-directory'])
+def test_link_text_that_depends_on_an_untracked_directory_is_not_shown_unchanged(tmp_path: Path, change: str) -> None:
+    root = tmp_path / 'repo'
+    skills = _repository(root)
+    (root / 'config').mkdir()
+    (root / 'config' / 'policy.toml').write_text('max-lines = 500\n')
+    # The link works only while "staging" exists, and Git records no empty directory.
+    (root / 'tracemantle.toml').symlink_to('staging/../config/policy.toml')
+    if change == 'remove-directory':
+        (root / 'staging').mkdir()
+    _git(root, 'add', '.')
+    _git(root, 'commit', '-qm', 'link through a directory name')
+    if change == 'create-directory':
+        (root / 'staging').mkdir()
+    else:
+        (root / 'staging').rmdir()
+    assert changed_skills(list(skills.values()), 'HEAD') == list(skills.values())
+
+
+@_needs_symlinks
+def test_explicit_configuration_through_a_tracked_link_to_the_repository_root_is_not_shown_unchanged(tmp_path: Path) -> None:
+    root = tmp_path / 'repo'
+    skills = _configured(root)
+    (root / 'other').mkdir()
+    (root / 'other' / 'tracemantle.toml').write_text('max-lines = 1\n')
+    (root / 'alpha-skill' / 'up').symlink_to('../other', target_is_directory=True)
+    _git(root, 'add', '.')
+    _git(root, 'commit', '-qm', 'linked directory')
+    (root / 'alpha-skill' / 'up').unlink()
+    (root / 'alpha-skill' / 'up').symlink_to('..', target_is_directory=True)
+    _git(root, 'commit', '-qam', 'retarget to the repository root')
+    paths = [skills['beta-skill'], skills['gamma-skill']]
+    assert changed_skills(paths, 'HEAD~1', explicit_config=root / 'alpha-skill' / 'up' / 'tracemantle.toml') == paths
+
+
+@_needs_symlinks
+def test_unchanged_symlinked_configuration_stays_selective(tmp_path: Path) -> None:
+    root = tmp_path / 'repo'
+    skills = _linked_configuration(root)
+    (root / 'config' / 'unrelated.toml').write_text('max-lines = 1\n')
+    (skills['beta-skill'].parent / 'notes.md').write_text('note\n')
+    assert changed_skills(list(skills.values()), 'HEAD') == [skills['beta-skill']]
+
+
+@_needs_symlinks
+def test_unchanged_nearer_configuration_shields_a_skill_from_a_symlinked_root_change(tmp_path: Path) -> None:
+    root = tmp_path / 'repo'
+    skills = _linked_configuration(root)
+    (skills['beta-skill'].parent / 'tracemantle.toml').write_text('max-lines = 400\n')
+    _git(root, 'add', '.')
+    _git(root, 'commit', '-qm', 'nearer project root')
+    (root / 'config' / 'policy.toml').write_text('max-lines = 1\n')
+    assert changed_skills(list(skills.values()), 'HEAD') == [skills['alpha-skill'], skills['gamma-skill']]
+
+
+@_needs_symlinks
+def test_a_symlinked_pyproject_gaining_a_tool_table_selects_its_skills(tmp_path: Path) -> None:
+    root = tmp_path / 'repo'
+    skills = _repository(root)
+    (root / 'config').mkdir()
+    (root / 'config' / 'package.toml').write_text('[project]\nname = "demo"\nversion = "1"\n')
+    (root / 'pyproject.toml').symlink_to('config/package.toml')
+    _git(root, 'add', '.')
+    _git(root, 'commit', '-qm', 'linked package metadata')
+    assert changed_skills(list(skills.values()), 'HEAD') == []
+    (root / 'config' / 'package.toml').write_text('[project]\nname = "demo"\nversion = "1"\n\n[tool.tracemantle]\nmax-lines = 1\n')
+    assert changed_skills(list(skills.values()), 'HEAD') == list(skills.values())
+    _git(root, 'commit', '-qam', 'adopt configuration')
+    (root / 'config' / 'package.toml').write_text('[project]\nname = "demo"\nversion = "1"\n')
+    assert changed_skills(list(skills.values()), 'HEAD') == list(skills.values())
+
+
+@_needs_symlinks
+@pytest.mark.parametrize('change,expected', [('none', []), ('target-edited', ALL), ('retargeted', ALL), ('directory-retargeted', ALL)])
+def test_explicit_symlinked_configuration_is_compared_through_its_link(tmp_path: Path, change: str, expected: list[str]) -> None:
+    root = tmp_path / 'repo'
+    _configured(root, config_name='config-policy.toml')
+    (root / 'strict').mkdir()
+    (root / 'strict' / 'ci.toml').write_text('max-lines = 1\n')
+    (root / 'lenient').mkdir()
+    (root / 'lenient' / 'ci.toml').write_text('max-lines = 500\n')
+    (root / 'strict.toml').write_text('max-lines = 1\n')
+    (root / 'ci.toml').symlink_to('config-policy.toml')
+    (root / 'active').symlink_to('lenient', target_is_directory=True)
+    _git(root, 'add', '.')
+    _git(root, 'commit', '-qm', 'linked explicit configuration')
+    config = 'active/ci.toml' if change == 'directory-retargeted' else 'ci.toml'
+    if change == 'target-edited':
+        (root / 'config-policy.toml').write_text('max-lines = 1\n')
+    elif change == 'retargeted':
+        (root / 'ci.toml').unlink()
+        (root / 'ci.toml').symlink_to('strict.toml')
+    elif change == 'directory-retargeted':
+        (root / 'active').unlink()
+        (root / 'active').symlink_to('strict', target_is_directory=True)
+    result = _cli(root, '.', '--strict', '--config', config, '--changed-since', 'HEAD', '--format', 'json')
+    assert _selected(result) == expected and result.returncode == (1 if expected else 0)

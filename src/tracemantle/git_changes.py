@@ -21,6 +21,7 @@ _MAX_LISTING_BYTES = 16 * 1024 * 1024
 _MAX_STDERR_BYTES = 64 * 1024
 _DEADLINE_SECONDS = 60.0
 _GIT: tuple[str, ...] = ('git', '--no-pager', '--no-replace-objects')
+_LINK_UNPROVEN = 'is a symbolic link whose target cannot be shown unchanged since'
 
 
 class ChangeDetectionError(Exception):
@@ -162,9 +163,35 @@ def _baseline_blob(changes: _Changes, path: Path) -> bytes | None:
         return None
 
 
+def _link_unchanged(changes: _Changes, link: Path) -> bool:
+    """Whether the symbolic link ``link``, whose parent directory is already
+    resolved, can be shown to name the same content as at the baseline.
+
+    Git records only the link's own text. The proof therefore needs the
+    committed link to resolve in one step, through no other link, to a file
+    committed in the same repository, with neither changed. A longer chain, a
+    target outside the repository, and a broken or cyclic link are not proven.
+    Neither is link text that normalization would alter: "name/.." resolves
+    only while "name" exists, which Git does not record for a directory.
+    """
+    try:
+        text = os.readlink(link)
+        resolved = os.path.realpath(link, strict=True)
+    except OSError:
+        return False
+    target = Path(os.path.normpath(link.parent / text))
+    if os.path.normpath(text) != text or resolved != str(target):
+        return False
+    if not (link.is_relative_to(changes.root) and target.is_relative_to(changes.root)):
+        return False
+    return not {_key(link), _key(target)} & changes.files and None not in (_baseline_blob(changes, link), _baseline_blob(changes, target))
+
+
 def _applies_differently(changes: _Changes, path: Path, present: bool) -> bool:
     """Whether the configuration file ``path`` cannot be shown to apply to its
     directory exactly as it did at the baseline."""
+    if path.is_symlink():
+        return not _link_unchanged(changes, path)
     if _key(path) not in changes.files:
         # Git reports no difference. That establishes nothing for a file it
         # ignores, which has no baseline to compare with.
@@ -212,8 +239,11 @@ def changed_skills(paths: list[Path], revision: str, *, explicit_config: Path | 
     or applied at ``revision``. Each skill is checked against the changes of
     its own repository. With ``explicit_config``, that file replaces discovered
     configuration: if it changed, or has no history at ``revision`` in the
-    repository that contains it, every skill is returned. ``notify`` receives one
-    message per reason that widened the selection.
+    repository that contains it, every skill is returned. Configuration reached
+    through a symbolic link counts as unchanged only when the link and its
+    target can both be compared with ``revision``; otherwise the skills it
+    applies to are returned. ``notify`` receives one message per reason that
+    widened the selection.
 
     The selection covers file changes only. It does not show that an
     unselected skill passes under a different tool version, environment or
@@ -231,7 +261,7 @@ def changed_skills(paths: list[Path], revision: str, *, explicit_config: Path | 
     changes: dict[Path, _Changes] = {}
     configs: dict[Path, Path | None] = {}
     notified: set[Path] = set()
-    everything = explicit_config is not None and _explicit_config_changed(explicit_config.resolve(), revision, roots, changes, notify)
+    everything = explicit_config is not None and _explicit_config_changed(explicit_config, revision, roots, changes, notify)
     selected = []
     for path in paths:
         directory = path.resolve().parent
@@ -250,7 +280,8 @@ def changed_skills(paths: list[Path], revision: str, *, explicit_config: Path | 
         selected.append(path)
         if config not in notified:
             notified.add(config)
-            state = 'changed since' if _key(config) in found.files else 'has no history at'
+            state = ('changed since' if _key(config) in found.files
+                     else _LINK_UNPROVEN if config.is_symlink() else 'has no history at')
             notify(f'Configuration {config.relative_to(root).as_posix()} {state} {revision}; validating the skills it applies to.')
     return selected
 
@@ -258,12 +289,24 @@ def changed_skills(paths: list[Path], revision: str, *, explicit_config: Path | 
 def _explicit_config_changed(config: Path, revision: str, roots: dict[Path, Path], changes: dict[Path, _Changes],
                              notify: Callable[[str], None]) -> bool:
     """Compare a ``--config`` file with ``revision`` in its own repository.
-    A file with no committed baseline there cannot be shown unchanged."""
+    A file with no committed baseline there cannot be shown unchanged, and
+    neither can one reached through a symbolic link, unless the link is the
+    file name itself and ``_link_unchanged`` holds."""
+    spelled = config.absolute()  # Not normalized: ".." after a link must not be collapsed lexically.
+    config = config.resolve()
     try:
         root = _repository_root(config.parent, roots)
         if root not in changes:
             changes[root] = _changes(root, revision)
         found = changes[root]
+        # A link kept outside the repository that resolves to its root or
+        # above only spells where the repository is; this history cannot
+        # describe it and it is not examined.
+        link = spelled.parent.resolve() / spelled.name
+        if any(path.is_symlink() and (root in path.resolve().parents or path.parent.resolve().is_relative_to(root))
+               for path in spelled.parents) or (link.is_symlink() and not _link_unchanged(found, link)):
+            notify(f'Configuration {config.name} {_LINK_UNPROVEN} {revision}; validating every skill.')
+            return True
         if _key(config) in found.files:
             notify(f'Configuration {config.name} changed since {revision}; validating every skill.')
             return True

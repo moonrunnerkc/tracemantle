@@ -252,6 +252,13 @@ continuations keep coverage incomplete; and code spans are matched before
 block-level definitions, which is why a backtick on a definition line now
 marks coverage incomplete rather than being resolved exactly.
 
+Correction, 2026-11-24: the statement above that an unparsed HTML block only
+adds a reported link was wrong. A fence marker inside an HTML block was read
+as a fence, which hid a real link after the block while coverage stayed
+complete. The omission existed at 1.8.0 and at this work's merge; it was found
+by the 2026-11-24 review and is resolved in 1.9.0. See the
+[closeout record](../correctness-trust-closeout/acceptance.md).
+
 ## Repository safeguards
 
 State before: `main` unprotected, no rulesets, private vulnerability reporting
@@ -340,7 +347,7 @@ its own later run. The pull request records the run for the merged head.
 | Tag ruleset not exercised | Its effect rests on the API read-back | None planned; see above |
 | Dependabot not yet observed | It may not update marker-qualified constraint lines | Check its first pull requests |
 | Issues 20 and 21 keep `references.uncertain` | Strict runs still fail on documented paths and globs unless ignored | Implement the direction agreed in the issues |
-| HTML blocks are not parsed | A link inside an HTML block is still treated as a dependency | Accept, or add an HTML block pass if it proves noisy |
+| HTML blocks are not parsed | A link inside an HTML block is still treated as a dependency. Corrected 2026-11-24: a fence marker inside one could also hide a later real link | Resolved in 1.9.0; see the [closeout record](../correctness-trust-closeout/acceptance.md) |
 | Every definition of a duplicated label is governed | A duplicate naming a missing file is a broken link | Accept; documented in contracts |
 | `strict_all` is still accepted by `get_rules` and `validate` | An unused parameter kept for API compatibility | Remove in a major version |
 | Actions pins not moved to current majors | Older pinned majors keep running | Review the Dependabot proposals |
